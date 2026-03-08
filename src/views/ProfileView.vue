@@ -74,12 +74,12 @@ export default {
          
          <h2 class="text-2xl font-bold text-slate-800">{{ user?.name }}</h2>
          
-         <div v-if="user?.username || user?.telegram_id" class="mt-2 flex flex-col items-center gap-1">
-            <span v-if="user?.username" class="text-amber-600 font-bold text-sm bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
-              @{{ user.username }}
+         <div class="mt-2 flex flex-col items-center gap-1">
+            <span class="text-amber-600 font-bold text-sm bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
+              @{{ user?.username || 'неизвестно' }}
             </span>
-            <span v-if="user?.telegram_id" class="text-slate-400 text-[10px] font-medium tracking-tight uppercase">
-              ID: {{ user.telegram_id }}
+            <span class="text-slate-400 text-[10px] font-medium tracking-tight uppercase">
+              ID: {{ user?.telegram_id || 'неизвестно' }}
             </span>
          </div>
 
