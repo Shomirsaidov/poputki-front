@@ -1,22 +1,27 @@
 <script>
 import api from '../api';
+import { getTelegramUser } from '../telegram';
 
 export default {
     data() {
         return {
             user: null,
             vehicle: null,
-            loading: false
+            loading: true,
+            rides: [],
+            stats: {
+                passenger: 0,
+                driver: 0
+            }
+        }
+    },
+    computed: {
+        tgUser() {
+            return getTelegramUser();
         }
     },
     async mounted() {
-        const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
-        if (savedUser) this.user = savedUser;
-        
-        this.loading = true;
-        await this.fetchProfile();
-        await this.fetchVehicle();
-        this.loading = false;
+        this.fetchProfile();
     },
     methods: {
         async fetchProfile() {

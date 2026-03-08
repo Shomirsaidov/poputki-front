@@ -1,6 +1,7 @@
 <script>
 import api from '../api';
 import AppModal from '../components/AppModal.vue';
+import { getTelegramUser, getTelegramInitData } from '../telegram';
 
 export default {
   components: {
@@ -27,8 +28,11 @@ export default {
     };
   },
   computed: {
+    tgUser() {
+      return getTelegramUser();
+    },
     tgName() {
-      return window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || '';
+      return this.tgUser?.first_name || '';
     }
   },
   async mounted() {
@@ -47,19 +51,19 @@ export default {
   },
   methods: {
     async syncTelegram() {
-      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-      if (!tgUser) return;
+      if (!this.tgUser) return;
 
       const user = JSON.parse(localStorage.getItem('user') || 'null');
       
       try {
         const res = await api.post('/auth/telegram-login', {
-          id: tgUser.id,
-          first_name: tgUser.first_name,
-          last_name: tgUser.last_name,
-          username: tgUser.username,
-          photo_url: tgUser.photo_url,
-          userId: user?.id // Pass existing ID to link if available
+          id: this.tgUser.id,
+          first_name: this.tgUser.first_name,
+          last_name: this.tgUser.last_name,
+          username: this.tgUser.username,
+          photo_url: this.tgUser.photo_url,
+          userId: user?.id, // Pass existing ID to link if available
+          initData: getTelegramInitData() // Send raw string for backend verification
         });
 
         if (res.data.user) {

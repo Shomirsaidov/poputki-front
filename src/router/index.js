@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import RideSeatSelectionView from '../views/RideSeatSelectionView.vue';
 import BusAdminView from '../views/BusAdminView.vue';
+import { getTelegramUser, getTelegramInitData } from '../telegram';
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -103,16 +104,10 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-    // 1. Initialize Telegram WebApp
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-        tg.expand();
-    }
-
+    const tgUser = getTelegramUser();
     const user = JSON.parse(localStorage.getItem('user'));
 
     // 2. Auto-login or Sync via Telegram if data is available
-    const tgUser = tg?.initDataUnsafe?.user;
     if (tgUser) {
         try {
             // Sync with backend to ensure telegram_id is saved
@@ -127,7 +122,8 @@ router.beforeEach(async (to, from, next) => {
                     last_name: tgUser.last_name,
                     username: tgUser.username,
                     photo_url: tgUser.photo_url,
-                    userId: user?.id
+                    userId: user?.id,
+                    initData: getTelegramInitData() // Secure string
                 })
             });
 
@@ -143,11 +139,8 @@ router.beforeEach(async (to, from, next) => {
                     if (to.name !== 'auth' || to.query.tg_complete !== '1') {
                         return next({ name: 'auth', query: { tg_complete: 1 } });
                     }
-                    return next();
-                }
-
-                // If they were trying to go to auth but are now fully synced, redirect to home
-                if (to.name === 'auth') {
+                } else if (to.name === 'auth') {
+                    // Fully synced and has phone -> go home
                     return next({ name: 'home' });
                 }
             }
