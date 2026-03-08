@@ -107,44 +107,47 @@ router.beforeEach(async (to, from, next) => {
     const tgUser = getTelegramUser();
     const user = JSON.parse(localStorage.getItem('user'));
 
-    // 2. Auto-login or Sync via Telegram if data is available
+    // 2. Background Sync via Telegram if data is available
     if (tgUser) {
-        try {
-            // Synchronous background attempt
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/telegram-login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: tgUser.id,
-                    first_name: tgUser.first_name,
-                    last_name: tgUser.last_name,
-                    username: tgUser.username,
-                    photo_url: tgUser.photo_url,
-                    userId: user?.id,
-                    initData: getTelegramInitData()
-                })
-            });
+        const syncAction = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/telegram-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: tgUser.id,
+                        first_name: tgUser.first_name,
+                        last_name: tgUser.last_name,
+                        username: tgUser.username,
+                        photo_url: tgUser.photo_url,
+                        userId: user?.id,
+                        initData: getTelegramInitData()
+                    })
+                });
 
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
 
-                const updatedUser = data.user;
-
-                // Handle forced redirect to auth if phone is missing
-                if (updatedUser.isNew || !updatedUser.phone) {
-                    if (to.name !== 'auth') {
-                        return next({ name: 'auth', query: { tg_complete: 1 } });
+                    // Only force redirect if missing phone AND not already on auth
+                    if ((data.user.isNew || !data.user.phone) && to.name !== 'auth') {
+                        router.push({ name: 'auth', query: { tg_complete: 1 } });
                     }
-                } else if (to.name === 'auth') {
-                    return next({ name: 'home' });
                 }
+            } catch (error) {
+                console.error("Background Telegram Sync Failure:", error);
             }
-        } catch (error) {
-            console.error("Telegram Sync Failure:", error);
+        };
+
+        // Non-blocking for authenticated users, blocking for newcomers
+        const isAuthenticated = !!localStorage.getItem('token');
+        if (isAuthenticated) {
+            syncAction(); // Fire and forget
+        } else {
+            await syncAction(); // Block for first-time login
         }
     }
 

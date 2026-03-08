@@ -69,21 +69,23 @@ export default {
     <!-- Profile Card -->
     <div class="px-6 -mt-32 relative z-10">
        <div class="bg-white/80 backdrop-blur-md p-6 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.05)] border border-white/50 text-center">
-         <div v-if="user?.photo_url" class="w-24 h-24 rounded-full mx-auto shadow-xl shadow-orange-500/20 mb-4 border-4 border-white overflow-hidden bg-white">
-           <img :src="user.photo_url" alt="Profile" class="w-full h-full object-cover" />
+        <div v-if="user?.photo_url || tgUser?.photo_url" class="w-24 h-24 rounded-full mx-auto shadow-xl shadow-orange-500/20 mb-4 border-4 border-white overflow-hidden bg-white">
+           <img :src="user?.photo_url || tgUser?.photo_url" alt="Profile" class="w-full h-full object-cover" />
          </div>
          <div v-else class="w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mx-auto flex items-center justify-center text-4xl font-bold text-white shadow-xl shadow-orange-500/20 mb-4 border-4 border-white">
-           {{ user?.name ? user.name[0] : 'U' }}
+           {{ (user?.name || tgUser?.first_name || 'U')[0] }}
          </div>
          
-         <h2 class="text-2xl font-bold text-slate-800">{{ user?.name }}</h2>
+         <h2 class="text-2xl font-bold text-slate-800">
+           {{ user?.name || (tgUser ? (tgUser.last_name ? `${tgUser.first_name} ${tgUser.last_name}` : tgUser.first_name) : 'Загрузка...') }}
+         </h2>
          
-         <div v-if="user?.tg_username || user?.telegram_id" class="mt-2 flex flex-col items-center gap-1">
-            <span v-if="user?.tg_username" class="text-amber-600 font-bold text-sm bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
-              @{{ user.tg_username }}
+         <div v-if="user?.tg_username || tgUser?.username || user?.telegram_id || tgUser?.id" class="mt-2 flex flex-col items-center gap-1">
+            <span v-if="user?.tg_username || tgUser?.username" class="text-amber-600 font-bold text-sm bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
+              @{{ user?.tg_username || tgUser?.username }}
             </span>
-            <span v-if="user?.telegram_id" class="text-slate-400 text-[10px] font-medium tracking-tight uppercase">
-              ID: {{ user.telegram_id }}
+            <span v-if="user?.telegram_id || tgUser?.id" class="text-slate-400 text-[10px] font-medium tracking-tight uppercase">
+              ID: {{ user?.telegram_id || tgUser?.id }}
             </span>
          </div>
 
