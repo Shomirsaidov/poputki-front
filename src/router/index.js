@@ -107,12 +107,12 @@ router.beforeEach(async (to, from, next) => {
 
     const user = JSON.parse(localStorage.getItem('user'));
 
-    // 2. Auto-login via Telegram if no active session
-    if (!user && tg?.initDataUnsafe?.user) {
+    // 2. Auto-login or Sync via Telegram if data is available
+    const tgUser = tg?.initDataUnsafe?.user;
+    if (tgUser && (!user || !user.telegram_id)) {
         try {
-            const tgUser = tg.initDataUnsafe.user;
-            // Need to fetch logic if api is not imported, let's use global fetch for simplicity here, or import api.
-            const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/telegram-login`, {
+            // Sync with backend to ensure telegram_id is saved
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/telegram-login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -131,22 +131,23 @@ router.beforeEach(async (to, from, next) => {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
-                if (data.user.isNew || !data.user.phone) {
+                const updatedUser = data.user;
+
+                // Handle forced redirect to auth if phone is missing
+                if (updatedUser.isNew || !updatedUser.phone) {
                     if (to.name !== 'auth' || to.query.tg_complete !== '1') {
                         return next({ name: 'auth', query: { tg_complete: 1 } });
                     }
                     return next();
                 }
 
-                // If they were trying to go to auth, redirect to home. Otherwise continue to intended destination.
+                // If they were trying to go to auth but are now fully synced, redirect to home
                 if (to.name === 'auth') {
                     return next({ name: 'home' });
                 }
-                return next(); // Continue after successful auto-login
             }
         } catch (error) {
-            console.error("Telegram Auto-Login Failed:", error);
-            // Fall back to standard logic
+            console.error("Telegram Sync/Login Failed:", error);
         }
     }
 

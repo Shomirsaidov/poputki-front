@@ -71,9 +71,19 @@ export default {
          <div v-else class="w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mx-auto flex items-center justify-center text-4xl font-bold text-white shadow-xl shadow-orange-500/20 mb-4 border-4 border-white">
            {{ user?.name ? user.name[0] : 'U' }}
          </div>
+         
          <h2 class="text-2xl font-bold text-slate-800">{{ user?.name }}</h2>
          
-         <p v-if="user?.phone" class="text-slate-500 font-medium mt-1">{{ user.phone }}</p>
+         <div v-if="user?.username || user?.telegram_id" class="mt-2 flex flex-col items-center gap-1">
+            <span v-if="user?.username" class="text-amber-600 font-bold text-sm bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
+              @{{ user.username }}
+            </span>
+            <span v-if="user?.telegram_id" class="text-slate-400 text-[10px] font-medium tracking-tight uppercase">
+              ID: {{ user.telegram_id }}
+            </span>
+         </div>
+
+         <p v-if="user?.phone" class="text-slate-500 font-medium mt-3">{{ user.phone }}</p>
          <div v-else class="mt-3 p-3 bg-red-50 rounded-xl border border-red-100 flex items-center flex-col gap-2">
             <span class="text-red-500 text-sm font-bold flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -84,7 +94,7 @@ export default {
             </button>
          </div>
 
-         <div class="flex justify-center mt-4 gap-2 flex-wrap">
+         <div class="flex justify-center mt-6 gap-2 flex-wrap">
             <span v-if="user?.age" class="px-4 py-1.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold uppercase tracking-wide">
               {{ user.age }} лет
             </span>
