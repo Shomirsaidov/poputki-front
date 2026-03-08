@@ -6,27 +6,14 @@ export default {
   components: {
     AppModal
   },
-  data() {
-    return {
-      step: 1, // 1: Phone, 2: Profile
-      phone: '',
-      needsPhone: false,
-      registration: {
-        id: null,
-        name: '',
-        age: '',
-        phone: ''
-      },
-      loading: false,
-      modal: {
-        show: false,
-        title: '',
-        message: '',
-        type: 'info'
-      }
-    };
+  computed: {
+    tgName() {
+      return window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || '';
+    }
   },
-  mounted() {
+  async mounted() {
+    this.syncTelegram();
+    
     if (this.$route.query.tg_complete === '1') {
         const userStr = localStorage.getItem('user');
         if (userStr) {
@@ -39,6 +26,36 @@ export default {
     }
   },
   methods: {
+    async syncTelegram() {
+      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+      if (!tgUser) return;
+
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      
+      try {
+        const res = await api.post('/auth/telegram-login', {
+          id: tgUser.id,
+          first_name: tgUser.first_name,
+          last_name: tgUser.last_name,
+          username: tgUser.username,
+          photo_url: tgUser.photo_url,
+          userId: user?.id // Pass existing ID to link if available
+        });
+
+        if (res.data.user) {
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+          if (res.data.token) localStorage.setItem('token', res.data.token);
+          
+          // Re-update registration if we are in step 2
+          if (this.step === 2) {
+             this.registration.id = res.data.user.id;
+             this.registration.name = res.data.user.name || '';
+          }
+        }
+      } catch (e) {
+        console.error("Sync TG error:", e);
+      }
+    },
     showAlert(title, message, type = 'info') {
       this.modal.title = title;
       this.modal.message = message;
@@ -126,7 +143,9 @@ export default {
            <div class="w-16 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg shadow-yellow-500/30 transform -rotate-6">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
            </div>
-           <h1 class="text-4xl font-bold text-slate-900 mb-3 tracking-tight">Вход</h1>
+           <h1 class="text-4xl font-bold text-slate-900 mb-3 tracking-tight">
+             Салом{{ tgName ? ', ' + tgName : '' }}!
+           </h1>
            <p class="text-slate-500 text-lg">Введите ваш номер телефона</p>
         </div>
 

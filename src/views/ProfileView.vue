@@ -27,9 +27,8 @@ export default {
             }
             try {
                 const res = await api.get(`/users/${u.id}/profile`);
-                this.user = res.data;
-                // Sync latest profile data back to localStorage
                 if (res.data) {
+                    this.user = res.data;
                     localStorage.setItem('user', JSON.stringify(res.data));
                 }
             } catch (e) {
