@@ -78,25 +78,16 @@ export default {
          
          <h2 class="text-2xl font-bold text-slate-800">{{ user?.name }}</h2>
          
-         <div class="mt-2 flex flex-col items-center gap-1">
-            <span class="text-amber-600 font-bold text-sm bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
-              @{{ user?.username || 'неизвестно' }}
+         <div v-if="user?.tg_username || user?.telegram_id" class="mt-2 flex flex-col items-center gap-1">
+            <span v-if="user?.tg_username" class="text-amber-600 font-bold text-sm bg-amber-50 px-3 py-1 rounded-full border border-amber-100/50">
+              @{{ user.tg_username }}
             </span>
-            <span class="text-slate-400 text-[10px] font-medium tracking-tight uppercase">
-              ID: {{ user?.telegram_id || 'неизвестно' }}
+            <span v-if="user?.telegram_id" class="text-slate-400 text-[10px] font-medium tracking-tight uppercase">
+              ID: {{ user.telegram_id }}
             </span>
          </div>
 
          <p v-if="user?.phone" class="text-slate-500 font-medium mt-3">{{ user.phone }}</p>
-         <div v-else class="mt-3 p-3 bg-red-50 rounded-xl border border-red-100 flex items-center flex-col gap-2">
-            <span class="text-red-500 text-sm font-bold flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-              Добавьте номер телефона
-            </span>
-            <button @click="$router.push('/preferences')" class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-200 transition-colors">
-               Привязать номер
-            </button>
-         </div>
 
          <div class="flex justify-center mt-6 gap-2 flex-wrap">
             <span v-if="user?.age" class="px-4 py-1.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold uppercase tracking-wide">

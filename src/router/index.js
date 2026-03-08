@@ -110,7 +110,7 @@ router.beforeEach(async (to, from, next) => {
     // 2. Auto-login or Sync via Telegram if data is available
     if (tgUser) {
         try {
-            // Sync with backend to ensure telegram_id is saved
+            // Synchronous background attempt
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/telegram-login`, {
                 method: 'POST',
                 headers: {
@@ -123,7 +123,7 @@ router.beforeEach(async (to, from, next) => {
                     username: tgUser.username,
                     photo_url: tgUser.photo_url,
                     userId: user?.id,
-                    initData: getTelegramInitData() // Secure string
+                    initData: getTelegramInitData()
                 })
             });
 
@@ -136,16 +136,15 @@ router.beforeEach(async (to, from, next) => {
 
                 // Handle forced redirect to auth if phone is missing
                 if (updatedUser.isNew || !updatedUser.phone) {
-                    if (to.name !== 'auth' || to.query.tg_complete !== '1') {
+                    if (to.name !== 'auth') {
                         return next({ name: 'auth', query: { tg_complete: 1 } });
                     }
                 } else if (to.name === 'auth') {
-                    // Fully synced and has phone -> go home
                     return next({ name: 'home' });
                 }
             }
         } catch (error) {
-            console.error("Telegram Sync/Login Failed:", error);
+            console.error("Telegram Sync Failure:", error);
         }
     }
 

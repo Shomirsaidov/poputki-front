@@ -73,7 +73,7 @@ export default {
           // Re-update registration if we are in step 2
           if (this.step === 2) {
              this.registration.id = res.data.user.id;
-             this.registration.name = res.data.user.name || '';
+             this.registration.name = res.data.user.name || this.registration.name;
           }
         }
       } catch (e) {
