@@ -113,7 +113,7 @@ router.beforeEach(async (to, from, next) => {
 
     // 2. Auto-login or Sync via Telegram if data is available
     const tgUser = tg?.initDataUnsafe?.user;
-    if (tgUser && (!user || !user.telegram_id)) {
+    if (tgUser) {
         try {
             // Sync with backend to ensure telegram_id is saved
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/telegram-login`, {
