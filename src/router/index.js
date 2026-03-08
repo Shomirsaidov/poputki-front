@@ -11,7 +11,84 @@ const router = createRouter({
             name: 'home',
             component: HomeView
         },
-        // ... other routes
+        {
+            path: '/create',
+            name: 'create-ride',
+            component: () => import('../views/CreateRideView.vue')
+        },
+        {
+            path: '/preferences',
+            name: 'preferences-edit',
+            component: () => import('../views/PreferencesView.vue')
+        },
+        {
+            path: '/bookings',
+            name: 'bookings',
+            component: () => import('../views/BookingsView.vue')
+        },
+        {
+            path: '/ride/:id',
+            name: 'ride-details',
+            component: () => import('../views/RideDetailsView.vue')
+        },
+        {
+            path: '/ride/:id/select-seat',
+            name: 'ride-seats',
+            component: RideSeatSelectionView
+        },
+        {
+            path: '/bus-admin',
+            name: 'bus-admin',
+            component: BusAdminView,
+            meta: { hideBottomNav: true }
+        },
+
+        {
+            path: '/profile',
+            name: 'profile',
+            component: () => import('../views/ProfileView.vue')
+        },
+        {
+            path: '/auth',
+            name: 'auth',
+            component: () => import('../views/AuthView.vue')
+        },
+        {
+            path: '/my-rides',
+            name: 'my-rides',
+            component: () => import('../views/MyRidesView.vue')
+        },
+        {
+            path: '/vehicle',
+            name: 'vehicle',
+            component: () => import('../views/VehicleView.vue')
+        },
+        {
+            path: '/driver/:id/reviews',
+            name: 'driver-reviews',
+            component: () => import('../views/UserProfileView.vue')
+        },
+        {
+            path: '/user/:id',
+            name: 'user-profile',
+            component: () => import('../views/UserProfileView.vue')
+        },
+        {
+            path: '/bus-ticket/:id',
+            name: 'bus-ticket-details',
+            component: () => import('../views/BusTicketDetailsView.vue')
+        },
+
+        {
+            path: '/bus-booking/:id/step/:step',
+            name: 'bus-booking',
+            component: () => import('../views/BusBookingView.vue')
+        },
+        {
+            path: '/my-bus-tickets',
+            name: 'my-bus-tickets',
+            component: () => import('../views/MyBusTicketsView.vue')
+        },
         {
             path: '/admin',
             name: 'admin',
