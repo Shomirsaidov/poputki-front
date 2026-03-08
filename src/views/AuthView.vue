@@ -6,6 +6,26 @@ export default {
   components: {
     AppModal
   },
+  data() {
+    return {
+      step: 1, // 1: Phone, 2: Profile
+      phone: '',
+      needsPhone: false,
+      registration: {
+        id: null,
+        name: '',
+        age: '',
+        phone: ''
+      },
+      loading: false,
+      modal: {
+        show: false,
+        title: '',
+        message: '',
+        type: 'info'
+      }
+    };
+  },
   computed: {
     tgName() {
       return window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || '';
