@@ -13,6 +13,7 @@ export default {
             ride: null,
             loading: true,
             user: JSON.parse(localStorage.getItem('user') || 'null'),
+            matchingDriverRides: [],
             modal: {
                 show: false,
                 title: '',
@@ -49,6 +50,7 @@ export default {
             try {
                 const res = await api.get(`/rides/${this.$route.params.id}`);
                 this.ride = res.data;
+                this.checkMatchingRides();
             } catch (e) {
                 console.error(e);
                 this.showAlert('Ошибка', 'Ошибка при загрузке поездки', 'error', () => {
@@ -58,6 +60,37 @@ export default {
             } finally {
                 this.loading = false;
             }
+        },
+        async checkMatchingRides() {
+            if (!this.user || !this.ride || !this.ride.is_passenger_entry) return;
+            try {
+               const res = await api.get('/rides', { 
+                   params: { from: this.ride.from_city, to: this.ride.to_city } 
+               }); 
+               this.matchingDriverRides = res.data.filter(r => 
+                  r.driver_id === this.user.id && 
+                  !r.is_passenger_entry && 
+                  r.status === 'active'
+               );
+            } catch(e) {
+                console.error(e);
+            }
+        },
+        async shareRide(driverRideId) {
+            this.showConfirm(
+                'Предложить поездку',
+                'Отправить пассажиру встречное предложение вашей поездки?',
+                async () => {
+                    this.modal.show = false;
+                    try {
+                        await api.post(`/rides/${this.ride.id}/share`, { driver_ride_id: driverRideId });
+                        this.showAlert('Успешно', 'Мы уведомили пассажира о вашей поездке. Ожидайте бронирования!', 'success');
+                    } catch (e) {
+                        console.error(e);
+                        this.showAlert('Ошибка', e.response?.data?.error || 'Не удалось предложить поездку', 'error');
+                    }
+                }
+            );
         },
         openSeatSelection() {
             if (!this.user) {
@@ -334,6 +367,15 @@ export default {
                           </button>
                       </template>
                       <template v-else-if="ride.is_passenger_entry">
+                          <button 
+                             v-if="matchingDriverRides.length > 0"
+                             @click="shareRide(matchingDriverRides[0].id)"
+                             class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-blue-500 text-white shadow-blue-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2 mb-4"
+                          >
+                             <span>Предложить свою поездку</span>
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                          </button>
+                          
                           <router-link 
                             :to="{ 
                                 path: '/create', 
@@ -347,7 +389,7 @@ export default {
                             }"
                             class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-slate-900 text-white shadow-slate-900/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
                           >
-                             <span>Создать похожую поездку</span>
+                             <span>{{ matchingDriverRides.length > 0 ? 'Создать другую поездку' : 'Создать похожую поездку' }}</span>
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                           </router-link>
                       </template>
