@@ -148,7 +148,7 @@ export default {
         if (user.role === 'bus_driver') {
             this.$router.push({ name: 'bus-admin' });
         } else {
-            this.$router.push({ name: 'home' });
+            this.$router.push({ name: 'search' });
         }
     }
   }

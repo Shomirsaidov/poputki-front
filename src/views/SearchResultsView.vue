@@ -4,12 +4,12 @@ import api from '../api';
 export default {
   data() {
     return {
-      activeTab: 'rides', // 'rides' | 'buses'
+      activeTab: this.$route.query.tab || 'rides', // 'rides' | 'buses'
       rides: [],
       busTickets: [],
-      fromCity: '',
-      toCity: '',
-      date: '',
+      fromCity: this.$route.query.from || '',
+      toCity: this.$route.query.to || '',
+      date: this.$route.query.date || '',
       isLoading: true,
       showSuccessNotify: false,
       successMessage: '',
