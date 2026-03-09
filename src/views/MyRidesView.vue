@@ -227,6 +227,22 @@ export default {
             // Implementation would depend on whether we fetch reviews here.
             // For now, simpler to let them try and backend will block if duplicate.
             return false;
+        },
+        repeatRide(ride) {
+            this.$router.push({
+                path: '/create',
+                query: {
+                    role: this.isDriver(ride) ? 'driver' : 'passenger',
+                    from: ride.from_city || '',
+                    to: ride.to_city || '',
+                    time: ride.time || '',
+                    price: ride.price || '',
+                    seats: ride.seats || '',
+                    fromAddress: ride.from_address || '',
+                    toAddress: ride.to_address || '',
+                    allows_delivery: ride.allows_delivery ? 'true' : 'false'
+                }
+            });
         }
     }
 }
@@ -521,6 +537,15 @@ export default {
                                 class="w-full bg-yellow-400 text-white font-bold py-3 rounded-2xl hover:bg-yellow-500 transition-colors shadow-lg shadow-yellow-500/20"
                             >
                                 Оставить отзыв
+                            </button>
+
+                            <!-- Repeat Ride (Both) -->
+                            <button 
+                                v-if="ride.status === 'completed' || ride.status === 'cancelled'"
+                                @click="repeatRide(ride)"
+                                class="w-full bg-slate-100 text-slate-800 font-bold py-3 rounded-2xl hover:bg-slate-200 transition-colors shadow-sm mt-2"
+                            >
+                                Повторить поездку
                             </button>
                         </div>
                     </div>

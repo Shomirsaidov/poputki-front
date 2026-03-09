@@ -72,6 +72,11 @@ export default {
         if (query.to) this.toCity = query.to;
         if (query.date) this.date = query.date;
         if (query.time) this.time = query.time;
+        if (query.price) this.price = parseInt(query.price);
+        if (query.seats) this.seats = parseInt(query.seats);
+        if (query.fromAddress) this.fromAddress = query.fromAddress;
+        if (query.toAddress) this.toAddress = query.toAddress;
+        if (query.allows_delivery) this.allows_delivery = query.allows_delivery === 'true';
         if (query.role) {
             this.rideRole = query.role;
             this.step = 2; // Jump to form if role is pre-selected

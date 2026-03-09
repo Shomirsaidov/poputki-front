@@ -212,8 +212,10 @@ export default {
                                 </template>
                                 <template v-else>
                                     <!-- Simple Seat/Chair Icon (Default) -->
-                                    <svg class="w-7 h-7 text-slate-200 transition-colors group-hover:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 10v4h10v-4H7zM5 8h14a1 1 0 011 1v1h-16V9a1 1 0 011-1zM6 14h12v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zM7 4h10a1 1 0 011 1v3H6V5a1 1 0 011-1z" />
+                                    <svg class="w-7 h-7 text-slate-200 transition-colors group-hover:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <path d="M19 13V8a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v5" />
+                                      <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2Z" />
+                                      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
                                     </svg>
                                 </template>
 
@@ -239,8 +241,10 @@ export default {
             <!-- Available -->
             <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                 <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 10v4h10v-4H7zM5 8h14a1 1 0 011 1v1h-16V9a1 1 0 011-1zM6 14h12v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zM7 4h10a1 1 0 011 1v3H6V5a1 1 0 011-1z" />
+                    <svg class="w-5 h-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 13V8a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v5" />
+                      <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2Z" />
+                      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
                     </svg>
                 </div>
                 <div class="flex flex-col">

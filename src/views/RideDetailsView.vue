@@ -81,6 +81,22 @@ export default {
             if (isNaN(d)) return `${dateStr} в ${timeStr || ''}`;
             const formattedDate = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
             return `${formattedDate} в ${timeStr || ''}`;
+        },
+        repeatRide() {
+            this.$router.push({
+                path: '/create',
+                query: {
+                    role: this.isDriver ? 'driver' : 'passenger',
+                    from: this.ride?.from_city || '',
+                    to: this.ride?.to_city || '',
+                    time: this.ride?.time || '',
+                    price: this.ride?.price || '',
+                    seats: this.ride?.seats || '',
+                    fromAddress: this.ride?.from_address || '',
+                    toAddress: this.ride?.to_address || '',
+                    allows_delivery: this.ride?.allows_delivery ? 'true' : 'false'
+                }
+            });
         }
     },
     computed: {
@@ -106,6 +122,16 @@ export default {
             if (!this.hasRowPrices) return this.ride.price;
             const prices = Object.values(this.ride.row_prices).filter(p => p > 0);
             return Math.min(...prices, this.ride.price);
+        },
+        isPastRide() {
+            if (!this.ride) return false;
+            // A ride is past if it's explicitly completed or cancelled, 
+            // or if its date+time is strictly in the past by local time.
+            if (this.ride.status === 'completed' || this.ride.status === 'cancelled') return true;
+            
+            const time = this.ride.time || '00:00:00';
+            const rideDate = new Date(`${this.ride.date}T${time}`);
+            return new Date() > rideDate;
         }
     },
     mounted() {
@@ -298,7 +324,16 @@ export default {
 
                   <!-- Action Button -->
                   <div class="mt-8 mb-6">
-                      <template v-if="ride.is_passenger_entry">
+                      <template v-if="isPastRide">
+                          <button 
+                             @click="repeatRide"
+                             class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-slate-100 text-slate-800 shadow-slate-100/30 hover:bg-slate-200 transition-all flex items-center justify-center space-x-2"
+                          >
+                             <span>Повторить поездку</span>
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                          </button>
+                      </template>
+                      <template v-else-if="ride.is_passenger_entry">
                           <router-link 
                             :to="{ 
                                 path: '/create', 
