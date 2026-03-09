@@ -153,8 +153,9 @@ router.beforeEach(async (to, from, next) => {
 
     // 3. Standard Navigation Guard
     const isAuthenticated = !!localStorage.getItem('token');
+    const publicRoutes = ['auth', 'admin', 'bus-admin', 'ride-details'];
 
-    if (to.name !== 'auth' && to.name !== 'admin' && to.name !== 'bus-admin' && !isAuthenticated) {
+    if (!publicRoutes.includes(to.name) && !isAuthenticated) {
         next({ name: 'auth' });
     } else {
         next();
