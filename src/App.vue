@@ -18,7 +18,7 @@ export default {
         </Transition>
       </RouterView>
     </main>
-    <BottomNav v-if="!$route.meta?.hideBottomNav && $route.name !== 'auth'" />
+    <BottomNav v-if="!$route.meta?.hideBottomNav && $route.name !== 'auth' && $route.name !== 'landing'" />
   </div>
 </template>
 

@@ -9,12 +9,7 @@ export default {
       date: '',
       availableCities: [],
       activeTab: 'rides',
-      popularRoutes: [
-        { from: 'Душанбе', to: 'Худжанд', minPrice: '150 с.' },
-        { from: 'Куляб', to: 'Душанбе', minPrice: '100 с.' },
-        { from: 'Пенджикент', to: 'Душанбе', minPrice: '120 с.' },
-        { from: 'Хорог', to: 'Душанбе', minPrice: '300 с.' }
-      ]
+      recentRides: []
     };
   },
   methods: {
@@ -24,6 +19,15 @@ export default {
         this.availableCities = res.data;
       } catch (err) {
         console.error('Failed to fetch cities:', err);
+      }
+    },
+    async fetchRecentRides() {
+      try {
+        const res = await api.get('/rides');
+        // Get the top 4 most recent rides
+        this.recentRides = res.data.slice(0, 4);
+      } catch (err) {
+        console.error('Failed to fetch recent rides:', err);
       }
     },
     goToSearch() {
@@ -37,15 +41,10 @@ export default {
         }
       });
     },
-    selectPopularRoute(route) {
-        this.fromCity = route.from;
-        this.toCity = route.to;
-        this.activeTab = 'rides';
-        this.goToSearch();
-    }
   },
   mounted() {
     this.fetchCities();
+    this.fetchRecentRides();
   }
 };
 </script>
@@ -216,13 +215,13 @@ export default {
         </div>
     </div>
 
-    <!-- Popular Routes Sections -->
+    <!-- Recent Rides Sections -->
     <div class="py-20 md:py-24 bg-white border-y border-gray-100">
         <div class="container mx-auto px-4 max-w-6xl">
             <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
                <div>
-                   <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Популярные маршруты</h2>
-                   <p class="text-slate-500 font-medium mt-1">Куда чаще всего ездят наши попутчики</p>
+                   <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Свежие поездки</h2>
+                   <p class="text-slate-500 font-medium mt-1">Только что опубликованные маршруты от наших водителей</p>
                </div>
                <button @click="$router.push('/search')" class="text-blue-600 font-bold hover:text-blue-700 transition-colors flex items-center gap-1">
                    Все поездки <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
@@ -230,22 +229,28 @@ export default {
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div v-for="route in popularRoutes" :key="route.from + route.to" @click="selectPopularRoute(route)"
-                    class="group cursor-pointer bg-slate-50 hover:bg-white rounded-2xl p-5 border border-transparent hover:border-gray-200 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] active:scale-95">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <div class="text-lg font-bold text-slate-900 leading-tight">{{ route.from }}</div>
-                            <div class="text-sm font-semibold text-slate-500 mt-0.5">{{ route.to }}</div>
-                        </div>
-                        <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-500 group-hover:bg-blue-50 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                <div v-for="ride in recentRides" :key="ride.id" @click="$router.push({ name: 'ride-details', params: { id: ride.id } })"
+                    class="group cursor-pointer bg-slate-50 hover:bg-white rounded-2xl p-5 border border-transparent hover:border-gray-200 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] active:scale-95 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-8">
+                            <div>
+                                <div class="text-lg font-bold text-slate-900 leading-tight">{{ ride.from_city }}</div>
+                                <div class="text-sm font-semibold text-slate-500 mt-0.5">{{ ride.to_city }}</div>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-500 group-hover:bg-blue-50 transition-colors shrink-0 ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-slate-500">от</span>
-                        <span class="font-bold text-lg text-slate-800">{{ route.minPrice }}</span>
+                    <div class="flex items-center justify-between text-sm mt-auto">
+                        <span class="text-slate-500 font-medium">{{ ride.date }}</span>
+                        <span class="font-bold text-lg text-slate-800">{{ ride.price }} с.</span>
                     </div>
                 </div>
+            </div>
+            
+            <div v-if="recentRides.length === 0" class="text-center py-8 text-slate-500">
+                Загрузка поездок...
             </div>
         </div>
     </div>
