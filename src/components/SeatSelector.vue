@@ -211,11 +211,12 @@ export default {
                                     </svg>
                                 </template>
                                 <template v-else>
-                                    <!-- Simple Seat/Chair Icon (Default) -->
+                                    <!-- Better Car Seat Icon -->
                                     <svg class="w-7 h-7 text-slate-200 transition-colors group-hover:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                      <path d="M19 13V8a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v5" />
-                                      <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2Z" />
-                                      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                                      <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/>
+                                      <path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2Z"/>
+                                      <path d="M5 18v2"/>
+                                      <path d="M19 18v2"/>
                                     </svg>
                                 </template>
 
@@ -242,9 +243,10 @@ export default {
             <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                 <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
                     <svg class="w-5 h-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M19 13V8a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v5" />
-                      <path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2Z" />
-                      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+                      <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/>
+                      <path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2Z"/>
+                      <path d="M5 18v2"/>
+                      <path d="M19 18v2"/>
                     </svg>
                 </div>
                 <div class="flex flex-col">
