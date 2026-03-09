@@ -71,7 +71,7 @@ export default {
                     <span class="text-2xl font-black tracking-tight text-slate-900">Poputki</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button @click="$router.push('/create-ride')" class="text-sm font-bold text-slate-700 hover:text-amber-500 transition-colors hidden md:flex items-center gap-1">
+                    <button @click="$router.push('/create')" class="text-sm font-bold text-slate-700 hover:text-amber-500 transition-colors hidden md:flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                         Создать поездку
                     </button>
@@ -240,7 +240,7 @@ export default {
                         </p>
                         
                         <div class="pt-4">
-                            <button @click="$router.push('/create-ride')" class="group relative px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-2xl text-lg flex items-center gap-3 overflow-hidden shadow-lg shadow-amber-500/30 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/40 active:scale-95">
+                            <button @click="$router.push('/create')" class="group relative px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-2xl text-lg flex items-center gap-3 overflow-hidden shadow-lg shadow-amber-500/30 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/40 active:scale-95">
                                 <span class="relative z-10">Стать водителем</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 relative z-10 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
