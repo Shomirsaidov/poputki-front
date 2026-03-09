@@ -93,9 +93,20 @@ export default {
                         </span> 
                         и быстрее
                     </h1>
-                    <p class="text-lg text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                    <p class="text-lg text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8">
                         Экономьте на межгороде. Надежные водители, комфортные автобусы и попутчики в Таджикистане и по всей Средней Азии.
                     </p>
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mt-8">
+                        <button @click="$router.push('/create-ride')" class="w-full sm:w-auto px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl shadow-lg shadow-amber-500/30 active:scale-95 transition-all text-lg flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Создать поездку
+                        </button>
+                        <div class="text-sm font-medium text-slate-400">
+                            Водитель? Предложите места<br class="hidden sm:block"/> и верните расходы на бензин.
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Search Widget -->
@@ -268,12 +279,17 @@ export default {
                     <p class="text-slate-500 leading-relaxed">Система рейтингов и верифицированные номера телефонов всех участников обеспечат вам безопасность в дороге.</p>
                 </div>
                 
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100/50 text-left">
-                     <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 mb-5">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100/50 text-left flex flex-col items-start">
+                     <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 mb-5 shrink-0">
                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">Telegram интеграция</h3>
-                    <p class="text-slate-500 leading-relaxed">Получайте все уведомления о бронированиях напрямую в Telegram. Быстро, удобно и всегда под рукой.</p>
+                    <p class="text-slate-500 leading-relaxed mb-6">Получайте все уведомления о бронированиях напрямую в Telegram. Быстро, удобно и всегда под рукой.</p>
+                    
+                    <a href="https://t.me/poputkionline_bot" target="_blank" class="mt-auto group inline-flex items-center gap-2 text-blue-600 font-bold bg-blue-50 px-5 py-3 rounded-2xl hover:bg-blue-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.96-.64-.34-.99.23-1.58.15-.15 2.76-2.52 2.81-2.74.01-.03.01-.13-.06-.18-.08-.05-.18-.03-.25-.01-.11.02-1.87 1.18-5.28 3.48-.5.35-.95.52-1.36.51-.45-.01-1.31-.25-1.95-.46-.78-.25-1.4-.38-1.35-.8.03-.22.34-.45.92-.69 3.63-1.58 6.05-2.63 7.27-3.13 3.46-1.43 4.18-1.68 4.65-1.69.11 0 .34.02.48.13.12.09.15.22.16.32-.01.07-.01.16-.02.26z"/></svg>
+                        Перейти в Telegram-бот
+                    </a>
                 </div>
             </div>
 
