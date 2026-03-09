@@ -71,8 +71,9 @@ export default {
                     <span class="text-2xl font-black tracking-tight text-slate-900">Poputki</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button @click="$router.push('/auth')" class="text-sm font-bold text-slate-700 hover:text-amber-500 transition-colors hidden md:block">
-                        Войти
+                    <button @click="$router.push('/create-ride')" class="text-sm font-bold text-slate-700 hover:text-amber-500 transition-colors hidden md:flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                        Создать поездку
                     </button>
                     <button @click="$router.push('/search')" class="text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-full transition-all shadow-md active:scale-95">
                         Найти поездку
@@ -216,29 +217,29 @@ export default {
     </div>
 
     <!-- For Drivers Premium Glassmorphic Block -->
-    <div class="py-24 bg-slate-900 relative overflow-hidden">
+    <div class="py-24 bg-amber-50 relative overflow-hidden border-y border-amber-100/50">
         <!-- Abstract glowing background elements -->
-        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/20 rounded-full blur-[100px] pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
-        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[100px] pointer-events-none transform -translate-x-1/2 translate-y-1/2"></div>
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-300/30 rounded-full blur-[100px] pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-orange-400/20 rounded-full blur-[100px] pointer-events-none transform -translate-x-1/2 translate-y-1/2"></div>
         
         <div class="container mx-auto px-4 max-w-6xl relative z-10">
-            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[40px] p-8 md:p-14 shadow-2xl overflow-hidden">
+            <div class="bg-white/70 backdrop-blur-xl border border-white rounded-[40px] p-8 md:p-14 shadow-2xl shadow-amber-900/5 overflow-hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
                     <!-- Left side text and CTA -->
                     <div class="space-y-8">
-                        <div class="inline-flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-amber-400 border border-white/5">
+                        <div class="inline-flex items-center space-x-2 bg-amber-100 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-amber-600 border border-amber-200/50">
                             Для водителей
                         </div>
-                        <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
                             Окупайте расходы<br class="hidden md:block"/> на бензин
                         </h2>
-                        <p class="text-lg text-slate-400 leading-relaxed font-medium max-w-md">
+                        <p class="text-lg text-slate-600 leading-relaxed font-medium max-w-md">
                             Возьмите попутчиков, если вам по пути. Удобный интерфейс, безопасные профили пассажиров и полная свобода выбора расценок.
                         </p>
                         
                         <div class="pt-4">
-                            <button @click="$router.push('/create-ride')" class="group relative px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-2xl text-lg flex items-center gap-3 overflow-hidden shadow-[0_0_40px_-10px_rgba(245,158,11,0.5)] transition-all hover:scale-[1.02] hover:shadow-[0_0_60px_-15px_rgba(245,158,11,0.7)] active:scale-95">
-                                <span class="relative z-10">Станть водителем</span>
+                            <button @click="$router.push('/create-ride')" class="group relative px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-2xl text-lg flex items-center gap-3 overflow-hidden shadow-lg shadow-amber-500/30 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/40 active:scale-95">
+                                <span class="relative z-10">Стать водителем</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 relative z-10 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>
@@ -251,29 +252,26 @@ export default {
                     <!-- Right side visual representation -->
                     <div class="relative hidden md:flex justify-center flex-col gap-4 pl-12">
                         <!-- Card 1 -->
-                        <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex items-center gap-5 shadow-xl transform translate-x-12 hover:-translate-y-1 transition-transform cursor-default">
-                             <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-emerald-600 rounded-[18px] flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/30">
+                        <div class="bg-white backdrop-blur-md border border-gray-100 rounded-3xl p-6 flex items-center gap-5 shadow-xl shadow-gray-200/50 transform translate-x-12 hover:-translate-y-1 transition-transform cursor-default">
+                             <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-emerald-500 rounded-[18px] flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/30">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                              </div>
                              <div>
-                                 <div class="text-white font-bold text-xl mb-1">До +300 с. за рейс</div>
-                                 <div class="text-slate-400 text-sm font-medium">Снижение расходов на авто</div>
+                                 <div class="text-slate-900 font-bold text-xl mb-1">До +300 с. за рейс</div>
+                                 <div class="text-slate-500 text-sm font-medium">Снижение расходов на авто</div>
                              </div>
                         </div>
                         
                         <!-- Card 2 -->
-                        <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex items-center gap-5 shadow-xl transform -translate-x-4 hover:-translate-y-1 transition-transform cursor-default relative z-10">
-                            <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-[18px] flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/30">
+                        <div class="bg-white backdrop-blur-md border border-gray-100 rounded-3xl p-6 flex items-center gap-5 shadow-xl shadow-gray-200/50 transform -translate-x-4 hover:-translate-y-1 transition-transform cursor-default relative z-10">
+                            <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-[18px] flex items-center justify-center text-white shrink-0 shadow-lg shadow-amber-500/30">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                             </div>
                             <div>
-                                <div class="text-white font-bold text-xl mb-1">Надежные люди</div>
-                                <div class="text-slate-400 text-sm font-medium">Рейтинги и отзывы пассажиров</div>
+                                <div class="text-slate-900 font-bold text-xl mb-1">Надежные люди</div>
+                                <div class="text-slate-500 text-sm font-medium">Рейтинги и отзывы пассажиров</div>
                             </div>
                         </div>
-                        
-                        <!-- Background glow for cards -->
-                        <div class="absolute inset-0 bg-blue-500/10 blur-[60px] rounded-full z-0"></div>
                     </div>
                 </div>
             </div>
