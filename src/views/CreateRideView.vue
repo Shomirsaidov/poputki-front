@@ -239,7 +239,7 @@ export default {
             await api.post('/rides', payload);
             
             // Show success and redirect
-            this.$router.push({ path: '/', query: { success: 'true', message: this.rideRole === 'driver' ? 'Поездка создана!' : 'Заявка создана!' } });
+            this.$router.push({ path: '/search', query: { from: this.fromCity, to: this.toCity, date: this.date, success: 'true', message: this.rideRole === 'driver' ? 'Поездка создана!' : 'Заявка создана!' } });
           } catch (err) {
             console.error(err);
             this.errorMessage = err.response?.data?.error || 'Ошибка при создании';
