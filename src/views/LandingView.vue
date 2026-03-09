@@ -93,20 +93,9 @@ export default {
                         </span> 
                         и быстрее
                     </h1>
-                    <p class="text-lg text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8">
+                    <p class="text-lg text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0">
                         Экономьте на межгороде. Надежные водители, комфортные автобусы и попутчики в Таджикистане и по всей Средней Азии.
                     </p>
-                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mt-8">
-                        <button @click="$router.push('/create-ride')" class="w-full sm:w-auto px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl shadow-lg shadow-amber-500/30 active:scale-95 transition-all text-lg flex items-center justify-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Создать поездку
-                        </button>
-                        <div class="text-sm font-medium text-slate-400">
-                            Водитель? Предложите места<br class="hidden sm:block"/> и верните расходы на бензин.
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Search Widget -->
@@ -221,6 +210,71 @@ export default {
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">Наслаждайтесь поездкой</h3>
                     <p class="text-slate-500">Оплачивайте напрямую водителю и экономьте.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- For Drivers Premium Glassmorphic Block -->
+    <div class="py-24 bg-slate-900 relative overflow-hidden">
+        <!-- Abstract glowing background elements -->
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/20 rounded-full blur-[100px] pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[100px] pointer-events-none transform -translate-x-1/2 translate-y-1/2"></div>
+        
+        <div class="container mx-auto px-4 max-w-6xl relative z-10">
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[40px] p-8 md:p-14 shadow-2xl overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative">
+                    <!-- Left side text and CTA -->
+                    <div class="space-y-8">
+                        <div class="inline-flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-amber-400 border border-white/5">
+                            Для водителей
+                        </div>
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                            Окупайте расходы<br class="hidden md:block"/> на бензин
+                        </h2>
+                        <p class="text-lg text-slate-400 leading-relaxed font-medium max-w-md">
+                            Возьмите попутчиков, если вам по пути. Удобный интерфейс, безопасные профили пассажиров и полная свобода выбора расценок.
+                        </p>
+                        
+                        <div class="pt-4">
+                            <button @click="$router.push('/create-ride')" class="group relative px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-2xl text-lg flex items-center gap-3 overflow-hidden shadow-[0_0_40px_-10px_rgba(245,158,11,0.5)] transition-all hover:scale-[1.02] hover:shadow-[0_0_60px_-15px_rgba(245,158,11,0.7)] active:scale-95">
+                                <span class="relative z-10">Станть водителем</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 relative z-10 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                                <!-- Button shine effect -->
+                                <div class="absolute inset-0 bg-white/20 translate-x-[-100%] skew-x-[-15deg] group-hover:animate-[shine_1.5s_ease-out_infinite]"></div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Right side visual representation -->
+                    <div class="relative hidden md:flex justify-center flex-col gap-4 pl-12">
+                        <!-- Card 1 -->
+                        <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex items-center gap-5 shadow-xl transform translate-x-12 hover:-translate-y-1 transition-transform cursor-default">
+                             <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-emerald-600 rounded-[18px] flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/30">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                             </div>
+                             <div>
+                                 <div class="text-white font-bold text-xl mb-1">До +300 с. за рейс</div>
+                                 <div class="text-slate-400 text-sm font-medium">Снижение расходов на авто</div>
+                             </div>
+                        </div>
+                        
+                        <!-- Card 2 -->
+                        <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex items-center gap-5 shadow-xl transform -translate-x-4 hover:-translate-y-1 transition-transform cursor-default relative z-10">
+                            <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-[18px] flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/30">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-bold text-xl mb-1">Надежные люди</div>
+                                <div class="text-slate-400 text-sm font-medium">Рейтинги и отзывы пассажиров</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Background glow for cards -->
+                        <div class="absolute inset-0 bg-blue-500/10 blur-[60px] rounded-full z-0"></div>
+                    </div>
                 </div>
             </div>
         </div>
