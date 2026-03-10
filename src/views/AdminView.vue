@@ -308,7 +308,9 @@ export default {
                 await api.post('/admin/cities', { name: this.newCityName });
                 this.newCityName = '';
                 this.fetchCities();
-            } catch (e) { alert('Ошибка при довалении города'); }
+            } catch (e) { 
+                alert(e.response?.data?.error || 'Ошибка при добавлении города'); 
+            }
         },
         async deleteCity(id) {
             if (confirm('Удалить город?')) {
