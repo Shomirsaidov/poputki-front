@@ -1,7 +1,11 @@
 <script>
 import api from '../api';
+import AppLogo from '../components/AppLogo.vue';
 
 export default {
+    components: {
+        AppLogo
+    },
     data() {
         return {
             isAuthenticated: false,
@@ -167,11 +171,13 @@ export default {
         <!-- Auth Overlay -->
         <div v-if="!isAuthenticated" class="fixed inset-0 z-[100] bg-slate-900 flex items-center justify-center p-4 sm:p-6">
             <div class="max-w-md w-full bg-slate-800 p-6 sm:p-8 rounded-[32px] border border-slate-700 shadow-2xl text-center">
-                <div class="w-20 h-20 bg-amber-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                </div>
+                <AppLogo 
+                    :showText="false" 
+                    containerClass="mx-auto mb-6"
+                    iconSizeClass="w-20 h-20"
+                    iconClass="h-10 w-10"
+                    iconBgClass="bg-amber-500/10 text-amber-500"
+                />
                 <h1 class="text-3xl font-bold mb-2">Кабинет Перевозчика</h1>
                 <p class="text-slate-400 mb-8">Введите телефон и пароль для входа</p>
                 <input 
@@ -202,7 +208,12 @@ export default {
             <!-- Mobile Header -->
             <div class="lg:hidden fixed top-0 inset-x-0 z-40 bg-slate-800 border-b border-slate-700 p-4 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-slate-900 font-black text-lg">P</div>
+                <AppLogo 
+                    :showText="false" 
+                    iconSizeClass="w-8 h-8"
+                    iconClass="h-5 w-5"
+                    iconBgClass="bg-amber-500 text-slate-900"
+                />
                     <span class="text-lg font-bold tracking-tight">Перевозчик</span>
                 </div>
                 <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-slate-300 p-2">
@@ -222,7 +233,12 @@ export default {
             >
                 <div class="px-8 mb-12">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-slate-900 font-black text-xl">P</div>
+                    <AppLogo 
+                        :showText="false" 
+                        iconSizeClass="w-10 h-10"
+                        iconClass="h-6 w-6"
+                        iconBgClass="bg-amber-500 text-slate-900"
+                    />
                         <div>
                             <span class="text-xl font-bold tracking-tight block">{{ user?.name }}</span>
                             <span class="text-xs text-slate-400">Перевозчик</span>

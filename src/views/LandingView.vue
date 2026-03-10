@@ -1,7 +1,13 @@
 <script>
 import api from '../api';
 
+import AppLogo from '../components/AppLogo.vue';
+
 export default {
+    name: 'LandingView',
+    components: {
+        AppLogo
+    },
   data() {
     return {
       fromCity: '',
@@ -62,14 +68,7 @@ export default {
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
             <!-- Navigation -->
             <nav class="flex items-center justify-between mb-16 md:mb-24">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                    <span class="text-2xl font-black tracking-tight text-slate-900">Poputki</span>
-                </div>
+                <AppLogo @click="$router.push('/')" class="cursor-pointer" />
                 <div class="flex items-center space-x-4">
                     <button @click="$router.push('/create')" class="text-sm font-bold text-slate-700 hover:text-amber-500 transition-colors hidden md:flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
