@@ -52,7 +52,7 @@ export default {
                 passenger_count: 1,
                 seat_numbers: [],
                 passengers_data: [
-                    { lastName: '', firstName: '', middleName: '', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' }
+                    { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' }
                 ]
             }
         }
@@ -207,7 +207,7 @@ export default {
             this.activeTab = 'create-booking';
         },
         addPassenger() {
-            this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' });
+            this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' });
             this.bookingForm.passenger_count++;
         },
         removePassenger(index) {
@@ -263,15 +263,44 @@ export default {
     },
     computed: {
         filteredBookings() {
-            if (!this.bookingSearch) return this.bookings;
-            const s = this.bookingSearch.toLowerCase();
-            return this.bookings.filter(b => {
-                // Check passengers_data for names
-                const hasName = b.passengers_data?.some(p => 
-                    `${p.lastName} ${p.firstName}`.toLowerCase().includes(s)
-                );
-                return (b.passenger_name?.toLowerCase().includes(s) || hasName);
+            // Flatten bookings into individual passenger rows
+            const flattened = [];
+            this.bookings.forEach(b => {
+                const pData = b.passengers_data || [];
+                const seats = b.seat_numbers || [];
+                
+                // If no passenger data (old bookings), create one entry
+                if (pData.length === 0) {
+                    flattened.push({
+                        ...b,
+                        display_name: b.passenger_name || 'Неизвестный',
+                        display_gender: '—',
+                        display_seat: seats.join(', ') || '—',
+                        display_doc: '—',
+                        display_birth: '—',
+                        display_citizenship: '—'
+                    });
+                } else {
+                    pData.forEach((p, idx) => {
+                        flattened.push({
+                            ...b,
+                            display_name: `${p.lastName || ''} ${p.firstName || ''} ${p.middleName || ''}`.trim() || 'Без имени',
+                            display_gender: p.gender === 'male' ? 'М' : (p.gender === 'female' ? 'Ж' : '—'),
+                            display_seat: seats[idx] || '—',
+                            display_doc: `${p.docType || ''} ${p.docNumber || ''}`.trim() || '—',
+                            display_birth: p.birthDate || '—',
+                            display_citizenship: p.citizenship || '—'
+                        });
+                    });
+                }
             });
+
+            if (!this.bookingSearch) return flattened;
+            const s = this.bookingSearch.toLowerCase();
+            return flattened.filter(f => 
+                f.display_name.toLowerCase().includes(s) || 
+                f.passenger_phone.toLowerCase().includes(s)
+            );
         }
     },
     watch: {
@@ -461,46 +490,48 @@ export default {
                          <h2 class="text-2xl lg:text-3xl font-bold">Бронирования</h2>
                          <div class="relative w-64">
                              <input v-model="bookingSearch" placeholder="Поиск по имени..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none focus:border-amber-500" />
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                         </div>
-                     </div>
-
-                     <div v-if="loading" class="text-slate-500">Загрузка...</div>
-                     <div v-else-if="filteredBookings.length === 0" class="bg-slate-800 p-8 rounded-[32px] border border-slate-700 text-center text-slate-400">
-                        Бронирований не найдено.
-                    </div>
-                    <div v-else class="bg-slate-800 rounded-[32px] border border-slate-700 overflow-hidden shadow-2xl">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 tex                                 <thead>
                                     <tr class="bg-slate-700/30 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                        <th class="px-6 py-4">Пассажир(ы)</th>
-                                        <th class="px-6 py-4">Рейс</th>
-                                        <th class="px-6 py-4">Места</th>
-                                        <th class="px-6 py-4">Телефон</th>
-                                        <th class="px-6 py-4">Статус</th>
+                                        <th class="px-6 py-4">ФИО Пассажира</th>
+                                        <th class="px-6 py-4">Пол</th>
+                                        <th class="px-6 py-4">Место</th>
+                                        <th class="px-6 py-4">Документ</th>
+                                        <th class="px-6 py-4">Дата рожд. / Гражд.</th>
+                                        <th class="px-6 py-4">Рейс / Телефон</th>
+                                        <th class="px-6 py-4">Тип</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-700/50">
-                                    <tr v-for="booking in filteredBookings" :key="booking.id" class="hover:bg-slate-700/20 transition-colors">
+                                    <tr v-for="(f, idx) in filteredBookings" :key="f.id + '-' + idx" class="hover:bg-slate-700/20 transition-colors">
                                         <td class="px-6 py-4">
-                                            <div class="font-bold text-slate-100">{{ booking.passenger_name || 'Неизвестный' }}</div>
-                                            <div v-if="booking.passengers_data?.length > 1" class="text-[10px] text-slate-500 mt-1">
-                                                и еще {{ booking.passengers_data.length - 1 }} чел.
-                                            </div>
-                                            <!-- List all names if searched -->
-                                            <div v-if="bookingSearch && booking.passengers_data?.length > 0" class="mt-2 space-y-1">
-                                                <div v-for="p in booking.passengers_data" :key="p.lastName" class="text-[10px] text-amber-500/70">
-                                                    {{ p.lastName }} {{ p.firstName }}
-                                                </div>
-                                            </div>
+                                            <div class="font-bold text-slate-100 text-sm">{{ f.display_name }}</div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="text-xs font-medium text-slate-300">{{ booking.ticket_context }}</div>
+                                            <div class="text-xs text-slate-400">{{ f.display_gender }}</div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="text-xs font-bold text-amber-500">{{ booking.seat_numbers.join(', ') }}</div>
+                                            <div class="text-xs font-bold text-amber-500">{{ f.display_seat }}</div>
                                         </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-[10px] text-slate-400 leading-tight">{{ f.display_doc }}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-[10px] text-slate-300 font-medium">{{ f.display_birth }}</div>
+                                            <div class="text-[9px] text-slate-500 mt-0.5">{{ f.display_citizenship }}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-[10px] font-medium text-slate-400 truncate max-w-[150px]">{{ f.ticket_context }}</div>
+                                            <div class="text-[10px] font-mono text-amber-500/70 mt-1">{{ f.passenger_phone }}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
+                                                :class="f.total_price === 0 ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'">
+                                                {{ f.total_price === 0 ? 'Р' : 'О' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                       </td>
                                         <td class="px-6 py-4">
                                             <div class="text-xs font-mono text-slate-400">{{ booking.passenger_phone }}</div>
                                         </td>
@@ -551,10 +582,48 @@ export default {
                                 <button v-if="idx > 0" @click="removePassenger(idx)" class="absolute top-4 right-4 text-red-400 hover:text-red-500">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                 </button>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <input v-model="p.lastName" placeholder="Фамилия" class="bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
-                                    <input v-model="p.firstName" placeholder="Имя" class="bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
-                                    <input v-model="p.docNumber" placeholder="Номер документа" class="bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-500 uppercase ml-1">Фамилия</label>
+                                        <input v-model="p.lastName" placeholder="Иванов" class="w-full bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-500 uppercase ml-1">Имя</label>
+                                        <input v-model="p.firstName" placeholder="Иван" class="w-full bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-500 uppercase ml-1">Отчество</label>
+                                        <input v-model="p.middleName" placeholder="Иванович" class="w-full bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-500 uppercase ml-1">Пол</label>
+                                        <select v-model="p.gender" class="w-full bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100 outline-none appearance-none cursor-pointer">
+                                            <option value="male">Мужской</option>
+                                            <option value="female">Женский</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-500 uppercase ml-1">Тип документа</label>
+                                        <select v-model="p.docType" class="w-full bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100">
+                                            <option>Паспорт РТ</option>
+                                            <option>Загранпаспорт</option>
+                                            <option>Свид. о рождении</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-500 uppercase ml-1">Номер документа</label>
+                                        <input v-model="p.docNumber" placeholder="A0000000" class="w-full bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-500 uppercase ml-1">Дата рождения</label>
+                                        <input v-model="p.birthDate" type="date" class="w-full bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-500 uppercase ml-1">Гражданство</label>
+                                        <input v-model="p.citizenship" placeholder="Таджикистан" class="w-full bg-slate-800 border-none rounded-xl p-3 text-sm text-slate-100" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
