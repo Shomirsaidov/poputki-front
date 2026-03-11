@@ -263,44 +263,31 @@ export default {
     },
     computed: {
         filteredBookings() {
-            // Flatten bookings into individual passenger rows
-            const flattened = [];
-            this.bookings.forEach(b => {
-                const pData = b.passengers_data || [];
-                const seats = b.seat_numbers || [];
-                
-                // If no passenger data (old bookings), create one entry
-                if (pData.length === 0) {
-                    flattened.push({
-                        ...b,
-                        display_name: b.passenger_name || 'Неизвестный',
-                        display_gender: '—',
-                        display_seat: seats.join(', ') || '—',
-                        display_doc: '—',
-                        display_birth: '—',
-                        display_citizenship: '—'
-                    });
-                } else {
-                    pData.forEach((p, idx) => {
-                        flattened.push({
-                            ...b,
-                            display_name: `${p.lastName || ''} ${p.firstName || ''} ${p.middleName || ''}`.trim() || 'Без имени',
-                            display_gender: p.gender === 'male' ? 'М' : (p.gender === 'female' ? 'Ж' : '—'),
-                            display_seat: seats[idx] || '—',
-                            display_doc: `${p.docType || ''} ${p.docNumber || ''}`.trim() || '—',
-                            display_birth: p.birthDate || '—',
-                            display_citizenship: p.citizenship || '—'
-                        });
-                    });
-                }
+            // Return bookings without flattening. We add some context properties for display.
+            const enhanced = this.bookings.map(b => {
+                return {
+                    ...b,
+                    ticket_context: b.ticket_context || '',
+                };
             });
 
-            if (!this.bookingSearch) return flattened;
+            if (!this.bookingSearch) return enhanced;
             const s = this.bookingSearch.toLowerCase();
-            return flattened.filter(f => 
-                f.display_name.toLowerCase().includes(s) || 
-                f.passenger_phone.toLowerCase().includes(s)
-            );
+            return enhanced.filter(b => {
+                // Search by main contact name or phone
+                if ((b.passenger_name || '').toLowerCase().includes(s)) return true;
+                if ((b.passenger_phone || '').toLowerCase().includes(s)) return true;
+                
+                // Search by nested passenger data
+                const pData = b.passengers_data || [];
+                for (const p of pData) {
+                    const fullName = `${p.lastName || ''} ${p.firstName || ''} ${p.middleName || ''}`.toLowerCase();
+                    const docInfo = `${p.docType || ''} ${p.docNumber || ''}`.toLowerCase();
+                    if (fullName.includes(s) || docInfo.includes(s)) return true;
+                }
+                
+                return false;
+            });
         }
     },
     watch: {
@@ -503,41 +490,54 @@ export default {
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="bg-slate-700/30 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                        <th class="px-6 py-4">ФИО Пассажира</th>
-                                        <th class="px-6 py-4">Пол</th>
-                                        <th class="px-6 py-4">Место</th>
-                                        <th class="px-6 py-4">Документ</th>
-                                        <th class="px-6 py-4">Дата рожд. / Гражд.</th>
-                                        <th class="px-6 py-4">Рейс / Телефон</th>
-                                        <th class="px-6 py-4">Тип</th>
+                                        <th class="px-6 py-4">Рейс / Контакт</th>
+                                        <th class="px-6 py-4">ДЕТАЛИ ПАССАЖИРОВ</th>
+                                        <th class="px-6 py-4">Оплата</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-700/50">
-                                    <tr v-for="(f, idx) in filteredBookings" :key="f.id + '-' + idx" class="hover:bg-slate-700/20 transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="font-bold text-slate-100 text-sm">{{ f.display_name }}</div>
+                                    <tr v-for="b in filteredBookings" :key="b.id" class="hover:bg-slate-700/20 transition-colors">
+                                        <td class="px-6 py-4 align-top w-1/4">
+                                            <div class="font-bold text-slate-100 text-sm mb-1">{{ b.passenger_name || 'Неизвестный' }}</div>
+                                            <div class="text-[10px] font-medium text-slate-400 mb-1 leading-snug break-words">{{ b.ticket_context }}</div>
+                                            <div class="text-[10px] font-mono text-amber-500/70">{{ b.passenger_phone }}</div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="text-xs text-slate-400">{{ f.display_gender }}</div>
+                                            <div class="space-y-3">
+                                                <div v-for="(p, idx) in b.passengers_data || []" :key="idx" class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/50 flex flex-col gap-2 relative">
+                                                    <div class="absolute top-3 right-3 text-[10px] font-bold text-amber-500 px-2 py-1 bg-amber-500/10 rounded-lg">
+                                                        Место: {{ (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—' }}
+                                                    </div>
+                                                    <div class="font-bold text-slate-100 text-sm pr-16 bg-slate-900/50 p-2 rounded-xl">
+                                                        <span class="text-slate-500 font-medium text-xs mr-2">{{ idx + 1 }}.</span>
+                                                        {{ p.lastName }} {{ p.firstName }} {{ p.middleName }}
+                                                    </div>
+                                                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] text-slate-400 mt-1 px-1">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <div class="w-4 text-slate-500 text-center">👁️</div>
+                                                            Пол: <span class="text-slate-200">{{ p.gender === 'male' ? 'Муж.' : (p.gender === 'female' ? 'Жен.' : '—') }}</span>
+                                                        </div>
+                                                        <div class="flex items-center gap-1.5">
+                                                            <div class="w-4 text-slate-500 text-center">📅</div>
+                                                            ДР: <span class="text-slate-200 font-medium">{{ p.birthDate || '—' }}</span>
+                                                        </div>
+                                                        <div class="col-span-2 flex flex-wrap items-center gap-1.5">
+                                                            <div class="w-4 text-slate-500 text-center">📄</div>
+                                                            Документ: <span class="text-slate-200">{{ p.docType || '—' }} {{ p.docNumber || '—' }}</span>
+                                                            <span class="ml-auto text-slate-500 text-[9px] uppercase tracking-wider">{{ p.citizenship || '—' }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Fallback if no detailed passenger data is present -->
+                                                <div v-if="!b.passengers_data || b.passengers_data.length === 0" class="text-xs text-slate-500 italic p-3 bg-slate-800/50 rounded-xl border border-dashed border-slate-700">
+                                                    Детальные данные отсутствуют. Места: <span class="text-amber-500 font-bold">{{ (b.seat_numbers || []).join(', ') }}</span>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-xs font-bold text-amber-500">{{ f.display_seat }}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-[10px] text-slate-400 leading-tight">{{ f.display_doc }}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-[10px] text-slate-300 font-medium">{{ f.display_birth }}</div>
-                                            <div class="text-[9px] text-slate-500 mt-0.5">{{ f.display_citizenship }}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-[10px] font-medium text-slate-400 truncate max-w-[150px]">{{ f.ticket_context }}</div>
-                                            <div class="text-[10px] font-mono text-amber-500/70 mt-1">{{ f.passenger_phone }}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
-                                                :class="f.total_price === 0 ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'">
-                                                {{ f.total_price === 0 ? 'Р' : 'О' }}
+                                        <td class="px-6 py-4 align-top w-[120px]">
+                                            <span class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
+                                                :class="b.total_price === 0 ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'">
+                                                {{ b.total_price === 0 ? 'Ручная' : 'Оплачено' }}
                                             </span>
                                         </td>
                                     </tr>
