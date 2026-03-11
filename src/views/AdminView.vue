@@ -41,9 +41,10 @@ export default {
             rides: [],
             busTickets: [],
             reviews: [],
-            cities: [],
-            cityType: 'ride', // 'ride' or 'bus'
-            newCityName: '',
+            ridesCities: [],
+            busCities: [],
+            newRideCity: '',
+            newBusCity: '',
             loading: false,
             isCreatingBus: false,
             busForm: {
@@ -299,20 +300,20 @@ export default {
         async fetchCities() {
             this.loading = true;
             try {
-                // Fetch cities based on the current context or tab
-                const type = (this.activeTab === 'cities') ? this.cityType : 'bus';
-                const res = await api.get('/admin/cities', { params: { type } });
-                this.cities = res.data;
+                const [ridesRes, busesRes] = await Promise.all([
+                    api.get('/admin/cities', { params: { type: 'ride' } }),
+                    api.get('/admin/cities', { params: { type: 'bus' } })
+                ]);
+                this.ridesCities = ridesRes.data;
+                this.busCities = busesRes.data;
             } catch (e) { console.error(e); } finally { this.loading = false; }
         },
-        async addCity() {
-            if (!this.newCityName) return;
+        async addCity(type) {
+            const name = type === 'ride' ? this.newRideCity : this.newBusCity;
+            if (!name) return;
             try {
-                await api.post('/admin/cities', { 
-                    name: this.newCityName,
-                    type: this.cityType 
-                });
-                this.newCityName = '';
+                await api.post('/admin/cities', { name, type });
+                if (type === 'ride') this.newRideCity = ''; else this.newBusCity = '';
                 this.fetchCities();
             } catch (e) { 
                 alert(e.response?.data?.error || 'Ошибка при добавлении города'); 
@@ -666,39 +667,70 @@ export default {
             </section>
 
             <!-- Cities Section -->
-            <section v-if="activeTab === 'cities'" class="space-y-6 lg:space-y-8">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-                    <div>
-                        <h2 class="text-2xl lg:text-3xl font-bold">Города и направления</h2>
-                        <!-- City Type Toggle -->
-                        <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700 mt-4 w-fit">
-                            <button @click="cityType = 'ride'; fetchCities()" 
-                                :class="cityType === 'ride' ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-slate-200'"
-                                class="px-4 py-2 rounded-lg text-sm font-bold transition-all">
-                                Попутки
-                            </button>
-                            <button @click="cityType = 'bus'; fetchCities()" 
-                                :class="cityType === 'bus' ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-slate-200'"
-                                class="px-4 py-2 rounded-lg text-sm font-bold transition-all ml-1">
-                                Автобусы
-                            </button>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2 sm:space-x-4 w-full sm:w-auto">
-                        <input v-model="newCityName" type="text" :placeholder="cityType === 'ride' ? 'Город для попуток' : 'Город для автобусов'" class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 outline-none focus:border-amber-500 w-full sm:w-auto">
-                        <button @click="addCity" class="bg-emerald-500 text-slate-900 px-4 sm:px-6 py-2 rounded-xl font-bold shadow-lg shadow-emerald-500/20 whitespace-nowrap">Добавить</button>
-                    </div>
+            <section v-if="activeTab === 'cities'" class="space-y-6 lg:space-y-10">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold">Управление городами</h2>
+                    <p class="text-slate-500 mt-2">Раздельное управление списками для попуток и автобусов</p>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                    <div v-for="city in cities" :key="city.id" class="bg-slate-800 p-4 lg:p-6 rounded-xl lg:rounded-2xl border border-slate-700 flex justify-between items-center group transition-all hover:border-amber-500/50 shadow-lg">
-                        <span class="font-bold text-lg">{{ city.name }}</span>
-                        <button @click="deleteCity(city.id)" class="text-red-500 opacity-0 group-hover:opacity-100 transition-all p-2 hover:bg-red-500/10 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 lg:gap-12">
+                    
+                    <!-- Rides Cities -->
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between bg-slate-800/50 p-6 rounded-[28px] border border-slate-700">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" /><circle cx="7" cy="17" r="2" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 17h6" /><circle cx="17" cy="17" r="2" /></svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-xl uppercase tracking-tight">Попутки</h3>
+                                    <p class="text-xs text-slate-500">Для частных поездок</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <input v-model="newRideCity" type="text" placeholder="Новый город" class="bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-2 text-sm outline-none focus:border-amber-500 w-32 md:w-auto">
+                                <button @click="addCity('ride')" class="bg-amber-500 text-slate-900 px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-amber-500/20">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div v-for="city in ridesCities" :key="'ride-city-'+city.id" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex justify-between items-center group hover:border-amber-500/30 transition-all">
+                                <span class="font-medium">{{ city.name }}</span>
+                                <button @click="deleteCity(city.id)" class="text-slate-600 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Bus Cities -->
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between bg-slate-800/50 p-6 rounded-[28px] border border-slate-700">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="5" width="18" height="14" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 11h18M7 19v2M17 19v2M3 8h18"/><circle cx="7.5" cy="16" r="1" fill="currentColor"/><circle cx="16.5" cy="16" r="1" fill="currentColor"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-xl uppercase tracking-tight">Автобусы</h3>
+                                    <p class="text-xs text-slate-500">Для официальных рейсов</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <input v-model="newBusCity" type="text" placeholder="Новый город" class="bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-2 text-sm outline-none focus:border-blue-500 w-32 md:w-auto">
+                                <button @click="addCity('bus')" class="bg-blue-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20">+</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div v-for="city in busCities" :key="'bus-city-'+city.id" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex justify-between items-center group hover:border-blue-400/30 transition-all">
+                                <span class="font-medium">{{ city.name }}</span>
+                                <button @click="deleteCity(city.id)" class="text-slate-600 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </section>
 
@@ -738,7 +770,7 @@ export default {
                             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Откуда</label>
                             <select v-model="busForm.from_city" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-500 transition-all shadow-inner appearance-none cursor-pointer" :class="{'border-red-500': busErrors.from_city}">
                                 <option value="" disabled>Выберите город</option>
-                                <option v-for="c in cities" :key="'bus-from-'+c.id" :value="c.name">{{ c.name }}</option>
+                                <option v-for="c in busCities" :key="'bus-from-'+c.id" :value="c.name">{{ c.name }}</option>
                             </select>
                             <p v-if="busErrors.from_city" class="text-[9px] text-red-500 ml-1">{{ busErrors.from_city }}</p>
                         </div>
@@ -755,7 +787,7 @@ export default {
                             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Куда</label>
                             <select v-model="busForm.to_city" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-500 transition-all shadow-inner appearance-none cursor-pointer" :class="{'border-red-500': busErrors.to_city}">
                                 <option value="" disabled>Выберите город</option>
-                                <option v-for="c in cities" :key="'bus-to-'+c.id" :value="c.name">{{ c.name }}</option>
+                                <option v-for="c in busCities" :key="'bus-to-'+c.id" :value="c.name">{{ c.name }}</option>
                             </select>
                             <p v-if="busErrors.to_city" class="text-[9px] text-red-500 ml-1">{{ busErrors.to_city }}</p>
                         </div>

@@ -558,7 +558,6 @@ export default {
                         </div>
                     </div>
                 </section>
-
                 <!-- Create Booking Section -->
                 <section v-if="activeTab === 'create-booking'" class="space-y-6 lg:space-y-8">
                     <h2 class="text-2xl lg:text-3xl font-bold">Создать бронирование вручную</h2>
