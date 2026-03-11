@@ -542,18 +542,6 @@ export default {
                                         </td>
                                     </tr>
                                 </tbody>
-                       </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-xs font-mono text-slate-400">{{ booking.passenger_phone }}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
-                                                :class="booking.total_price === 0 ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'">
-                                                {{ booking.total_price === 0 ? 'Ручная бронь' : 'Оплачено' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
                             </table>
                         </div>
                     </div>
