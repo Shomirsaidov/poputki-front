@@ -65,6 +65,7 @@ export default {
       this.fromCity = '';
       this.toCity = '';
       this.date = '';
+      this.fetchCities(); // Fetch relevant cities for the new tab
       await this.search();
     },
     formatDuration(minutes) {
@@ -94,7 +95,8 @@ export default {
     },
     async fetchCities() {
       try {
-        const res = await api.get('/general/cities');
+        const type = this.activeTab === 'buses' ? 'bus' : 'ride';
+        const res = await api.get('/general/cities', { params: { type } });
         this.availableCities = res.data;
       } catch (err) {
         console.error('Failed to fetch cities:', err);

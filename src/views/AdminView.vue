@@ -42,6 +42,7 @@ export default {
             busTickets: [],
             reviews: [],
             cities: [],
+            cityType: 'ride', // 'ride' or 'bus'
             newCityName: '',
             loading: false,
             isCreatingBus: false,
@@ -298,14 +299,19 @@ export default {
         async fetchCities() {
             this.loading = true;
             try {
-                const res = await api.get('/admin/cities');
+                // Fetch cities based on the current context or tab
+                const type = (this.activeTab === 'cities') ? this.cityType : 'bus';
+                const res = await api.get('/admin/cities', { params: { type } });
                 this.cities = res.data;
             } catch (e) { console.error(e); } finally { this.loading = false; }
         },
         async addCity() {
             if (!this.newCityName) return;
             try {
-                await api.post('/admin/cities', { name: this.newCityName });
+                await api.post('/admin/cities', { 
+                    name: this.newCityName,
+                    type: this.cityType 
+                });
                 this.newCityName = '';
                 this.fetchCities();
             } catch (e) { 
@@ -662,9 +668,24 @@ export default {
             <!-- Cities Section -->
             <section v-if="activeTab === 'cities'" class="space-y-6 lg:space-y-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-                    <h2 class="text-2xl lg:text-3xl font-bold">Города и направления</h2>
+                    <div>
+                        <h2 class="text-2xl lg:text-3xl font-bold">Города и направления</h2>
+                        <!-- City Type Toggle -->
+                        <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700 mt-4 w-fit">
+                            <button @click="cityType = 'ride'; fetchCities()" 
+                                :class="cityType === 'ride' ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-slate-200'"
+                                class="px-4 py-2 rounded-lg text-sm font-bold transition-all">
+                                Попутки
+                            </button>
+                            <button @click="cityType = 'bus'; fetchCities()" 
+                                :class="cityType === 'bus' ? 'bg-amber-500 text-slate-900' : 'text-slate-400 hover:text-slate-200'"
+                                class="px-4 py-2 rounded-lg text-sm font-bold transition-all ml-1">
+                                Автобусы
+                            </button>
+                        </div>
+                    </div>
                     <div class="flex space-x-2 sm:space-x-4 w-full sm:w-auto">
-                        <input v-model="newCityName" type="text" placeholder="Название города" class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 outline-none focus:border-amber-500 w-full sm:w-auto">
+                        <input v-model="newCityName" type="text" :placeholder="cityType === 'ride' ? 'Город для попуток' : 'Город для автобусов'" class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 outline-none focus:border-amber-500 w-full sm:w-auto">
                         <button @click="addCity" class="bg-emerald-500 text-slate-900 px-4 sm:px-6 py-2 rounded-xl font-bold shadow-lg shadow-emerald-500/20 whitespace-nowrap">Добавить</button>
                     </div>
                 </div>

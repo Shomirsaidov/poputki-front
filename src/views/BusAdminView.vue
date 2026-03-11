@@ -73,7 +73,7 @@ export default {
         async fetchCities() {
             if (this.cities.length > 0) return;
             try {
-                const res = await api.get('/general/cities');
+                const res = await api.get('/general/cities', { params: { type: 'bus' } });
                 this.cities = res.data;
             } catch (e) { console.error('Error fetching cities', e); }
         },
