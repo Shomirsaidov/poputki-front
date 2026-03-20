@@ -29,7 +29,10 @@ export default {
                 arrival_time: '',
                 duration_minutes: '',
                 price: '',
-                total_seats: 44,
+                premium_price: '',
+                total_seats: 53,
+                floor1_seats: 20,
+                floor2_seats: 56,
                 bus_type: 'single',
                 passenger_comments: '',
                 intermediate_stops: []
@@ -133,7 +136,12 @@ export default {
             if (!this.busForm.arrival_time) e.arrival_time = 'Укажите время прибытия';
             if (!this.busForm.duration_minutes || this.busForm.duration_minutes <= 0) e.duration_minutes = 'Укажите длительность';
             if (!this.busForm.price || this.busForm.price <= 0) e.price = 'Укажите цену';
-            if (!this.busForm.total_seats || this.busForm.total_seats < 1) e.total_seats = 'Укажите количество мест';
+            if (this.busForm.bus_type === 'double') {
+                if (!this.busForm.floor1_seats || this.busForm.floor1_seats < 1) e.floor1_seats = 'Укажите кол-во мест 1 этажа';
+                if (!this.busForm.floor2_seats || this.busForm.floor2_seats < 1) e.floor2_seats = 'Укажите кол-во мест 2 этажа';
+            } else {
+                if (!this.busForm.total_seats || this.busForm.total_seats < 1) e.total_seats = 'Укажите количество мест';
+            }
             this.busErrors = e;
             return Object.keys(e).length === 0;
         },
@@ -144,13 +152,24 @@ export default {
             }
             this.loading = true;
             try {
-                await api.post('/bus-tickets', {
+                const submitData = {
                     ...this.busForm,
                     operator_id: this.user.id,
                     duration_minutes: Number(this.busForm.duration_minutes),
                     price: Number(this.busForm.price),
-                    total_seats: Number(this.busForm.total_seats)
-                });
+                    premium_price: this.busForm.premium_price ? Number(this.busForm.premium_price) : null
+                };
+                if (this.busForm.bus_type === 'double') {
+                    submitData.floor1_seats = Number(this.busForm.floor1_seats);
+                    submitData.floor2_seats = Number(this.busForm.floor2_seats);
+                    submitData.total_seats = submitData.floor1_seats + submitData.floor2_seats;
+                } else {
+                    submitData.total_seats = Number(this.busForm.total_seats);
+                    submitData.floor1_seats = null;
+                    submitData.floor2_seats = null;
+                    submitData.premium_price = null;
+                }
+                await api.post('/bus-tickets', submitData);
                 alert('Рейс успешно создан!');
                 
                 // Reset form
@@ -158,7 +177,8 @@ export default {
                     transport_company: '', from_city: '', from_address: '',
                     to_city: '', to_address: '', departure_date: '',
                     departure_time: '', arrival_date: '', arrival_time: '',
-                    duration_minutes: '', price: '', total_seats: 44,
+                    duration_minutes: '', price: '', premium_price: '', total_seats: 53,
+                    floor1_seats: 20, floor2_seats: 56,
                     bus_type: 'single', passenger_comments: '',
                     intermediate_stops: []
                 };
@@ -190,12 +210,23 @@ export default {
             if (!this.validateBusForm()) return;
             this.loading = true;
             try {
-                await api.put(`/bus-admin/tickets/${this.editingTicketId}`, {
+                const updateData = {
                     ...this.busForm,
                     duration_minutes: Number(this.busForm.duration_minutes),
                     price: Number(this.busForm.price),
-                    total_seats: Number(this.busForm.total_seats)
-                });
+                    premium_price: this.busForm.premium_price ? Number(this.busForm.premium_price) : null
+                };
+                if (this.busForm.bus_type === 'double') {
+                    updateData.floor1_seats = Number(this.busForm.floor1_seats);
+                    updateData.floor2_seats = Number(this.busForm.floor2_seats);
+                    updateData.total_seats = updateData.floor1_seats + updateData.floor2_seats;
+                } else {
+                    updateData.total_seats = Number(this.busForm.total_seats);
+                    updateData.floor1_seats = null;
+                    updateData.floor2_seats = null;
+                    updateData.premium_price = null;
+                }
+                await api.put(`/bus-admin/tickets/${this.editingTicketId}`, updateData);
                 alert('Рейс успешно обновлен!');
                 this.isEditingTicket = false;
                 this.editingTicketId = null;
@@ -722,23 +753,23 @@ export default {
                              <div class="space-y-2 flex flex-col">
                                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-2">Конфигурация автобуса</label>
                                 <div class="flex bg-slate-700/30 p-1.5 rounded-2xl border border-slate-600/50">
-                                    <button @click="busForm.bus_type = 'single'; busForm.total_seats = 44"
+                                    <button @click="busForm.bus_type = 'single'; busForm.total_seats = 53"
                                         :class="busForm.bus_type === 'single' ? 'bg-amber-500 text-slate-900 shadow-lg' : 'text-slate-400'"
                                         class="flex-1 py-3 rounded-xl font-bold text-xs transition-all tracking-tighter uppercase whitespace-nowrap px-2"
                                     >
-                                        Обычный (44)
+                                        Обычный (53)
                                     </button>
-                                    <button @click="busForm.bus_type = 'double'; busForm.total_seats = 72"
+                                    <button @click="busForm.bus_type = 'double'; busForm.floor1_seats = 20; busForm.floor2_seats = 56; busForm.total_seats = 76"
                                         :class="busForm.bus_type === 'double' ? 'bg-amber-500 text-slate-900 shadow-lg' : 'text-slate-400'"
                                         class="flex-1 py-3 rounded-xl font-bold text-xs transition-all tracking-tighter uppercase whitespace-nowrap px-2"
                                     >
-                                        Двухэтажный (72)
+                                        Двухэтажный (76)
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Total Seats & Duration -->
-                             <div class="grid grid-cols-2 gap-4">
+                            <!-- Total Seats & Duration (single-floor) -->
+                             <div v-if="busForm.bus_type === 'single'" class="grid grid-cols-2 gap-4">
                                 <div class="space-y-2">
                                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Мест всего</label>
                                     <input v-model="busForm.total_seats" type="number" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none" />
@@ -747,6 +778,36 @@ export default {
                                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Длит (мин)</label>
                                     <input v-model="busForm.duration_minutes" type="number" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none" />
                                 </div>
+                             </div>
+
+                             <!-- Per-floor Seats & Duration (double-decker) -->
+                             <div v-if="busForm.bus_type === 'double'" class="space-y-4">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">1 Этаж (мест)</label>
+                                        <input v-model="busForm.floor1_seats" type="number" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none" :class="{'border-red-500': busErrors.floor1_seats}" />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">2 Этаж (мест)</label>
+                                        <input v-model="busForm.floor2_seats" type="number" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none" :class="{'border-red-500': busErrors.floor2_seats}" />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Длит (мин)</label>
+                                        <input v-model="busForm.duration_minutes" type="number" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none" />
+                                    </div>
+                                </div>
+                                <div class="bg-slate-700/20 p-3 rounded-xl border border-slate-600/30">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Всего мест: </span>
+                                    <span class="text-sm font-bold text-amber-500">{{ (Number(busForm.floor1_seats) || 0) + (Number(busForm.floor2_seats) || 0) }}</span>
+                                </div>
+                             </div>
+
+                             <!-- Premium Price (double-decker only) -->
+                             <div v-if="busForm.bus_type === 'double'" class="space-y-2">
+                                <label class="text-[10px] font-black text-amber-400 uppercase tracking-widest ml-1">★ Цена за Премиум-место (с.)</label>
+                                <input v-model="busForm.premium_price" type="number" placeholder="0 = нет премиума" 
+                                    class="w-full bg-slate-700/50 border border-amber-500/30 rounded-2xl p-4 text-amber-400 font-bold text-xl outline-none focus:border-amber-500 transition-all shadow-inner" />
+                                <p class="text-[9px] text-slate-500 ml-1">Премиум-места: 69-76 (у столов, 1 этаж), 53-56 (зад, 2 этаж)</p>
                              </div>
                         </div>
 
