@@ -174,11 +174,13 @@ export default {
 
             allFloor1Seats.forEach(row => {
                 if (row.type === 'table-row') {
-                    layout.push({ type: 'table-row' });
+                    const left = row.left === 'table' ? 'table' : (row.left || []).filter(s => s <= floor1Max);
+                    const right = row.right === 'table' ? 'table' : (row.right || []).filter(s => s <= floor1Max);
+                    layout.push({ ...row, left, right });
                     return;
                 }
-                const filteredLeft = row.left.filter(s => s <= floor1Max);
-                const filteredRight = row.right.filter(s => s <= floor1Max);
+                const filteredLeft = (row.left || []).filter(s => s <= floor1Max);
+                const filteredRight = (row.right || []).filter(s => s <= floor1Max);
                 if (filteredLeft.length > 0 || filteredRight.length > 0) {
                     layout.push({ type: 'seat-row', left: filteredLeft, right: filteredRight });
                 }
@@ -235,8 +237,14 @@ export default {
             ];
 
             allFloor2Rows.forEach(row => {
-                const filteredLeft = row.left.filter(s => s <= maxSeats);
-                const filteredRight = row.right.filter(s => s <= maxSeats);
+                if (row.type === 'table-row') {
+                    const left = row.left === 'table' ? 'table' : (row.left || []).filter(s => s <= maxSeats);
+                    const right = row.right === 'table' ? 'table' : (row.right || []).filter(s => s <= maxSeats);
+                    layout.push({ ...row, left, right });
+                    return;
+                }
+                const filteredLeft = (row.left || []).filter(s => s <= maxSeats);
+                const filteredRight = (row.right || []).filter(s => s <= maxSeats);
                 if (filteredLeft.length > 0 || filteredRight.length > 0) {
                     layout.push({ type: 'seat-row', left: filteredLeft, right: filteredRight });
                 }
