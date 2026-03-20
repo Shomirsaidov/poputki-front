@@ -154,20 +154,18 @@ export default {
             const allFloor1Seats = [
                 // Row 1: [71, 72] | [78, 77]
                 { left: [71, 72], right: [78, 77] },
-                // Table row
-                { type: 'table-row' },
-                // Row 2: [69, 70] | [76, 75] - PREMIUM
-                { left: [69, 70], right: [76, 75] },
-                // Table row
-                { type: 'table-row' },
-                // Row 3: [] | [74, 73] - PREMIUM
-                { left: [], right: [74, 73] },
-                // Row 4: [65, 66] | [68, 67]
-                { left: [65, 66], right: [68, 67] },
-                // Row 5: [61, 62] | [64, 63]
-                { left: [61, 62], right: [64, 63] },
-                // Row 6: [57, 58] | [60, 59]
-                { left: [57, 58], right: [60, 59] },
+                // Table L (71,72 <-> 69,70) whereas Right has 76,75
+                { type: 'table-row', left: 'table', right: [76, 75] },
+                // Row 2: [69, 70] | Table R (76,75 <-> 74,73)
+                { type: 'table-row', left: [69, 70], right: 'table' },
+                // Row 3: [65, 66] | [74, 73]
+                { left: [65, 66], right: [74, 73] },
+                // Row 4: [61, 62] | [68, 67]
+                { left: [61, 62], right: [68, 67] },
+                // Row 5: [57, 58] | [64, 63]
+                { left: [57, 58], right: [64, 63] },
+                // Row 6: [] | [60, 59]
+                { left: [], right: [60, 59] },
             ];
 
             // Calculate which seats are within range
@@ -231,7 +229,9 @@ export default {
                 { left: [41, 42], right: [44, 43] },
                 { left: [45, 46], right: [48, 47] },
                 { left: [49, 50], right: [52, 51] },
-                { left: [53, 54], right: [56, 55] },
+                { left: [53, 54], right: [] },
+                { type: 'table-row', left: 'table', right: [] },
+                { left: [55, 56], right: [] },
             ];
 
             allFloor2Rows.forEach(row => {
@@ -452,11 +452,39 @@ export default {
                     </button>
                 </div>
 
-                <!-- Table row (double-decker floor 1) -->
+                <!-- Table row (double-decker) -->
                 <div v-else-if="row.type === 'table-row'" class="table-row">
-                    <div class="table-cell">Стол</div>
+                    <div v-if="row.left === 'table'" class="table-cell">Стол</div>
+                    <div v-else-if="Array.isArray(row.left)" class="seat-pair">
+                        <button
+                            v-for="seatNum in row.left"
+                            :key="seatNum"
+                            @click="toggleSeat(seatNum)"
+                            :class="['seat-btn', getSeatClass(seatNum), getSeatGender(seatNum) ? 'seat-booked-' + getSeatGender(seatNum) : '']"
+                            :disabled="isSeatBooked(seatNum)"
+                        >
+                            <span class="seat-num">{{ seatNum }}</span>
+                            <span v-if="isSeatPremium(seatNum)" class="premium-star">★</span>
+                        </button>
+                    </div>
+                    <div v-else class="empty-cell"></div>
+
                     <div class="aisle"></div>
-                    <div class="table-cell">Стол</div>
+
+                    <div v-if="row.right === 'table'" class="table-cell">Стол</div>
+                    <div v-else-if="Array.isArray(row.right)" class="seat-pair">
+                        <button
+                            v-for="seatNum in row.right"
+                            :key="seatNum"
+                            @click="toggleSeat(seatNum)"
+                            :class="['seat-btn', getSeatClass(seatNum), getSeatGender(seatNum) ? 'seat-booked-' + getSeatGender(seatNum) : '']"
+                            :disabled="isSeatBooked(seatNum)"
+                        >
+                            <span class="seat-num">{{ seatNum }}</span>
+                            <span v-if="isSeatPremium(seatNum)" class="premium-star">★</span>
+                        </button>
+                    </div>
+                    <div v-else class="empty-cell"></div>
                 </div>
 
                 <!-- Footer label -->
@@ -765,19 +793,23 @@ export default {
     margin: 2px 0;
 }
 .table-cell {
-    flex: 1;
-    height: 24px;
-    background: #fef3c7;
-    border: 1px solid #fcd34d;
+    width: 84px;
+    height: 32px;
+    background: #f1f5f9;
+    border: 1px dashed #cbd5e1;
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
-    font-weight: 800;
-    color: #92400e;
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+.empty-cell {
+    width: 84px;
+    height: 32px;
 }
 
 /* Last row (5 seats) */
