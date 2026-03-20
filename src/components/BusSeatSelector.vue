@@ -45,21 +45,12 @@ export default {
                 { type: 'label', text: 'exit', variant: 'exit', colspan: 2 }
             ]});
 
-            // Driver + guide seats row
+            // Driver + guide seats row (Aligned in one straight line)
             layout.push({ type: 'special-row', items: [
                 { type: 'driver' },
-                { type: 'empty' },
+                { type: 'guide', text: '1 в' },
                 { type: 'spacer' },
                 { type: 'guide', text: '2 в' },
-                { type: 'empty' }
-            ]});
-
-            // Guide seat 1в row 
-            layout.push({ type: 'special-row', items: [
-                { type: 'guide', text: '1 в' },
-                { type: 'empty' },
-                { type: 'spacer' },
-                { type: 'empty' },
                 { type: 'empty' }
             ]});
 
@@ -227,34 +218,20 @@ export default {
             ]});
 
             const allFloor2Rows = [
-                { left: [1, 2], right: [] },
-                { left: [], right: [4, 3] },
-                { left: [5, 6], right: [] },
-                { left: [], right: [8, 7] },
-                { left: [9, 10], right: [] },
-                { left: [], right: [12, 11] },
-                { left: [13, 14], right: [] },
-                { left: [], right: [16, 15] },
-                { left: [17, 18], right: [] },
-                { left: [], right: [20, 19] },
-                { left: [21, 22], right: [] },
-                { left: [], right: [24, 23] },
-                { left: [25, 26], right: [] },
-                { left: [], right: [28, 27] },
-                { left: [29, 30], right: [] },
-                { left: [], right: [32, 31] },
-                { left: [33, 34], right: [] },
-                { left: [], right: [36, 35] },
-                { left: [37, 38], right: [] },
-                { left: [], right: [40, 39] },
-                { left: [41, 42], right: [] },
-                { left: [], right: [44, 43] },
-                { left: [45, 46], right: [] },
-                { left: [], right: [48, 47] },
-                { left: [49, 50], right: [] },
-                { left: [], right: [52, 51] },
-                { left: [53, 54], right: [] },
-                { left: [], right: [56, 55] },
+                { left: [1, 2], right: [4, 3] },
+                { left: [5, 6], right: [8, 7] },
+                { left: [9, 10], right: [12, 11] },
+                { left: [13, 14], right: [16, 15] },
+                { left: [17, 18], right: [20, 19] },
+                { left: [21, 22], right: [24, 23] },
+                { left: [25, 26], right: [28, 27] },
+                { left: [29, 30], right: [32, 31] },
+                { left: [33, 34], right: [36, 35] },
+                { left: [37, 38], right: [40, 39] },
+                { left: [41, 42], right: [44, 43] },
+                { left: [45, 46], right: [48, 47] },
+                { left: [49, 50], right: [52, 51] },
+                { left: [53, 54], right: [56, 55] },
             ];
 
             allFloor2Rows.forEach(row => {
