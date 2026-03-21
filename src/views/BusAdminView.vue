@@ -457,8 +457,21 @@ watch: {
                 <!-- Tickets List -->
                 <section v-if="activeTab === 'tickets'" class="space-y-6 lg:space-y-8">
                     <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">Мои рейсы</h2>
-                    <div v-if="loading" class="text-slate-400">Загрузка...</div>
-                    <div v-else-if="tickets.length === 0" class="bg-white p-8 rounded-[32px] border border-slate-100 text-center text-slate-400 shadow-sm">
+                    <div v-if="loading && tickets.length === 0" class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-pulse">
+                        <div v-for="i in 4" :key="'ticket-skel-'+i" class="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8 h-64 shadow-sm relative overflow-hidden">
+                             <div class="h-4 w-24 bg-slate-50 rounded mb-6"></div>
+                             <div class="flex items-center justify-between mb-8">
+                                 <div class="h-8 w-32 bg-slate-50 rounded"></div>
+                                 <div class="h-8 w-8 bg-slate-50 rounded-full"></div>
+                                 <div class="h-8 w-32 bg-slate-50 rounded text-right"></div>
+                             </div>
+                             <div class="pt-6 border-t border-slate-50 flex justify-between items-center">
+                                 <div class="h-4 w-20 bg-slate-50 rounded"></div>
+                                 <div class="h-10 w-32 bg-slate-50 rounded-xl"></div>
+                             </div>
+                        </div>
+                    </div>
+                    <div v-else-if="!loading && tickets.length === 0" class="bg-white p-8 rounded-[32px] border border-slate-100 text-center text-slate-400 shadow-sm">
                         У вас пока нет созданных рейсов.
                     </div>
                     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -549,7 +562,18 @@ watch: {
                          </div>
                      </div>
 
-                     <div v-if="loading" class="text-slate-400">Загрузка...</div>
+                      <div v-if="loading" class="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm animate-pulse">
+                         <div class="h-16 bg-slate-50 border-b border-slate-100 mb-2"></div>
+                         <div class="p-6 space-y-4">
+                             <div v-for="i in 5" :key="'booking-skel-'+i" class="flex justify-between items-center py-4 border-b border-slate-50 last:border-0">
+                                 <div class="h-4 w-8 bg-slate-50 rounded"></div>
+                                 <div class="h-4 w-48 bg-slate-50 rounded"></div>
+                                 <div class="h-4 w-12 bg-slate-50 rounded"></div>
+                                 <div class="h-4 w-24 bg-slate-50 rounded"></div>
+                                 <div class="h-4 w-32 bg-slate-50 rounded"></div>
+                             </div>
+                         </div>
+                      </div>
                      <div v-else-if="passengerManifest.length === 0" class="bg-white p-20 rounded-[40px] border border-slate-100 text-center shadow-sm">
                         <div class="bg-slate-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>

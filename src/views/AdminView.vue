@@ -518,6 +518,14 @@ export default {
                     </div>
                 </div>
 
+                <!-- Dashboard Stats Skeletons -->
+                <div v-if="!stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-6 animate-pulse">
+                    <div v-for="i in 2" :key="'stat-skel-'+i" class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
+                        <div class="h-3 w-20 bg-slate-100 rounded mb-4"></div>
+                        <div class="h-10 w-32 bg-slate-50 rounded"></div>
+                    </div>
+                </div>
+
                 <div v-if="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-6">
                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
                         <p class="text-slate-400 text-xs lg:text-sm font-black uppercase tracking-widest mb-2">Пользователи</p>
@@ -526,6 +534,21 @@ export default {
                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm border-l-[6px] border-l-amber-500">
                         <p class="text-slate-400 text-xs lg:text-sm font-black uppercase tracking-widest mb-2">Активные поездки</p>
                         <h3 class="text-3xl lg:text-4xl font-black text-amber-500 font-mono">{{ stats.activeRides }}</h3>
+                    </div>
+                </div>
+
+                <!-- Dashboard Charts Skeletons Row 1 -->
+                <div v-if="!stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 animate-pulse">
+                    <div v-for="i in 2" :key="'chart-skel-1-'+i" class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="h-6 w-40 bg-slate-100 rounded"></div>
+                            <div class="h-3 w-24 bg-slate-50 rounded"></div>
+                        </div>
+                        <div class="h-[300px] bg-slate-50 rounded-xl flex items-center justify-center">
+                            <svg class="w-12 h-12 text-slate-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
@@ -550,6 +573,19 @@ export default {
                     </div>
                 </div>
 
+                <!-- Dashboard Charts Skeletons Row 2 -->
+                <div v-if="!stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 animate-pulse">
+                    <div v-for="i in 2" :key="'chart-skel-2-'+i" class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
+                        <div class="h-6 w-48 bg-slate-100 rounded mb-6"></div>
+                        <div class="h-[300px] bg-slate-50 rounded-xl flex items-center justify-center">
+                             <svg class="w-12 h-12 text-slate-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
                 <div v-if="stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
                      <!-- Age Distribution -->
                      <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
@@ -564,6 +600,19 @@ export default {
                         <h4 class="text-lg lg:text-xl font-bold mb-6 text-slate-800">Наличие авто</h4>
                         <div class="h-[300px]">
                             <PieChart :data="vehicleChartData" :options="pieOptions" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Lists Skeletons -->
+                <div v-if="!stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 animate-pulse">
+                    <div v-for="i in 2" :key="'list-skel-'+i" class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
+                        <div class="h-6 w-40 bg-slate-100 rounded mb-8"></div>
+                        <div class="space-y-6">
+                            <div v-for="j in 4" :key="'list-item-skel-'+j" class="flex justify-between items-center pb-3 border-b border-slate-50 last:border-0">
+                                <div class="h-4 w-32 bg-slate-50 rounded"></div>
+                                <div class="h-4 w-16 bg-slate-50 rounded-full"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
