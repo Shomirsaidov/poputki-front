@@ -1,5 +1,45 @@
-# Vue 3 + Vite
+# Poputki.online - Frontend (Клиентская часть)
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Этот репозиторий содержит клиентскую часть платформы Poputki.online, реализованную на Vue 3 и интегрированную с Telegram Mini App.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Быстрый старт
+
+1. **Установка зависимостей:**
+   ```bash
+   npm install
+   ```
+
+2. **Настройка окружения:**
+   Убедитесь, что в `src/api/index.js` (или через `.env`) указан корректный URL бэкенда.
+   ```env
+   VITE_API_BASE_URL=https://api.poputki.online
+   ```
+
+3. **Запуск сервера разработки:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Сборка для продакшена:**
+   ```bash
+   npm run build
+   ```
+
+## Документация проекта
+
+Подробная информация о фронтенде находится в директории `client/docs/`:
+
+- [Архитектура фронтенда](docs/architecture.md): Стек технологий и структура проекта.
+- [Страницы и навигация](docs/views.md): Описание разделов приложения и маршрутов.
+- [Библиотека компонентов](docs/components.md): Описание UI элементов и стиля.
+
+## Особенности Mini App
+
+- **Темизация**: Приложение автоматически адаптируется под темную или светлую тему Telegram.
+- **Header Color**: Управление цветом заголовка через SDK.
+- **Haptic Feedback**: Виброотклик при важных действиях (бронирование, ошибки).
+- **InitData**: Безопасная передача данных пользователя при входе.
+
+## Лицензия
+
+Собственность Poputki.online. Все права защищены.
