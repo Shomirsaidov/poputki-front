@@ -515,23 +515,12 @@ export default {
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-100">
-                                        <th class="px-6 py-4">Рейс / Контакт</th>
                                         <th class="px-6 py-4">ДЕТАЛИ ПАССАЖИРОВ</th>
-                                        <th class="px-6 py-4">Оплата</th>
+                                        <th class="px-6 py-4 text-right">Статус / Контакт</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-50">
                                     <tr v-for="b in filteredBookings" :key="b.id" class="hover:bg-slate-50/50 transition-colors">
-                                        <td class="px-6 py-4 align-top w-1/4">
-                                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Маршрут / Связь</div>
-                                            <div class="text-[10px] font-medium text-slate-600 mb-1.5 leading-snug break-words bg-slate-50 p-2 rounded-xl border border-slate-100/50 shadow-inner">
-                                                {{ b.ticket_context }}
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center text-[10px]">📞</div>
-                                                <div class="text-[11px] font-bold text-amber-600 tracking-tight">{{ b.passenger_phone }}</div>
-                                            </div>
-                                        </td>
                                         <td class="px-6 py-4">
                                             <div class="space-y-3">
                                                 <div v-for="(p, idx) in b.passengers_data || []" :key="idx" class="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col gap-2 relative shadow-sm">
@@ -564,11 +553,18 @@ export default {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 align-top w-[120px]">
-                                            <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border"
-                                                :class="b.total_price === 0 ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'">
-                                                {{ b.total_price === 0 ? 'Ручная' : 'Оплачено' }}
-                                            </span>
+                                        <td class="px-6 py-4 align-top w-[140px] text-right">
+                                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Статус / Тел</div>
+                                            <div class="mb-3 flex justify-end">
+                                                <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border"
+                                                    :class="b.total_price === 0 ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'">
+                                                    {{ b.total_price === 0 ? 'Ручная' : 'Оплачено' }}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center gap-2 justify-end">
+                                                <div class="text-[11px] font-bold text-amber-600 tracking-tight">{{ b.passenger_phone }}</div>
+                                                <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center text-[10px]">📞</div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
