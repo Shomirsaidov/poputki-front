@@ -109,8 +109,23 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
+    const tg = window.Telegram?.WebApp;
     const tgUser = getTelegramUser();
     const user = JSON.parse(localStorage.getItem('user'));
+
+    // 1. Handle Deep Links (Telegram startParam)
+    if (tg?.initDataUnsafe?.start_param && !to.query.processedStartParam) {
+        const startParam = tg.initDataUnsafe.start_param;
+        if (startParam.startsWith('ride_')) {
+            const rideId = startParam.replace('ride_', '');
+            // Prevent infinite loop by adding a flag
+            return next({ 
+                name: 'ride-details', 
+                params: { id: rideId },
+                query: { ...to.query, processedStartParam: '1' } 
+            });
+        }
+    }
 
     // 2. Background Sync via Telegram if data is available
     if (tgUser) {
