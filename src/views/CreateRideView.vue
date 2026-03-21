@@ -77,7 +77,24 @@ export default {
         if (query.fromAddress) this.fromAddress = query.fromAddress;
         if (query.toAddress) this.toAddress = query.toAddress;
         if (query.allows_delivery) this.allows_delivery = query.allows_delivery === 'true';
+        
         if (query.role) {
+            if (query.role === 'driver') {
+                try {
+                    const limitRes = await api.get('/rides/check-limit', { params: { driver_id: user.id } });
+                    if (limitRes.data.exceedsLimit) {
+                        this.showAlert(
+                            'Превышен лимит', 
+                            'У вас уже есть 2 активных рейса в будущем. Пожалуйста, завершите их, чтобы создать новый.',
+                            'warning',
+                            () => { this.modal.show = false; this.$router.push('/'); }
+                        );
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error checking active rides:', e);
+                }
+            }
             this.rideRole = query.role;
             this.step = 2; // Jump to form if role is pre-selected
         }
@@ -105,7 +122,7 @@ export default {
             this.modal.onConfirm = onConfirm || (() => { this.modal.show = false; });
             this.modal.show = true;
         },
-        selectRole(role) {
+        async selectRole(role) {
             if (role === 'driver' && !this.hasVehicle) {
                 this.showAlert(
                     'Нужен автомобиль', 
@@ -114,6 +131,25 @@ export default {
                     () => { this.modal.show = false; this.$router.push('/profile'); }
                 );
                 return;
+            }
+            if (role === 'driver') {
+                try {
+                    const userStr = localStorage.getItem('user');
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        const limitRes = await api.get('/rides/check-limit', { params: { driver_id: user.id } });
+                        if (limitRes.data.exceedsLimit) {
+                            this.showAlert(
+                                'Превышен лимит', 
+                                'У вас уже есть 2 активных рейса в будущем. Пожалуйста, завершите их, чтобы создать новый.',
+                                'warning'
+                            );
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error checking active rides:', e);
+                }
             }
             this.rideRole = role;
             this.step = 2;
