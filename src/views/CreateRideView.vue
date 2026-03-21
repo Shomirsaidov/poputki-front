@@ -267,7 +267,18 @@ export default {
             this.loading = true;
             this.errorMessage = '';
             
-            await api.post('/rides', payload);
+            const res = await api.post('/rides', payload);
+            const newRideId = res.data.id;
+            
+            // Auto-share if originating from a passenger request
+            const passengerRequestId = this.$route.query.requestId;
+            if (passengerRequestId && this.rideRole === 'driver') {
+                try {
+                    await api.post(`/rides/${passengerRequestId}/share`, { driver_ride_id: newRideId });
+                } catch (e) {
+                    console.error('Failed to auto-share new ride with passenger:', e);
+                }
+            }
             
             if (this.addReturnRide) {
                 const returnPayload = {
