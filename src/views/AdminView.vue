@@ -60,7 +60,7 @@ export default {
                 departure_time: '',
                 arrival_date: '',
                 arrival_time: '',
-                duration_minutes: '',
+                duration_hours: '',
                 price: '',
                 total_seats: 44,
                 bus_type: 'single',
@@ -386,7 +386,7 @@ export default {
                 await api.post('/bus-tickets', {
                     ...this.busForm,
                     operator_id: this.user?.id || 1, // Fallback to admin if no user
-                    duration_minutes: Number(this.busForm.duration_minutes),
+                    duration_minutes: Number(this.busForm.duration_hours) * 60,
                     price: Number(this.busForm.price),
                     total_seats: Number(this.busForm.total_seats)
                 });
@@ -398,7 +398,7 @@ export default {
                     transport_company: '', from_city: '', from_address: '',
                     to_city: '', to_address: '', departure_date: '',
                     departure_time: '', arrival_date: '', arrival_time: '',
-                    duration_minutes: '', price: '', total_seats: 44,
+                    duration_hours: '', price: '', total_seats: 44,
                     bus_type: 'single', passenger_comments: '',
                     intermediate_stops: []
                 };
@@ -787,106 +787,100 @@ export default {
                 </div>
 
                 <!-- ADD BUS TICKET INTERFACE (Embedded) -->
-                <div v-if="isCreatingBus" class="bg-slate-800 rounded-[32px] border border-slate-700 p-8 shadow-2xl space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div v-if="isCreatingBus" class="bg-white rounded-[32px] border border-slate-100 p-8 shadow-2xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-2xl font-bold text-amber-500">Новый автобусный рейс</h3>
+                        <h3 class="text-2xl font-bold text-slate-800">Новый автобусный рейс</h3>
                         <div class="flex items-center space-x-2">
-                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                             <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Создание записи</span>
+                             <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                             <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Создание записи</span>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <!-- Company -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Компания</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Компания</label>
                             <input v-model="busForm.transport_company" placeholder="Название перевозчика" 
-                                class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-500 transition-all shadow-inner"
+                                class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-500 transition-all shadow-inner"
                                 :class="{'border-red-500': busErrors.transport_company}" />
                         </div>
 
                         <!-- From City -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Откуда</label>
-                            <select v-model="busForm.from_city" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-500 transition-all shadow-inner appearance-none cursor-pointer" :class="{'border-red-500': busErrors.from_city}">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Откуда</label>
+                            <select v-model="busForm.from_city" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-500 transition-all shadow-inner appearance-none cursor-pointer" :class="{'border-red-500': busErrors.from_city}">
                                 <option value="" disabled>Выберите город</option>
                                 <option v-for="c in busCities" :key="'bus-from-'+c.id" :value="c.name">{{ c.name }}</option>
                             </select>
-                            <p v-if="busErrors.from_city" class="text-[9px] text-red-500 ml-1">{{ busErrors.from_city }}</p>
                         </div>
 
                         <!-- From Address -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Адрес отправления</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Адрес отправления</label>
                             <input v-model="busForm.from_address" placeholder="Точный адрес автовокзала" 
-                                class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-500 transition-all shadow-inner" />
+                                class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-500 transition-all shadow-inner" />
                         </div>
 
                         <!-- To City -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Куда</label>
-                            <select v-model="busForm.to_city" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-500 transition-all shadow-inner appearance-none cursor-pointer" :class="{'border-red-500': busErrors.to_city}">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Куда</label>
+                            <select v-model="busForm.to_city" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-500 transition-all shadow-inner appearance-none cursor-pointer" :class="{'border-red-500': busErrors.to_city}">
                                 <option value="" disabled>Выберите город</option>
                                 <option v-for="c in busCities" :key="'bus-to-'+c.id" :value="c.name">{{ c.name }}</option>
                             </select>
-                            <p v-if="busErrors.to_city" class="text-[9px] text-red-500 ml-1">{{ busErrors.to_city }}</p>
                         </div>
 
                         <!-- To Address -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Адрес прибытия</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Адрес прибытия</label>
                             <input v-model="busForm.to_address" placeholder="Точный адрес прибытия" 
-                                class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-500 transition-all shadow-inner" />
+                                class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-500 transition-all shadow-inner" />
                         </div>
 
                         <!-- Dates (Departure) -->
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Дата отпр.</label>
-                                <input v-model="busForm.departure_date" type="date" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-400 text-xs" :class="{'border-red-500': busErrors.departure_date}" />
-                                <p v-if="busErrors.departure_date" class="text-[9px] text-red-400 ml-1">{{ busErrors.departure_date }}</p>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Дата отпр.</label>
+                                <input v-model="busForm.departure_date" type="date" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-400 text-xs" :class="{'border-red-500': busErrors.departure_date}" />
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Время отпр.</label>
-                                <input v-model="busForm.departure_time" type="time" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-400 text-xs" :class="{'border-red-500': busErrors.departure_time}" />
-                                <p v-if="busErrors.departure_time" class="text-[9px] text-red-400 ml-1">{{ busErrors.departure_time }}</p>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Время отпр.</label>
+                                <input v-model="busForm.departure_time" type="time" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-400 text-xs" :class="{'border-red-500': busErrors.departure_time}" />
                             </div>
                         </div>
 
                         <!-- Dates (Arrival) -->
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Дата приб.</label>
-                                <input v-model="busForm.arrival_date" type="date" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-400 text-xs" :class="{'border-red-500': busErrors.arrival_date}" />
-                                <p v-if="busErrors.arrival_date" class="text-[9px] text-red-400 ml-1">{{ busErrors.arrival_date }}</p>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Дата приб.</label>
+                                <input v-model="busForm.arrival_date" type="date" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-400 text-xs" :class="{'border-red-500': busErrors.arrival_date}" />
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Время приб.</label>
-                                <input v-model="busForm.arrival_time" type="time" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none focus:border-amber-400 text-xs" :class="{'border-red-500': busErrors.arrival_time}" />
-                                <p v-if="busErrors.arrival_time" class="text-[9px] text-red-400 ml-1">{{ busErrors.arrival_time }}</p>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Время приб.</label>
+                                <input v-model="busForm.arrival_time" type="time" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-blue-400 text-xs" :class="{'border-red-500': busErrors.arrival_time}" />
                             </div>
                         </div>
 
                         <!-- Price -->
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Цена (TJS)</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Цена (TJS)</label>
                             <input v-model="busForm.price" type="number" placeholder="000.00" 
-                                class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-amber-500 font-bold text-xl outline-none focus:border-amber-500 transition-all shadow-inner" />
+                                class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-blue-600 font-bold text-xl outline-none focus:border-blue-500 transition-all shadow-inner" />
                         </div>
 
                          <!-- Bus Type Selection (Premium Toggles) -->
                          <div class="space-y-2 flex flex-col">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-2">Конфигурация автобуса</label>
-                            <div class="flex bg-slate-700/30 p-1.5 rounded-2xl border border-slate-600/50">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Конфигурация автобуса</label>
+                            <div class="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
                                 <button @click="busForm.bus_type = 'single'; busForm.total_seats = 44"
-                                    :class="busForm.bus_type === 'single' ? 'bg-amber-500 text-slate-900 shadow-lg' : 'text-slate-400'"
-                                    class="flex-1 py-3 rounded-xl font-bold text-xs transition-all tracking-tighter uppercase whitespace-nowrap px-2"
+                                    :class="busForm.bus_type === 'single' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400'"
+                                    class="flex-1 py-3 rounded-xl font-bold text-xs transition-all tracking-tighter uppercase whitespace-pretty px-2"
                                 >
                                     Обычный (44)
                                 </button>
                                 <button @click="busForm.bus_type = 'double'; busForm.total_seats = 72"
-                                    :class="busForm.bus_type === 'double' ? 'bg-amber-500 text-slate-900 shadow-lg' : 'text-slate-400'"
-                                    class="flex-1 py-3 rounded-xl font-bold text-xs transition-all tracking-tighter uppercase whitespace-nowrap px-2"
+                                    :class="busForm.bus_type === 'double' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400'"
+                                    class="flex-1 py-3 rounded-xl font-bold text-xs transition-all tracking-tighter uppercase whitespace-pretty px-2"
                                 >
                                     Двухэтажный (72)
                                 </button>
@@ -896,12 +890,12 @@ export default {
                         <!-- Total Seats & Duration -->
                          <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Мест всего</label>
-                                <input v-model="busForm.total_seats" type="number" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none" />
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Мест всего</label>
+                                <input v-model="busForm.total_seats" type="number" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Длит (мин)</label>
-                                <input v-model="busForm.duration_minutes" type="number" class="w-full bg-slate-700/50 border border-slate-600 rounded-2xl p-4 text-slate-100 outline-none" />
+                                <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Длительность (ч.)</label>
+                                <input v-model="busForm.duration_hours" type="number" step="0.5" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
                             </div>
                          </div>
                     </div>

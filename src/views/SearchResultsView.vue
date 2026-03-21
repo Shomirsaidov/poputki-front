@@ -30,7 +30,6 @@ export default {
         if (this.toCity) params.to = this.toCity;
         if (this.date) params.date = this.date;
 
-        await new Promise(r => setTimeout(r, 400));
 
         if (this.activeTab === 'rides') {
           const res = await api.get('/rides', { params });
@@ -161,9 +160,11 @@ export default {
         this.$router.replace({ query: {} });
       }, 4000);
     }
-    this.fetchCities();
-    this.search();
-    this.syncTelegram();
+    Promise.all([
+      this.fetchCities(),
+      this.search(),
+      this.syncTelegram()
+    ]);
   }
 };
 </script>

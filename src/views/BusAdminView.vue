@@ -155,7 +155,7 @@ export default {
                 const submitData = {
                     ...this.busForm,
                     operator_id: this.user.id,
-                    duration_minutes: Number(this.busForm.duration_minutes),
+                    duration_minutes: Number(this.busForm.duration_hours) * 60,
                     price: Number(this.busForm.price),
                     premium_price: this.busForm.premium_price ? Number(this.busForm.premium_price) : null
                 };
@@ -177,7 +177,7 @@ export default {
                     transport_company: '', from_city: '', from_address: '',
                     to_city: '', to_address: '', departure_date: '',
                     departure_time: '', arrival_date: '', arrival_time: '',
-                    duration_minutes: '', price: '', premium_price: '', total_seats: 53,
+                    duration_hours: '', price: '', premium_price: '', total_seats: 53,
                     floor1_seats: 20, floor2_seats: 56,
                     bus_type: 'single', passenger_comments: '',
                     intermediate_stops: []
@@ -202,6 +202,7 @@ export default {
             this.editingTicketId = ticket.id;
             this.busForm = { 
                 ...ticket,
+                duration_hours: ticket.duration_minutes ? (ticket.duration_minutes / 60).toFixed(1) : '',
                 intermediate_stops: ticket.intermediate_stops || []
             };
             this.activeTab = 'create';
@@ -212,7 +213,7 @@ export default {
             try {
                 const updateData = {
                     ...this.busForm,
-                    duration_minutes: Number(this.busForm.duration_minutes),
+                    duration_minutes: Number(this.busForm.duration_hours) * 60,
                     price: Number(this.busForm.price),
                     premium_price: this.busForm.premium_price ? Number(this.busForm.premium_price) : null
                 };
@@ -522,9 +523,14 @@ export default {
                                 <tbody class="divide-y divide-slate-50">
                                     <tr v-for="b in filteredBookings" :key="b.id" class="hover:bg-slate-50/50 transition-colors">
                                         <td class="px-6 py-4 align-top w-1/4">
-                                            <div class="font-bold text-slate-900 text-sm mb-1">{{ b.passenger_name || 'Неизвестный' }}</div>
-                                            <div class="text-[10px] font-medium text-slate-400 mb-1 leading-snug break-words">{{ b.ticket_context }}</div>
-                                            <div class="text-[10px] font-mono text-amber-600">{{ b.passenger_phone }}</div>
+                                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Маршрут / Связь</div>
+                                            <div class="text-[10px] font-medium text-slate-600 mb-1.5 leading-snug break-words bg-slate-50 p-2 rounded-xl border border-slate-100/50 shadow-inner">
+                                                {{ b.ticket_context }}
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center text-[10px]">📞</div>
+                                                <div class="text-[11px] font-bold text-amber-600 tracking-tight">{{ b.passenger_phone }}</div>
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="space-y-3">
@@ -769,8 +775,8 @@ export default {
                                     <input v-model="busForm.total_seats" type="number" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Длит (мин)</label>
-                                    <input v-model="busForm.duration_minutes" type="number" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
+                                    <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Длительность (ч.)</label>
+                                    <input v-model="busForm.duration_hours" type="number" step="0.5" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
                                 </div>
                              </div>
 
@@ -786,8 +792,8 @@ export default {
                                         <input v-model="busForm.floor2_seats" type="number" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" :class="{'border-red-500': busErrors.floor2_seats}" />
                                     </div>
                                     <div class="space-y-2">
-                                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Длит (мин)</label>
-                                        <input v-model="busForm.duration_minutes" type="number" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
+                                        <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Длительность (ч.)</label>
+                                        <input v-model="busForm.duration_hours" type="number" step="0.5" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
                                     </div>
                                 </div>
                                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner">

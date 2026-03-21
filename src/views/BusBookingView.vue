@@ -26,11 +26,7 @@ export default {
                 "Турция", "ОАЭ", "США", "Китай", "Германия", "Другое"
             ],
 
-            modal: {
-                show: false, title: '', message: '', type: 'info',
-                confirmText: 'ОК', showCancel: false,
-                onConfirm: () => { this.modal.show = false; }
-            }
+            modal: { show: false, title: '', message: '', type: 'info', confirmText: 'ОК', showCancel: false, showBotLink: false, onConfirm: null }
         };
     },
     computed: {
@@ -82,11 +78,8 @@ export default {
         }
     },
     methods: {
-        showAlert(title, message, type = 'info', onConfirm = null) {
-            this.modal.title = title; this.modal.message = message; this.modal.type = type;
-            this.modal.confirmText = 'ОК'; this.modal.showCancel = false;
-            this.modal.onConfirm = onConfirm || (() => { this.modal.show = false; });
-            this.modal.show = true;
+        showAlert(title, message, type = 'info', onConfirm = null, showBotLink = false) {
+            this.modal = { show: true, title, message, type, confirmText: 'ОК', showCancel: false, showBotLink, onConfirm };
         },
 
         saveState() {
@@ -120,11 +113,17 @@ export default {
             try {
                 const res = await api.get(`/bus-tickets/${this.ticketId}`);
                 this.ticket = res.data;
-            } catch {
-                this.showAlert('Ошибка', 'Ошибка загрузки билета', 'error', () => {
-                    this.modal.show = false;
-                    this.$router.push('/');
-                });
+            } catch (e) {
+                if (e.response?.status === 401) {
+                    this.showAlert('Внимание', 'Приложение работает правильно в телеграм боте', 'info', () => {
+                        this.modal.show = false;
+                    }, true);
+                } else {
+                    this.showAlert('Ошибка', 'Ошибка загрузки билета', 'error', () => {
+                        this.modal.show = false;
+                        this.$router.push('/');
+                    });
+                }
             } finally {
                 this.loading = false;
             }
@@ -191,7 +190,15 @@ export default {
                 sessionStorage.removeItem(STATE_KEY(this.ticketId));
                 this.$router.replace({ name: 'my-bus-tickets', query: { booked: 'true' } });
             } catch (e) {
-                this.showAlert('Ошибка', e.response?.data?.error || 'Ошибка при бронировании', 'error');
+                if (e.response?.status === 401) {
+                    this.showAlert('Внимание', 'Приложение работает правильно в телеграм боте', 'info', () => {
+                        this.modal.show = false;
+                    }, true);
+                } else {
+                    this.showAlert('Ошибка', e.response?.data?.error || 'Ошибка при бронировании', 'error', () => {
+                        this.modal.show = false;
+                    });
+                }
             } finally {
                 this.bookingLoading = false;
             }
@@ -618,6 +625,7 @@ export default {
         <AppModal
             :show="modal.show" :title="modal.title" :message="modal.message"
             :type="modal.type" :confirmText="modal.confirmText" :showCancel="modal.showCancel"
+            :showBotLink="modal.showBotLink"
             @confirm="modal.onConfirm" @cancel="modal.show = false" @close="modal.show = false"
         />
     </div>
