@@ -28,7 +28,7 @@ export default {
 
         doubleDeckPremiumSeats() {
             if (this.premiumSeats && this.premiumSeats.length > 0) return this.premiumSeats;
-            return [69, 70, 71, 72, 73, 74, 75, 76, 53, 54, 55, 56];
+            return [1, 2, 3, 4];
         },
 
         singleFloorLayout() {
