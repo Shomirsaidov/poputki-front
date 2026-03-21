@@ -539,7 +539,7 @@ export default {
                                                     <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] text-slate-500 mt-1 px-1">
                                                         <div class="flex items-center gap-1.5">
                                                             <div class="w-4 text-slate-400 text-center">👁️</div>
-                                                            Пол: <span class="text-slate-700 font-medium">{{ p.gender === 'male' ? 'Муж.' : (p.gender === 'female' ? 'Жен.' : '—') }}</span>
+                                                            Пол: <span class="text-slate-700 font-medium">{{ p.gender === 'male' ? 'Мужской' : (p.gender === 'female' ? 'Женский' : '—') }}</span>
                                                         </div>
                                                         <div class="flex items-center gap-1.5">
                                                             <div class="w-4 text-slate-400 text-center">📅</div>
@@ -620,6 +620,7 @@ export default {
                                     <div class="space-y-1">
                                         <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Пол</label>
                                         <select v-model="p.gender" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 outline-none appearance-none cursor-pointer shadow-sm">
+                                            <option value="" disabled>Выберите пол</option>
                                             <option value="male">Мужской</option>
                                             <option value="female">Женский</option>
                                         </select>
@@ -660,7 +661,7 @@ export default {
                 </section>
 
                 <!-- Create Bus Section (Copied from Admin View) -->
-                <section v-if="activeTab === 'create'" class="space-y-6 lg:space-y-8">
+                <section v-if="activeTab === 'create'" class="space-y-6 lg:space-y-8 text-slate-900">
                     <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">{{ isEditingTicket ? 'Редактировать рейс' : 'Опубликовать новый рейс' }}</h2>
                     
                     <div class="bg-white rounded-[32px] border border-slate-100 p-6 lg:p-8 shadow-sm space-y-8">
@@ -744,7 +745,7 @@ export default {
 
                              <!-- Bus Type Selection -->
                              <div class="space-y-2 flex flex-col">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">Конфигурация автобуса</label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 text-slate-400">Конфигурация автобуса</label>
                                 <div class="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
                                     <button @click="busForm.bus_type = 'single'; busForm.total_seats = 53"
                                         :class="busForm.bus_type === 'single' ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-400'"
@@ -795,20 +796,43 @@ export default {
                                 </div>
                              </div>
 
-                             <!-- Premium Price (double-decker only) -->
+                             <!-- Premium Price -->
                              <div v-if="busForm.bus_type === 'double'" class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">★ Цена за Премиум-место (с.)</label>
                                 <input v-model="busForm.premium_price" type="number" placeholder="0 = нет премиума" 
                                     class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 font-bold text-xl outline-none focus:border-amber-500 transition-all shadow-inner" />
-                                <p class="text-[9px] text-slate-500 ml-1">Премиум-места: 69-76 (у столов, 1 этаж), 53-56 (зад, 2 этаж)</p>
                              </div>
                         </div>
 
                         <!-- Intermediate Stops -->
+                        <div class="space-y-4 pt-4 border-t border-slate-50">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-sm font-bold text-slate-700">Промежуточные остановки</h3>
+                                <button @click="addStop" class="text-xs font-bold text-amber-500 hover:text-amber-600 px-4 py-2 bg-amber-50 rounded-xl transition-all border border-amber-100">+ Добавить</button>
+                            </div>
+                            <div v-for="(stop, idx) in busForm.intermediate_stops" :key="idx" class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 relative shadow-inner">
+                                <button @click="removeStop(idx)" class="absolute top-4 right-4 text-red-500 hover:text-red-600 p-2 bg-white rounded-xl shadow-sm border border-slate-100 transition-all">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                                <div class="space-y-2">
+                                    <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Город</label>
+                                    <select v-model="stop.city" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 shadow-sm">
+                                        <option v-for="c in cities" :key="c" :value="c">{{ c }}</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Время прибытия</label>
+                                    <input v-model="stop.time" type="time" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 shadow-sm" />
+                                </div>
+                                <div class="md:col-span-2 space-y-2 pr-10">
+                                    <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Адрес / Место</label>
+                                    <input v-model="stop.address" placeholder="Напр. Центр города" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 shadow-sm outline-none focus:border-amber-500" />
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Submit Button -->
-                        <div class="flex justify-end pt-4">
+                         <div class="flex justify-end pt-4">
                              <button 
                                 @click="isEditingTicket ? updateBusTicket() : submitBusTicket()" 
                                 :disabled="loading"
