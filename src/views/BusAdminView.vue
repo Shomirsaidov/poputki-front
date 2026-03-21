@@ -27,7 +27,7 @@ export default {
                 departure_time: '',
                 arrival_date: '',
                 arrival_time: '',
-                duration_minutes: '',
+                duration_hours: '',
                 price: '',
                 premium_price: '',
                 total_seats: 53,
@@ -138,9 +138,8 @@ export default {
             if (!this.busForm.to_address.trim()) e.to_address = 'Укажите место прибытия';
             if (!this.busForm.departure_date) e.departure_date = 'Укажите дату отправления';
             if (!this.busForm.departure_time) e.departure_time = 'Укажите время отправления';
-            if (!this.busForm.arrival_date) e.arrival_date = 'Укажите дату прибытия';
             if (!this.busForm.arrival_time) e.arrival_time = 'Укажите время прибытия';
-            if (!this.busForm.duration_minutes || this.busForm.duration_minutes <= 0) e.duration_minutes = 'Укажите длительность';
+            if (!this.busForm.duration_hours || this.busForm.duration_hours <= 0) e.duration_hours = 'Укажите длительность (в часах)';
             if (!this.busForm.price || this.busForm.price <= 0) e.price = 'Укажите цену';
             if (this.busForm.bus_type === 'double') {
                 if (!this.busForm.floor1_seats || this.busForm.floor1_seats < 1) e.floor1_seats = 'Укажите кол-во мест 1 этажа';
@@ -183,7 +182,9 @@ export default {
                     transport_company: '', from_city: '', from_address: '',
                     to_city: '', to_address: '', departure_date: '',
                     departure_time: '', arrival_date: '', arrival_time: '',
-                    duration_hours: '', price: '', premium_price: '', total_seats: 53,
+                    arrival_time: '',
+                    duration_hours: '',
+                    price: '',
                     floor1_seats: 20, floor2_seats: 56,
                     bus_type: 'single', passenger_comments: '',
                     intermediate_stops: []
@@ -736,6 +737,7 @@ watch: {
                                 <input v-model="busForm.transport_company" placeholder="Название перевозчика" 
                                     class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 transition-all shadow-inner"
                                     :class="{'border-red-500': busErrors.transport_company}" />
+                                <p v-if="busErrors.transport_company" class="text-[9px] text-red-500 ml-1">{{ busErrors.transport_company }}</p>
                             </div>
 
                             <!-- From City -->
@@ -752,7 +754,9 @@ watch: {
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Адрес отправления</label>
                                 <input v-model="busForm.from_address" placeholder="Точный адрес автовокзала" 
-                                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 transition-all shadow-inner" />
+                                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 transition-all shadow-inner"
+                                    :class="{'border-red-500': busErrors.from_address}" />
+                                <p v-if="busErrors.from_address" class="text-[9px] text-red-500 ml-1">{{ busErrors.from_address }}</p>
                             </div>
 
                             <!-- To City -->
@@ -769,7 +773,9 @@ watch: {
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Адрес прибытия</label>
                                 <input v-model="busForm.to_address" placeholder="Точный адрес прибытия" 
-                                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 transition-all shadow-inner" />
+                                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 transition-all shadow-inner"
+                                    :class="{'border-red-500': busErrors.to_address}" />
+                                <p v-if="busErrors.to_address" class="text-[9px] text-red-500 ml-1">{{ busErrors.to_address }}</p>
                             </div>
 
                             <!-- Dates (Departure) -->
@@ -804,7 +810,8 @@ watch: {
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Цена (с.)</label>
                                 <input v-model="busForm.price" type="number" placeholder="000.00" 
-                                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-amber-600 font-bold text-xl outline-none focus:border-amber-500 transition-all shadow-inner" />
+                                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-amber-600 font-bold text-xl outline-none focus:border-amber-500 transition-all shadow-inner" :class="{'border-red-500': busErrors.price}" />
+                                <p v-if="busErrors.price" class="text-[10px] text-red-500 mt-1 ml-1 font-bold">{{ busErrors.price }}</p>
                             </div>
 
                              <!-- Bus Type Selection -->
@@ -834,7 +841,8 @@ watch: {
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Длительность (ч.)</label>
-                                    <input v-model="busForm.duration_hours" type="number" step="0.5" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
+                                    <input v-model="busForm.duration_hours" type="number" step="0.5" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" :class="{'border-red-500': busErrors.duration_hours}" />
+                                    <p v-if="busErrors.duration_hours" class="text-[9px] text-red-500 ml-1">{{ busErrors.duration_hours }}</p>
                                 </div>
                              </div>
 
@@ -851,7 +859,8 @@ watch: {
                                     </div>
                                     <div class="space-y-2">
                                         <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Длительность (ч.)</label>
-                                        <input v-model="busForm.duration_hours" type="number" step="0.5" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none" />
+                                        <input v-model="busForm.duration_hours" type="number" step="0.5" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-400" :class="{'border-red-500': busErrors.duration_hours}" />
+                                        <p v-if="busErrors.duration_hours" class="text-[9px] text-red-500 ml-1">{{ busErrors.duration_hours }}</p>
                                     </div>
                                 </div>
                                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner">
