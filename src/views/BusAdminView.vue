@@ -57,7 +57,9 @@ export default {
                 passengers_data: [
                     { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' }
                 ]
-            }
+            },
+            selectedBookingRideId: ''
+
         }
     },
     methods: {
@@ -104,6 +106,10 @@ export default {
         async fetchBookings() {
             this.loading = true;
             try {
+                // Also fetch tickets if we haven't yet, to populate the filter dropdown
+                if (this.tickets.length === 0) {
+                    await this.fetchTickets();
+                }
                 const res = await api.get(`/bus-admin/bookings?operator_id=${this.user.id}`);
                 this.bookings = res.data;
             } catch (e) { console.error(e); } finally { this.loading = false; }
@@ -295,13 +301,16 @@ export default {
     },
     computed: {
         filteredBookings() {
-            // Return bookings without flattening. We add some context properties for display.
-            const enhanced = this.bookings.map(b => {
-                return {
-                    ...b,
-                    ticket_context: b.ticket_context || '',
-                };
-            });
+            if (!this.selectedBookingRideId) return [];
+
+            const enhanced = this.bookings
+                .filter(b => b.bus_ticket_id === Number(this.selectedBookingRideId))
+                .map(b => {
+                    return {
+                        ...b,
+                        ticket_context: b.ticket_context || '',
+                    };
+                });
 
             if (!this.bookingSearch) return enhanced;
             const s = this.bookingSearch.toLowerCase();
@@ -499,16 +508,40 @@ export default {
                 <!-- Bookings section -->
                 <section v-if="activeTab === 'bookings'" class="space-y-6 lg:space-y-8">
                      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                         <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">Бронирования</h2>
-                         <div class="relative w-full sm:w-64">
-                             <input v-model="bookingSearch" placeholder="Поиск по имени..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-amber-500 text-slate-900 shadow-sm" />
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                         <div>
+                            <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">Бронирования</h2>
+                            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">Выберите рейс для просмотра пассажиров</p>
+                         </div>
+                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                            <div class="relative w-full sm:w-80">
+                                <select v-model="selectedBookingRideId" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500 text-slate-900 shadow-sm appearance-none font-bold">
+                                    <option value="">-- Выберите рейс --</option>
+                                    <option v-for="t in tickets" :key="t.id" :value="t.id">
+                                        {{ t.from_city }} → {{ t.to_city }} ({{ t.departure_date }} {{ t.departure_time }})
+                                    </option>
+                                </select>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                            <div class="relative w-full sm:w-64" v-if="selectedBookingRideId">
+                                <input v-model="bookingSearch" placeholder="Поиск по имени..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500 text-slate-900 shadow-sm" />
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            </div>
                          </div>
                      </div>
 
                      <div v-if="loading" class="text-slate-400">Загрузка...</div>
-                     <div v-else-if="filteredBookings.length === 0" class="bg-white p-8 rounded-[32px] border border-slate-100 text-center text-slate-400 shadow-sm">
-                        Бронирований не найдено.
+                     <div v-else-if="!selectedBookingRideId" class="bg-white p-20 rounded-[40px] border border-slate-100 text-center shadow-sm">
+                        <div class="bg-amber-50 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-amber-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Выберите рейс</h3>
+                        <p class="text-slate-400 max-w-xs mx-auto text-sm">Пожалуйста, выберите рейс из выкладывающегося списка выше, чтобы увидеть список забронированных пассажиров.</p>
+                     </div>
+                     <div v-else-if="filteredBookings.length === 0" class="bg-white p-20 rounded-[40px] border border-slate-100 text-center shadow-sm">
+                        <div class="bg-slate-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        </div>
+                        <p class="text-slate-400">На этот рейс пока нет бронирований.</p>
                     </div>
                     <div v-else class="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm">
                         <div class="overflow-x-auto">
