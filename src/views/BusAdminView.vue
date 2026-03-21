@@ -300,38 +300,50 @@ export default {
         }
     },
     computed: {
-        filteredBookings() {
+        passengerManifest() {
             if (!this.selectedBookingRideId) return [];
 
-            const enhanced = this.bookings
+            const manifest = [];
+            this.bookings
                 .filter(b => b.bus_ticket_id === Number(this.selectedBookingRideId))
-                .map(b => {
-                    return {
-                        ...b,
-                        ticket_context: b.ticket_context || '',
-                    };
+                .forEach(b => {
+                    const pData = b.passengers_data || [];
+                    if (pData.length === 0) {
+                        // Fallback: If no detailed passenger data is present, show the core booking info
+                        manifest.push({
+                            lastName: b.passenger_name || '—',
+                            firstName: '',
+                            middleName: '',
+                            seat: (b.seat_numbers || []).join(', '),
+                            gender: '—',
+                            birthDate: '—',
+                            docType: '—',
+                            docNumber: '—',
+                            citizenship: '—',
+                            contactPhone: b.passenger_phone,
+                            paymentStatus: b.total_price === 0 ? 'Ручная' : 'Оплачено',
+                            searchContext: `${b.passenger_name} ${b.passenger_phone}`.toLowerCase()
+                        });
+                    } else {
+                        pData.forEach((p, idx) => {
+                            manifest.push({
+                                ...p,
+                                seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
+                                contactPhone: b.passenger_phone,
+                                paymentStatus: b.total_price === 0 ? 'Ручная' : 'Оплачено',
+                                searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${b.passenger_phone}`.toLowerCase()
+                            });
+                        });
+                    }
                 });
 
-            if (!this.bookingSearch) return enhanced;
+            if (!this.bookingSearch) return manifest;
             const s = this.bookingSearch.toLowerCase();
-            return enhanced.filter(b => {
-                // Search by main contact name or phone
-                if ((b.passenger_name || '').toLowerCase().includes(s)) return true;
-                if ((b.passenger_phone || '').toLowerCase().includes(s)) return true;
-                
-                // Search by nested passenger data
-                const pData = b.passengers_data || [];
-                for (const p of pData) {
-                    const fullName = `${p.lastName || ''} ${p.firstName || ''} ${p.middleName || ''}`.toLowerCase();
-                    const docInfo = `${p.docType || ''} ${p.docNumber || ''}`.toLowerCase();
-                    if (fullName.includes(s) || docInfo.includes(s)) return true;
-                }
-                
-                return false;
-            });
+            return manifest.filter(p => p.searchContext.includes(s));
         }
     },
-    watch: {
+watch: {
+
         activeTab() {
             this.fetchData();
         }
@@ -530,74 +542,59 @@ export default {
                      </div>
 
                      <div v-if="loading" class="text-slate-400">Загрузка...</div>
-                     <div v-else-if="!selectedBookingRideId" class="bg-white p-20 rounded-[40px] border border-slate-100 text-center shadow-sm">
-                        <div class="bg-amber-50 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-amber-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-900 mb-2">Выберите рейс</h3>
-                        <p class="text-slate-400 max-w-xs mx-auto text-sm">Пожалуйста, выберите рейс из выкладывающегося списка выше, чтобы увидеть список забронированных пассажиров.</p>
-                     </div>
-                     <div v-else-if="filteredBookings.length === 0" class="bg-white p-20 rounded-[40px] border border-slate-100 text-center shadow-sm">
+                     <div v-else-if="passengerManifest.length === 0" class="bg-white p-20 rounded-[40px] border border-slate-100 text-center shadow-sm">
                         <div class="bg-slate-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                         </div>
                         <p class="text-slate-400">На этот рейс пока нет бронирований.</p>
                     </div>
-                    <div v-else class="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm">
+                     <div v-else class="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm">
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
+                            <table class="w-full text-left border-collapse min-w-[1000px]">
                                 <thead>
                                     <tr class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-100">
-                                        <th class="px-6 py-4">ДЕТАЛИ ПАССАЖИРОВ</th>
-                                        <th class="px-6 py-4 text-right">Статус / Контакт</th>
+                                        <th class="px-6 py-5">#</th>
+                                        <th class="px-6 py-5">ФИО ПАССАЖИРА</th>
+                                        <th class="px-6 py-5">МЕСТО</th>
+                                        <th class="px-6 py-5">ПОЛ</th>
+                                        <th class="px-6 py-5">ДАТА РОЖДЕНИЯ</th>
+                                        <th class="px-6 py-5">ДОКУМЕНТ</th>
+                                        <th class="px-6 py-5">ГРАЖДАНСТВО</th>
+                                        <th class="px-6 py-5">КОНТАКТ</th>
+                                        <th class="px-6 py-5">ОПЛАТА</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-50">
-                                    <tr v-for="b in filteredBookings" :key="b.id" class="hover:bg-slate-50/50 transition-colors">
+                                    <tr v-for="(p, idx) in passengerManifest" :key="idx" class="hover:bg-slate-50/20 transition-colors">
                                         <td class="px-6 py-4">
-                                            <div class="space-y-3">
-                                                <div v-for="(p, idx) in b.passengers_data || []" :key="idx" class="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col gap-2 relative shadow-sm">
-                                                    <div class="absolute top-3 right-3 text-[10px] font-bold text-amber-600 px-2.5 py-1 bg-amber-50 rounded-lg border border-amber-100/50">
-                                                        Место: {{ (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—' }}
-                                                    </div>
-                                                    <div class="font-bold text-slate-900 text-sm pr-16 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                                        <span class="text-slate-400 font-medium text-xs mr-2">{{ idx + 1 }}.</span>
-                                                        {{ p.lastName }} {{ p.firstName }} {{ p.middleName }}
-                                                    </div>
-                                                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] text-slate-500 mt-1 px-1">
-                                                        <div class="flex items-center gap-1.5">
-                                                            <div class="w-4 text-slate-400 text-center">👁️</div>
-                                                            Пол: <span class="text-slate-700 font-medium">{{ p.gender === 'male' ? 'Мужской' : (p.gender === 'female' ? 'Женский' : '—') }}</span>
-                                                        </div>
-                                                        <div class="flex items-center gap-1.5">
-                                                            <div class="w-4 text-slate-400 text-center">📅</div>
-                                                            ДР: <span class="text-slate-700 font-medium">{{ p.birthDate || '—' }}</span>
-                                                        </div>
-                                                        <div class="col-span-2 flex flex-wrap items-center gap-1.5">
-                                                            <div class="w-4 text-slate-400 text-center">📄</div>
-                                                            Документ: <span class="text-slate-700 font-medium">{{ p.docType || '—' }} {{ p.docNumber || '—' }}</span>
-                                                            <span class="ml-auto text-slate-400 text-[9px] uppercase tracking-wider font-bold">{{ p.citizenship || '—' }}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- Fallback if no detailed passenger data is present -->
-                                                <div v-if="!b.passengers_data || b.passengers_data.length === 0" class="text-xs text-slate-500 italic p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                                    Детальные данные отсутствуют. Места: <span class="text-amber-600 font-bold">{{ (b.seat_numbers || []).join(', ') }}</span>
-                                                </div>
+                                            <span class="text-slate-400 font-bold text-[11px]">{{ idx + 1 }}</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="font-bold text-slate-900 text-sm whitespace-nowrap">{{ p.lastName }} {{ p.firstName }} {{ p.middleName }}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2.5 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-black border border-amber-100/50">{{ p.seat }}</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-slate-600 uppercase font-bold tracking-tighter">
+                                            {{ p.gender === 'male' ? 'Муж' : (p.gender === 'female' ? 'Жен' : '—') }}
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-slate-600 font-medium font-mono tracking-tighter">{{ p.birthDate || '—' }}</td>
+                                        <td class="px-6 py-4 text-[11px] text-slate-600 font-medium tracking-tight">
+                                            {{ p.docType }} {{ p.docNumber }}
+                                        </td>
+                                        <td class="px-6 py-4 text-[10px] text-slate-500 uppercase font-black tracking-widest">
+                                            {{ p.citizenship || '—' }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-1.5 whitespace-nowrap">
+                                                <span class="text-[11px] font-bold text-slate-900 tracking-tighter">{{ p.contactPhone }}</span>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 align-top w-[140px] text-right">
-                                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Статус / Тел</div>
-                                            <div class="mb-3 flex justify-end">
-                                                <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border"
-                                                    :class="b.total_price === 0 ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'">
-                                                    {{ b.total_price === 0 ? 'Ручная' : 'Оплачено' }}
-                                                </span>
-                                            </div>
-                                            <div class="flex items-center gap-2 justify-end">
-                                                <div class="text-[11px] font-bold text-amber-600 tracking-tight">{{ b.passenger_phone }}</div>
-                                                <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center text-[10px]">📞</div>
-                                            </div>
+                                        <td class="px-6 py-4">
+                                            <span class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border leading-none inline-block border-slate-100"
+                                                :class="p.paymentStatus === 'Ручная' ? 'bg-blue-50 text-blue-600 border-blue-100 mb-1' : 'bg-emerald-50 text-emerald-600 border-emerald-100'">
+                                                {{ p.paymentStatus }}
+                                            </span>
                                         </td>
                                     </tr>
                                 </tbody>
