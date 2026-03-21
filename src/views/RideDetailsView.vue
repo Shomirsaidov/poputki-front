@@ -92,6 +92,41 @@ export default {
                 }
             );
         },
+        async requestDelivery() {
+             if (!this.user) {
+                 this.$router.push('/auth');
+                 return;
+             }
+             if (!this.user.phone) {
+                 this.showAlert(
+                      'Требуется номер телефона', 
+                      'Для отправки посылки необходимо добавить номер телефона в профиле. Перейти в профиль?',
+                      'warning',
+                      () => { this.modal.show = false; this.$router.push('/profile'); }
+                  );
+                  return;
+             }
+             
+             this.showConfirm(
+                 'Отправить посылку',
+                 'Водителю будет отправлен ваш номер телефона для связи. Подтверждаете?',
+                 async () => {
+                     this.modal.show = false;
+                     this.loading = true;
+                     try {
+                         await api.post(`/rides/${this.ride.id}/delivery-request`, {
+                             passenger_id: this.user.id
+                         });
+                         this.showAlert('Успешно', 'Заявка отправлена! Водитель скоро с вами свяжется.', 'success');
+                     } catch (e) {
+                         console.error(e);
+                         this.showAlert('Ошибка', e.response?.data?.error || 'Не удалось отправить заявку', 'error');
+                     } finally {
+                         this.loading = false;
+                     }
+                 }
+             );
+        },
         openSeatSelection() {
             if (!this.user) {
                 this.$router.push('/auth');
@@ -405,6 +440,15 @@ export default {
                          <span v-else-if="hasBooked">Вы записаны</span>
                          <span v-else-if="isFull">Мест нет</span>
                          <span v-else>Выбрать место</span>
+                      </button>
+
+                      <button 
+                         v-if="!isPastRide && ride && !ride.is_passenger_entry && !isDriver"
+                         @click="requestDelivery" 
+                         class="w-full mt-4 py-4 rounded-2xl font-bold text-lg shadow-xl bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-amber-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
+                      >
+                         <span>Отдать посылку</span>
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                       </button>
                   </div>
              </div>
