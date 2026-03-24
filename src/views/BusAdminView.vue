@@ -264,6 +264,19 @@ export default {
                 this.fetchTickets();
             } catch (e) { console.error('Update error:', e.response?.data || e); alert('Ошибка при обновлении: ' + (e.response?.data?.error || e.message)); } finally { this.loading = false; }
         },
+        async completeTicket(ticket) {
+            if (!confirm('Завершить этот рейс? Он больше не будет доступен для поиска.')) return;
+            this.loading = true;
+            try {
+                await api.put(`/bus-admin/tickets/${ticket.id}`, { status: 'completed' });
+                this.fetchTickets();
+            } catch (e) {
+                alert('Ошибка при завершении рейса');
+                console.error(e);
+            } finally {
+                this.loading = false;
+            }
+        },
         initBooking(ticketId) {
             this.bookingForm.bus_ticket_id = ticketId;
             this.activeTab = 'create-booking';
@@ -564,8 +577,9 @@ watch: {
                                             <p class="font-bold text-lg leading-tight text-slate-800">{{ ticket.departure_date }} в {{ ticket.departure_time }}</p>
                                         </div>
                                     </div>
-                                    <div class="bg-emerald-50 px-4 py-1.5 rounded-full border border-emerald-100">
+                                    <div class="bg-emerald-50 px-4 py-1.5 rounded-full border border-emerald-100 flex items-center space-x-2">
                                         <span class="text-emerald-600 font-bold text-sm">{{ ticket.price }} с.</span>
+                                        <span v-if="ticket.status === 'completed'" class="bg-emerald-600 text-white text-[10px] uppercase font-black px-2 py-0.5 rounded-md">Завершен</span>
                                     </div>
                                 </div>
     
@@ -595,15 +609,23 @@ watch: {
                                 </div>
                                 <div class="flex items-center space-x-3">
                                      <span class="hidden sm:inline-block text-[10px] font-bold px-3 py-1 bg-slate-50 rounded-lg text-slate-400 border border-slate-100 uppercase tracking-widest">{{ ticket.transport_company }}</span>
-                                <div class="flex items-center space-x-2">
+                                <div class="flex items-center space-x-2" v-if="ticket.status !== 'completed'">
                                      <button @click="editTicket(ticket)" class="p-2.5 bg-slate-50 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl transition-all border border-slate-100" title="Изменить">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                      </button>
                                      <button @click="deleteTicket(ticket.id)" class="p-2.5 bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-slate-100" title="Удалить">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                      </button>
+                                     <button @click="completeTicket(ticket)" class="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all border border-slate-100" title="Завершить рейс">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                     </button>
                                      <button @click="initBooking(ticket.id)" class="px-6 py-2.5 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 text-sm">
                                         Бронировать
+                                     </button>
+                                </div>
+                                <div class="flex items-center space-x-2" v-else>
+                                     <button @click="deleteTicket(ticket.id)" class="p-2.5 bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-slate-100" title="Удалить">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                      </button>
                                 </div>
                                 </div>
