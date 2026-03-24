@@ -14,7 +14,9 @@ export default {
                 show: false, title: '', message: '', type: 'info',
                 confirmText: 'ОК', showCancel: false,
                 onConfirm: () => { this.modal.show = false; }
-            }
+            },
+            showPhotoModal: false,
+            currentPhotoIndex: 0
         };
     },
     computed: {
@@ -55,6 +57,20 @@ export default {
         formatDate(dateStr) {
             if (!dateStr) return '';
             return new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', weekday: 'short' });
+        },
+        openFullScreen(idx) {
+            this.currentPhotoIndex = idx;
+            this.showPhotoModal = true;
+            this.$nextTick(() => {
+                const el = this.$refs.photoScroller;
+                if (el) {
+                    el.scrollLeft = el.clientWidth * idx;
+                }
+            });
+        },
+        onPhotoScroll(e) {
+            const el = e.target;
+            this.currentPhotoIndex = Math.round(el.scrollLeft / el.clientWidth);
         }
     },
     mounted() { this.fetchTicket(); }
@@ -134,6 +150,19 @@ export default {
                     </div>
                 </div>
 
+                <!-- Bus Photos -->
+                <div v-if="ticket?.photos?.length > 0" class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-slate-700 text-sm mb-4 uppercase tracking-wider">Фотографии</h3>
+                    <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide">
+                        <div v-for="(photo, idx) in ticket.photos" :key="idx" 
+                            @click="openFullScreen(idx)"
+                            class="relative min-w-[280px] h-[180px] rounded-2xl overflow-hidden snap-center shrink-0 cursor-pointer shadow-sm border border-slate-100 group">
+                            <img :src="photo.url" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Route Timeline -->
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                     <h3 class="font-bold text-slate-700 text-sm mb-6 uppercase tracking-wider">Детали маршрута</h3>
@@ -206,5 +235,40 @@ export default {
             :type="modal.type" :confirmText="modal.confirmText" :showCancel="modal.showCancel"
             @confirm="modal.onConfirm" @cancel="modal.show = false" @close="modal.show = false"
         />
+
+        <!-- Fullscreen Photo Modal -->
+        <div v-if="showPhotoModal" class="fixed inset-0 z-[100] bg-black/95 flex flex-col">
+            <!-- Close -->
+            <button @click="showPhotoModal = false" class="absolute top-6 right-6 w-12 h-12 flex items-center justify-center bg-white/10 rounded-full text-white backdrop-blur-md z-[110] p-2 hover:bg-white/20 transition-colors">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            
+            <!-- Current Counter -->
+            <div class="absolute top-6 left-0 right-0 text-center text-white/50 text-sm font-medium z-[105] pointer-events-none">
+                {{ currentPhotoIndex + 1 }} / {{ ticket.photos.length }}
+            </div>
+
+            <!-- Scroll container -->
+            <div class="flex-1 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide" ref="photoScroller" @scroll="onPhotoScroll">
+                <div v-for="(photo, idx) in ticket.photos" :key="'fs-'+idx" class="min-w-full h-full flex flex-col items-center justify-center snap-center relative shrink-0 px-4">
+                    <img :src="photo.url" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" />
+                </div>
+            </div>
+            
+            <!-- Safe area bottom spacer for mobile browsers -->
+            <div class="h-10 shrink-0"></div>
+        </div>
     </div>
 </template>
+
+<style>
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+</style>

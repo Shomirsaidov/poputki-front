@@ -36,7 +36,8 @@ export default {
                 floor2_seats: 56,
                 bus_type: 'single',
                 passenger_comments: '',
-                intermediate_stops: []
+                intermediate_stops: [],
+                photos: []
             },
             busErrors: {},
             mobileMenuOpen: false,
@@ -163,7 +164,8 @@ export default {
                     operator_id: this.user.id,
                     duration_minutes: Number(this.busForm.duration_hours) * 60,
                     price: Number(this.busForm.price),
-                    premium_price: this.busForm.premium_price ? Number(this.busForm.premium_price) : null
+                    premium_price: this.busForm.premium_price ? Number(this.busForm.premium_price) : null,
+                    photos: this.busForm.photos
                 };
                 if (this.busForm.bus_type === 'double') {
                     submitData.floor1_seats = Number(this.busForm.floor1_seats);
@@ -188,7 +190,8 @@ export default {
                     price: '',
                     floor1_seats: 20, floor2_seats: 56,
                     bus_type: 'single', passenger_comments: '',
-                    intermediate_stops: []
+                    intermediate_stops: [],
+                    photos: []
                 };
                 
                 this.activeTab = 'tickets';
@@ -211,7 +214,8 @@ export default {
             this.busForm = { 
                 ...ticket,
                 duration_hours: ticket.duration_minutes ? (ticket.duration_minutes / 60).toFixed(1) : '',
-                intermediate_stops: ticket.intermediate_stops || []
+                intermediate_stops: ticket.intermediate_stops || [],
+                photos: ticket.photos || []
             };
             this.activeTab = 'create';
         },
@@ -235,7 +239,8 @@ export default {
                     bus_type: f.bus_type,
                     passenger_comments: f.passenger_comments,
                     intermediate_stops: f.intermediate_stops || [],
-                    premium_price: f.premium_price ? Number(f.premium_price) : null
+                    premium_price: f.premium_price ? Number(f.premium_price) : null,
+                    photos: f.photos || []
                 };
                 if (f.bus_type === 'double') {
                     updateData.floor1_seats = Number(f.floor1_seats);
@@ -330,6 +335,20 @@ export default {
             } catch (e) {
                 alert(e.response?.data?.error || 'Ошибка при бронировании');
             } finally { this.loading = false; }
+        },
+        handlePhotoUpload(event) {
+            const files = Array.from(event.target.files);
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.busForm.photos.push(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+            event.target.value = ''; // Reset input
+        },
+        removePhoto(index) {
+            this.busForm.photos.splice(index, 1);
         }
     },
     computed: {
@@ -941,6 +960,24 @@ watch: {
                                     <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Адрес / Место</label>
                                     <input v-model="stop.address" placeholder="Напр. Центр города" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 shadow-sm outline-none focus:border-amber-500" />
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Bus Photos -->
+                        <div class="space-y-4 pt-4 border-t border-slate-50">
+                            <h3 class="text-sm font-bold text-slate-700">Фотографии автобуса</h3>
+                            <div class="flex flex-wrap gap-4">
+                                <div v-for="(photo, idx) in busForm.photos" :key="idx" class="relative group w-24 h-24 rounded-2xl overflow-hidden border border-slate-200">
+                                    <img :src="typeof photo === 'string' ? photo : photo.url" class="w-full h-full object-cover" />
+                                    <button @click="removePhoto(idx)" class="absolute top-1 right-1 bg-white/80 backdrop-blur-sm text-red-500 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                                <label class="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 cursor-pointer transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                    <span class="text-[9px] font-bold uppercase">Добавить</span>
+                                    <input type="file" multiple accept="image/*" class="hidden" @change="handlePhotoUpload" />
+                                </label>
                             </div>
                         </div>
 
