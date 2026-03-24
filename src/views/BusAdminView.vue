@@ -218,18 +218,30 @@ export default {
             if (!this.validateBusForm()) return;
             this.loading = true;
             try {
+                const f = this.busForm;
                 const updateData = {
-                    ...this.busForm,
-                    duration_minutes: Number(this.busForm.duration_hours) * 60,
-                    price: Number(this.busForm.price),
-                    premium_price: this.busForm.premium_price ? Number(this.busForm.premium_price) : null
+                    transport_company: f.transport_company,
+                    from_city: f.from_city,
+                    from_address: f.from_address,
+                    to_city: f.to_city,
+                    to_address: f.to_address,
+                    departure_date: f.departure_date,
+                    departure_time: f.departure_time,
+                    arrival_date: f.arrival_date,
+                    arrival_time: f.arrival_time,
+                    duration_minutes: Number(f.duration_hours) * 60,
+                    price: Number(f.price),
+                    bus_type: f.bus_type,
+                    passenger_comments: f.passenger_comments,
+                    intermediate_stops: f.intermediate_stops || [],
+                    premium_price: f.premium_price ? Number(f.premium_price) : null
                 };
-                if (this.busForm.bus_type === 'double') {
-                    updateData.floor1_seats = Number(this.busForm.floor1_seats);
-                    updateData.floor2_seats = Number(this.busForm.floor2_seats);
+                if (f.bus_type === 'double') {
+                    updateData.floor1_seats = Number(f.floor1_seats);
+                    updateData.floor2_seats = Number(f.floor2_seats);
                     updateData.total_seats = updateData.floor1_seats + updateData.floor2_seats;
                 } else {
-                    updateData.total_seats = Number(this.busForm.total_seats);
+                    updateData.total_seats = Number(f.total_seats);
                     updateData.floor1_seats = null;
                     updateData.floor2_seats = null;
                     updateData.premium_price = null;
@@ -239,7 +251,8 @@ export default {
                 this.isEditingTicket = false;
                 this.editingTicketId = null;
                 this.activeTab = 'tickets';
-            } catch (e) { alert('Ошибка при обновлении'); } finally { this.loading = false; }
+                this.fetchTickets();
+            } catch (e) { console.error('Update error:', e.response?.data || e); alert('Ошибка при обновлении: ' + (e.response?.data?.error || e.message)); } finally { this.loading = false; }
         },
         initBooking(ticketId) {
             this.bookingForm.bus_ticket_id = ticketId;
