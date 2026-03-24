@@ -1,6 +1,7 @@
 <script>
 import api from '../api';
 import AppLogo from '../components/AppLogo.vue';
+import * as XLSX from 'xlsx';
 
 export default {
     components: {
@@ -265,6 +266,24 @@ export default {
         removePassenger(index) {
             this.bookingForm.passengers_data.splice(index, 1);
             this.bookingForm.passenger_count--;
+        },
+        exportToExcel() {
+            if (!this.passengerManifest || this.passengerManifest.length === 0) return;
+            const data = this.passengerManifest.map((p, idx) => ({
+                '#': idx + 1,
+                'ФИО ПАССАЖИРА': `${p.lastName || ''} ${p.firstName || ''} ${p.middleName || ''}`.trim(),
+                'МЕСТО': p.seat,
+                'ПОЛ': p.gender === 'male' ? 'Муж' : (p.gender === 'female' ? 'Жен' : '—'),
+                'ДАТА РОЖДЕНИЯ': p.birthDate || '—',
+                'ДОКУМЕНТ': `${p.docType || ''} ${p.docNumber || ''}`.trim(),
+                'ГРАЖДАНСТВО': p.citizenship || '—',
+                'КОНТАКТ': p.contactPhone,
+                'ОПЛАТА': p.paymentStatus
+            }));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Пассажиры");
+            XLSX.writeFile(wb, `Рейс_${this.selectedBookingRideId}_Пассажиры.xlsx`);
         },
         async submitManualBooking() {
             const f = this.bookingForm;
@@ -573,6 +592,14 @@ watch: {
                                 <input v-model="bookingSearch" placeholder="Поиск по имени..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500 text-slate-900 shadow-sm" />
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </div>
+                            <button 
+                                v-if="selectedBookingRideId && passengerManifest.length > 0"
+                                @click="exportToExcel" 
+                                class="w-full sm:w-auto px-4 py-2.5 bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 text-sm whitespace-nowrap"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                Экспорт .xlsx
+                            </button>
                          </div>
                      </div>
 
