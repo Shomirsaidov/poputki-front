@@ -2,6 +2,8 @@
 import api from '../api';
 import AppLogo from '../components/AppLogo.vue';
 import * as XLSX from 'xlsx';
+import { compressImage } from '../utils/imageCompression';
+import { uploadToCloudinaryDirect } from '../utils/cloudinary';
 
 export default {
     components: {
@@ -60,7 +62,9 @@ export default {
                     { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' }
                 ]
             },
-            selectedBookingRideId: ''
+            selectedBookingRideId: '',
+            photoLoading: false,
+            uploadPreset: 'poputki'
 
         }
     },
@@ -336,16 +340,34 @@ export default {
                 alert(e.response?.data?.error || 'Ошибка при бронировании');
             } finally { this.loading = false; }
         },
-        handlePhotoUpload(event) {
+        async handlePhotoUpload(event) {
             const files = Array.from(event.target.files);
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.busForm.photos.push(e.target.result);
-                };
-                reader.readAsDataURL(file);
-            });
-            event.target.value = ''; // Reset input
+            if (files.length === 0) return;
+
+            this.photoLoading = true;
+            try {
+                for (const file of files) {
+                    // 1. Compress the image
+                    const compressedBase64 = await compressImage(file, { maxWidth: 1200, quality: 0.7 });
+                    
+                    // 2. Upload directly to Cloudinary
+                    const result = await uploadToCloudinaryDirect(compressedBase64, { 
+                        uploadPreset: this.uploadPreset 
+                    });
+                    
+                    // 3. Add to photos array
+                    this.busForm.photos.push({
+                        url: result.url,
+                        public_id: result.public_id
+                    });
+                }
+            } catch (err) {
+                console.error('Photo upload error:', err);
+                alert('Ошибка при загрузке фото: ' + err.message);
+            } finally {
+                this.photoLoading = false;
+                event.target.value = ''; // Reset input
+            }
         },
         removePhoto(index) {
             this.busForm.photos.splice(index, 1);
@@ -973,10 +995,11 @@ watch: {
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                     </button>
                                 </div>
-                                <label class="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 cursor-pointer transition-all">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                                    <span class="text-[9px] font-bold uppercase">Добавить</span>
-                                    <input type="file" multiple accept="image/*" class="hidden" @change="handlePhotoUpload" />
+                                <label class="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-amber-500 hover:border-amber-500 hover:bg-amber-50 cursor-pointer transition-all" :class="{'opacity-50 pointer-events-none': photoLoading}">
+                                    <svg v-if="!photoLoading" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                    <span v-else class="w-6 h-6 border-2 border-slate-300 border-t-amber-500 rounded-full animate-spin mb-1"></span>
+                                    <span class="text-[9px] font-bold uppercase text-center">{{ photoLoading ? 'Загрузка...' : 'Добавить' }}</span>
+                                    <input type="file" multiple accept="image/*" class="hidden" @change="handlePhotoUpload" :disabled="photoLoading" />
                                 </label>
                             </div>
                         </div>
