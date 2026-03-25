@@ -7,4 +7,15 @@ const api = axios.create({
     }
 });
 
+// Request interceptor to add Admin Token
+api.interceptors.request.use(config => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) {
+        config.headers['X-Admin-Token'] = adminToken;
+    }
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
+
 export default api;

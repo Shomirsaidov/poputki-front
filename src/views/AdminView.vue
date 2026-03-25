@@ -36,7 +36,7 @@ export default {
     },
     data() {
         return {
-            isAuthenticated: false,
+            isAuthenticated: !!localStorage.getItem('adminToken'),
             passcode: '',
             activeTab: 'dashboard',
             stats: null,
@@ -193,13 +193,25 @@ export default {
         }
     },
     methods: {
-        checkPasscode() {
-            if (this.passcode === '141206') {
-                this.isAuthenticated = true;
-                this.fetchDashboardData();
-            } else {
-                alert('Неверный код доступа');
+        async checkPasscode() {
+            if (!this.passcode) return;
+            this.loading = true;
+            try {
+                const res = await api.post('/admin/login', { passcode: this.passcode });
+                if (res.data.token) {
+                    localStorage.setItem('adminToken', res.data.token);
+                    this.isAuthenticated = true;
+                    this.fetchDashboardData();
+                }
+            } catch (e) {
+                alert(e.response?.data?.error || 'Неверный код доступа');
+            } finally {
+                this.loading = false;
             }
+        },
+        logout() {
+            localStorage.removeItem('adminToken');
+            this.isAuthenticated = false;
         },
         async fetchDashboardData() {
             this.loading = true;
@@ -502,7 +514,7 @@ export default {
             </nav>
 
             <div class="p-8 border-t border-slate-100">
-                <button @click="isAuthenticated = false" class="text-xs font-bold text-slate-300 hover:text-red-400 transition-colors uppercase tracking-widest">Выйти из сессии</button>
+                <button @click="logout" class="text-xs font-bold text-slate-300 hover:text-red-400 transition-colors uppercase tracking-widest">Выйти из сессии</button>
             </div>
         </aside>
 

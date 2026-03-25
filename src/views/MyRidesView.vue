@@ -229,6 +229,18 @@ export default {
             // For now, simpler to let them try and backend will block if duplicate.
             return false;
         },
+        repeatRide(ride) {
+            this.$router.push({
+                path: '/create',
+                query: {
+                    role: this.isDriver(ride) ? 'driver' : 'passenger',
+                    from: ride.from_city || '',
+                    to: ride.to_city || '',
+                    time: ride.time || '',
+                    price: ride.price || '',
+                    seats: ride.seats || '',
+                    fromAddress: ride.from_address || '',
+                    toAddress: ride.to_address || '',
                     allows_delivery: ride.allows_delivery ? 'true' : 'false'
                 }
             });
