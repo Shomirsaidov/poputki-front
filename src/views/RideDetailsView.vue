@@ -437,15 +437,22 @@ export default {
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                           </router-link>
                       </template>
+                      <a 
+                         v-if="hasBooked"
+                         :href="`tel:${ride.driver_phone}`" 
+                         class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-green-500 text-white shadow-green-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
+                      >
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                         <span>Позвонить водителю</span>
+                      </a>
                       <button 
                          v-else
                          @click="openSeatSelection" 
-                         :disabled="isFull || isDriver || hasBooked"
+                         :disabled="isFull || isDriver"
                          class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 disabled:grayscale flex items-center justify-center space-x-2"
-                         :class="hasBooked ? 'bg-green-500 text-white shadow-green-500/30' : 'bg-slate-900 text-white shadow-slate-900/30'"
+                         :class="isDriver ? 'bg-slate-300 text-slate-700 cursor-not-allowed' : 'bg-slate-900 text-white shadow-slate-900/30'"
                       >
                          <span v-if="isDriver">Вы водитель</span>
-                         <span v-else-if="hasBooked">Вы записаны</span>
                          <span v-else-if="isFull">Мест нет</span>
                          <span v-else>Выбрать место</span>
                       </button>
