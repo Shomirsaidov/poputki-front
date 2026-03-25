@@ -54,12 +54,9 @@ export default {
             editingTicketId: null,
             bookingForm: {
                 bus_ticket_id: '',
-                passenger_name: '', // For manual entry
-                phone: '',
                 passenger_count: 1,
-                seat_numbers: [],
                 passengers_data: [
-                    { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' }
+                    { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', seatNumber: '' }
                 ]
             },
             selectedBookingRideId: '',
@@ -282,7 +279,7 @@ export default {
             this.activeTab = 'create-booking';
         },
         addPassenger() {
-            this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' });
+            this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', seatNumber: '' });
             this.bookingForm.passenger_count++;
         },
         removePassenger(index) {
@@ -309,46 +306,63 @@ export default {
         },
         async submitManualBooking() {
             const f = this.bookingForm;
-            if (!f.bus_ticket_id || !f.passenger_name || !f.phone) {
-                alert('Заполните основные данные (Рейс, ФИО, Телефон)');
+            if (!f.bus_ticket_id) {
+                alert('Выберите рейс');
                 return;
             }
-            this.loading = true;
-            try {
-                // Determine seat numbers if not manually provided
-                const ticket = this.tickets.find(t => t.id === f.bus_ticket_id);
-                if (!ticket) throw new Error('Рейс не найден');
-                
-                const reserved = ticket.reserved_seats || [];
-                const needed = f.passenger_count;
-                const available = [];
-                for (let i = 1; i <= ticket.total_seats; i++) {
-                    if (!reserved.includes(i)) available.push(i);
-                    if (available.length === needed) break;
-                }
-                
-                if (available.length < needed) {
-                    alert('Нет свободных мест');
+            // Validate each passenger has a seat number
+            for (let i = 0; i < f.passengers_data.length; i++) {
+                const p = f.passengers_data[i];
+                const seatNum = Number(p.seatNumber);
+                if (!seatNum || seatNum < 1) {
+                    alert(`Пассажир ${i + 1}: укажите номер места`);
                     return;
                 }
+            }
+            // Check for duplicate seat assignments within the form
+            const assignedSeats = f.passengers_data.map(p => Number(p.seatNumber));
+            const unique = new Set(assignedSeats);
+            if (unique.size !== assignedSeats.length) {
+                alert('Два пассажира не могут занимать одно место');
+                return;
+            }
+
+            this.loading = true;
+            try {
+                const ticket = this.tickets.find(t => t.id === f.bus_ticket_id);
+                if (!ticket) throw new Error('Рейс не найден');
+
+                // Validate against already reserved seats
+                const reserved = ticket.reserved_seats || [];
+                const conflicts = assignedSeats.filter(s => reserved.includes(s));
+                if (conflicts.length > 0) {
+                    alert(`Место(а) ${conflicts.join(', ')} уже занято. Выберите другое.`);
+                    this.loading = false;
+                    return;
+                }
+
+                // Auto-copy contact info from first passenger
+                const firstP = f.passengers_data[0];
+                const contactName = `${firstP.lastName} ${firstP.firstName}`.trim();
 
                 await api.post('/bus-admin/bookings/manual', {
                     bus_ticket_id: f.bus_ticket_id,
                     operator_id: this.user.id,
-                    passenger_name: f.passenger_name,
-                    seat_numbers: available,
+                    passenger_name: contactName,
+                    seat_numbers: assignedSeats,
                     passengers_data: f.passengers_data,
-                    phone: f.phone
+                    phone: firstP.phone || '—'
                 });
 
                 alert('Бронь успешно создана!');
                 // Reset
                 this.bookingForm = {
-                    bus_ticket_id: '', passenger_name: '', phone: '',
-                    passenger_count: 1, seat_numbers: [],
-                    passengers_data: [{ lastName: '', firstName: '', middleName: '', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан' }]
+                    bus_ticket_id: '',
+                    passenger_count: 1,
+                    passengers_data: [{ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', seatNumber: '' }]
                 };
                 this.activeTab = 'bookings';
+                this.fetchBookings();
             } catch (e) {
                 alert(e.response?.data?.error || 'Ошибка при бронировании');
             } finally { this.loading = false; }
@@ -616,8 +630,8 @@ watch: {
                                      <button @click="deleteTicket(ticket.id)" class="p-2.5 bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-slate-100" title="Удалить">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                      </button>
-                                     <button @click="completeTicket(ticket)" class="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all border border-slate-100" title="Завершить рейс">
-                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                     <button @click="completeTicket(ticket)" class="px-4 py-2.5 bg-slate-50 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all border border-slate-100 text-xs font-bold" title="Завершить рейс">
+                                         Завершить рейс
                                      </button>
                                      <button @click="initBooking(ticket.id)" class="px-6 py-2.5 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 text-sm">
                                         Бронировать
@@ -743,35 +757,39 @@ watch: {
                     <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">Создать бронирование вручную</h2>
 
                     <div class="bg-white rounded-[32px] border border-slate-100 p-6 lg:p-8 shadow-sm space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Выберите рейс</label>
-                                <select v-model="bookingForm.bus_ticket_id" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 appearance-none cursor-pointer">
-                                    <option value="" disabled>Рейс не выбран</option>
-                                    <option v-for="t in tickets" :key="'book-t-'+t.id" :value="t.id">
-                                        {{ t.from_city }} -> {{ t.to_city }} ({{ t.departure_date }} {{ t.departure_time }})
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Имя основного контакта</label>
-                                <input v-model="bookingForm.passenger_name" placeholder="Имя Фамилия" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 shadow-inner" />
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Телефон</label>
-                                <input v-model="bookingForm.phone" placeholder="+992..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 shadow-inner" />
-                            </div>
+                        <!-- Ride selector -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Выберите рейс</label>
+                            <select v-model="bookingForm.bus_ticket_id" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 appearance-none cursor-pointer">
+                                <option value="" disabled>Рейс не выбран</option>
+                                <option v-for="t in tickets" :key="'book-t-'+t.id" :value="t.id">
+                                    {{ t.from_city }} -> {{ t.to_city }} ({{ t.departure_date }} {{ t.departure_time }})
+                                </option>
+                            </select>
                         </div>
 
-                        <div class="space-y-4 pt-6 border-t border-slate-50">
+                        <!-- Booked seats info hint -->
+                        <div v-if="bookingForm.bus_ticket_id" class="bg-amber-50 border border-amber-100 rounded-2xl px-5 py-3 text-xs font-bold text-amber-700">
+                            Занятые места: {{ (tickets.find(t => t.id === bookingForm.bus_ticket_id)?.reserved_seats || []).sort((a,b)=>a-b).join(', ') || 'нет' }}
+                        </div>
+
+                        <div class="space-y-4 pt-2 border-t border-slate-50">
                             <div class="flex justify-between items-center">
                                 <h3 class="text-sm font-bold text-slate-700">Данные пассажиров ({{ bookingForm.passenger_count }})</h3>
                                 <button @click="addPassenger" class="text-xs font-bold text-amber-500 hover:text-amber-600 px-4 py-2 bg-amber-50 rounded-xl transition-all border border-amber-100">+ Добавить</button>
                             </div>
                             <div v-for="(p, idx) in bookingForm.passengers_data" :key="idx" class="bg-slate-50 p-6 rounded-[24px] border border-slate-100 relative shadow-inner">
-                                <button v-if="idx > 0" @click="removePassenger(idx)" class="absolute top-4 right-4 text-red-400 hover:text-red-500 p-2 bg-white rounded-xl shadow-sm border border-slate-100 transition-all">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                </button>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Пассажир {{ idx + 1 }}</span>
+                                    <button v-if="idx > 0" @click="removePassenger(idx)" class="text-red-400 hover:text-red-500 p-2 bg-white rounded-xl shadow-sm border border-slate-100 transition-all">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                                <!-- Seat number — prominent at top -->
+                                <div class="mb-4 space-y-1">
+                                    <label class="text-[9px] text-amber-600 font-black uppercase ml-1">★ Номер места</label>
+                                    <input v-model="p.seatNumber" type="number" min="1" placeholder="Напр. 12" class="w-full bg-white border-2 border-amber-200 rounded-xl p-3 text-sm text-slate-900 outline-none focus:border-amber-500 shadow-sm font-bold" />
+                                </div>
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                     <div class="space-y-1">
                                         <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Фамилия</label>
