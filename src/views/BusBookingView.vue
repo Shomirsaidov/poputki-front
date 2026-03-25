@@ -51,7 +51,9 @@ export default {
         },
         totalPrice() {
             if (!this.ticket) return 0;
-            const premiumSeatNums = this.ticket.premiumSeats || [];
+            const premiumSeatNums = this.ticket.premiumSeats?.length > 0 
+                ? this.ticket.premiumSeats 
+                : (this.ticket.bus_type === 'double' ? [69, 70, 71, 72, 73, 74, 75, 76] : []);
             const premiumPrice = this.ticket.premium_price || this.ticket.price;
             let total = 0;
             for (const seatNum of this.selectedSeats) {
