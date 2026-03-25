@@ -204,7 +204,15 @@ export default {
                     this.fetchDashboardData();
                 }
             } catch (e) {
-                alert(e.response?.data?.error || 'Неверный код доступа');
+                if (e.response?.status === 401) {
+                    alert('Неверный код доступа');
+                } else if (!e.response) {
+                    // This is likely a CORS or Network error
+                    alert('Ошибка сети или доступа (CORS). Пожалуйста, свяжитесь с администратором.');
+                    console.error('Network/CORS Error:', e);
+                } else {
+                    alert(e.response?.data?.error || 'Произошла ошибка при входе');
+                }
             } finally {
                 this.loading = false;
             }
