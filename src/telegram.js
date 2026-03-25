@@ -44,24 +44,9 @@ export function getTelegramInitData() {
     return tg?.initData || '';
 }
 
-/**
- * Robustly opens a phone dialer.
- * Uses Telegram WebApp openLink if available, otherwise falls back to window.location.
- */
-export function openPhone(phoneNumber) {
-    if (!phoneNumber) return;
-    const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
-    if (tg && tg.openLink) {
-        tg.openLink(`tel:${cleanPhone}`);
-    } else {
-        window.location.href = `tel:${cleanPhone}`;
-    }
-}
-
 export default {
     init: initTelegram,
     getApp: getTelegramApp,
     getUser: getTelegramUser,
-    getInitData: getTelegramInitData,
-    openPhone: openPhone
+    getInitData: getTelegramInitData
 };
