@@ -68,9 +68,15 @@ export default {
                     user_id: user.id,
                     ...this.form
                 });
+                // Check if user came from create-ride flow
+                const fromCreateRide = this.$route.query.redirect === 'create-ride';
                 this.showAlert('Успешно', 'Транспорт успешно сохранен!', 'success', () => {
                     this.modal.show = false;
-                    this.$router.back();
+                    if (fromCreateRide) {
+                        this.$router.push({ path: '/create-ride', query: { role: 'driver' } });
+                    } else {
+                        this.$router.back();
+                    }
                 });
             } catch (e) {
                 console.error('Vehicle save error:', e);

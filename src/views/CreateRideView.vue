@@ -126,9 +126,9 @@ export default {
             if (role === 'driver' && !this.hasVehicle) {
                 this.showAlert(
                     'Нужен автомобиль', 
-                    'Для создания поездки в качестве водителя необходимо добавить данные автомобиля в профиле. Перейти в профиль?',
+                    'Для создания поездки в качестве водителя необходимо добавить данные автомобиля. Добавить сейчас?',
                     'warning',
-                    () => { this.modal.show = false; this.$router.push('/profile'); }
+                    () => { this.modal.show = false; this.$router.push({ path: '/vehicle', query: { redirect: 'create-ride' } }); }
                 );
                 return;
             }
