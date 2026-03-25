@@ -108,17 +108,21 @@ const router = createRouter({
     }
 })
 
+function isProfileComplete(user) {
+    return user && user.phone && user.name && user.age && parseInt(user.age) > 0;
+}
+
 router.beforeEach(async (to, from, next) => {
     const tg = window.Telegram?.WebApp;
     const tgUser = getTelegramUser();
-    const user = JSON.parse(localStorage.getItem('user'));
+    let user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
 
     // 1. Handle Deep Links (Telegram startParam)
     if (tg?.initDataUnsafe?.start_param && !to.query.processedStartParam) {
         const startParam = tg.initDataUnsafe.start_param;
         if (startParam.startsWith('ride_')) {
             const rideId = startParam.replace('ride_', '');
-            // Prevent infinite loop by adding a flag
             return next({ 
                 name: 'ride-details', 
                 params: { id: rideId },
@@ -127,15 +131,13 @@ router.beforeEach(async (to, from, next) => {
         }
     }
 
-    // 2. Background Sync via Telegram if data is available
+    // 2. Telegram Auth / Sync logic
     if (tgUser) {
         const syncAction = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/telegram-login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         id: tgUser.id,
                         first_name: tgUser.first_name,
@@ -151,35 +153,40 @@ router.beforeEach(async (to, from, next) => {
                     const data = await response.json();
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-
-                    // Force redirect if registration is incomplete (missing phone, age, or name)
-                    if (data.user.isNew && to.name !== 'auth') {
-                        router.push({ name: 'auth', query: { tg_complete: 1 } });
-                    }
+                    user = data.user; // Update local reference
+                    return data.user;
                 }
             } catch (error) {
                 console.error("Background Telegram Sync Failure:", error);
             }
+            return null;
         };
 
-        // Non-blocking for authenticated users, blocking for newcomers
-        const isAuthenticated = !!localStorage.getItem('token');
-        if (isAuthenticated) {
-            syncAction(); // Fire and forget
+        // BLOCKING SYNC: If no token or profile is incomplete, we MUST wait for the server.
+        if (!token || !isProfileComplete(user)) {
+            const syncedUser = await syncAction();
+            if (syncedUser && syncedUser.isNew && to.name !== 'auth') {
+                return next({ name: 'auth', query: { tg_complete: 1 } });
+            }
         } else {
-            await syncAction(); // Block for first-time login
+            // FIRE AND FORGET: Profile is complete, just sync in background.
+            syncAction();
         }
     }
 
-    // 3. Standard Navigation Guard
+    // 3. Final Navigation Guard
     const isAuthenticated = !!localStorage.getItem('token');
+    user = JSON.parse(localStorage.getItem('user')); // Re-fetch after possible sync
+    const isComplete = isProfileComplete(user);
     const publicRoutes = ['auth', 'admin', 'bus-admin', 'ride-details', 'landing', 'search'];
 
-    if (!publicRoutes.includes(to.name) && !isAuthenticated) {
-        next({ name: 'auth' });
-    } else {
-        next();
+    if (!publicRoutes.includes(to.name)) {
+        if (!isAuthenticated || !isComplete) {
+            return next({ name: 'auth' });
+        }
     }
+    
+    next();
 });
 
 export default router
