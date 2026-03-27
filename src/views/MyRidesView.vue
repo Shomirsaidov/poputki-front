@@ -49,6 +49,17 @@ export default {
         }
         this.user = JSON.parse(userStr);
         await this.fetchMyRides();
+
+        // Handle direct review link from Telegram notification
+        if (this.$route.query.reviewRideId) {
+            const rideId = parseInt(this.$route.query.reviewRideId);
+            const ride = this.rides.find(r => r.id === rideId);
+            if (ride) {
+                this.openReviewModal(ride);
+                // Clear the query parameter to avoid re-opening on refresh
+                this.$router.replace({ query: { ...this.$route.query, reviewRideId: undefined } });
+            }
+        }
     },
     methods: {
         showAlert(title, message, type = 'info', onConfirm = null) {
