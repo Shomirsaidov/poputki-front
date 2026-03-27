@@ -20,6 +20,14 @@ export default {
         age: '',
         phone: ''
       },
+      selectedCountry: '+992',
+      countries: [
+        { name: 'Таджикистан', code: '+992', flag: '🇹🇯' },
+        { name: 'Узбекистан', code: '+998', flag: '🇺🇿' },
+        { name: 'Казахстан', code: '+7', flag: '🇰🇿' },
+        { name: 'Кыргызстан', code: '+996', flag: '🇰🇬' },
+        { name: 'Россия', code: '+7', flag: '🇷🇺' }
+      ],
       loading: false,
       modal: {
         show: false,
@@ -89,8 +97,9 @@ export default {
       this.modal.show = true;
     },
     async handleLogin() {
-      // Normalize phone: keep only + and digits
-      const cleanPhone = this.phone.replace(/[^\d+]/g, '');
+      // Combine code and phone, then normalize: keep only + and digits
+      const fullPhone = this.selectedCountry + this.phone;
+      const cleanPhone = fullPhone.replace(/[^\d+]/g, '');
       if (!cleanPhone || cleanPhone.length < 5) {
         this.showAlert('Внимание', 'Пожалуйста, введите корректный номер телефона', 'warning');
         return;
@@ -124,7 +133,8 @@ export default {
         
         let cleanedPhone = this.registration.phone;
         if (this.needsPhone) {
-             cleanedPhone = cleanedPhone.replace(/[^\d+]/g, '');
+             const fullPhone = this.selectedCountry + this.registration.phone;
+             cleanedPhone = fullPhone.replace(/[^\d+]/g, '');
              if (!cleanedPhone || cleanedPhone.length < 5) {
                  this.showAlert('Внимание', 'Пожалуйста, введите корректный номер телефона', 'warning');
                  return;
@@ -182,10 +192,25 @@ export default {
         <div class="space-y-6">
           <label class="block space-y-2 group">
              <span class="text-sm font-bold text-slate-400 uppercase tracking-wider ml-1 group-focus-within:text-yellow-500 transition-colors">Номер телефона</span>
-             <div class="relative">
-               <input v-model="phone" type="tel" placeholder="+ (Код) Номер телефона" class="w-full bg-gray-50 border-2 border-transparent focus:border-yellow-400/50 focus:bg-white rounded-2xl p-4 text-xl font-bold outline-none transition-all placeholder-gray-300 text-slate-800" />
-               <div class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" v-if="phone.length > 8">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+             <div class="flex space-x-2">
+               <!-- Country Selector -->
+               <div class="relative w-1/3">
+                 <select v-model="selectedCountry" class="w-full h-full bg-gray-50 border-2 border-transparent focus:border-yellow-400/50 focus:bg-white rounded-2xl p-4 text-lg font-bold outline-none transition-all appearance-none">
+                   <option v-for="c in countries" :key="c.code + c.name" :value="c.code">
+                     {{ c.flag }} {{ c.code }}
+                   </option>
+                 </select>
+                 <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                 </div>
+               </div>
+               
+               <!-- Phone Input -->
+               <div class="relative flex-1">
+                 <input v-model="phone" type="tel" placeholder="Номер телефона" class="w-full bg-gray-50 border-2 border-transparent focus:border-yellow-400/50 focus:bg-white rounded-2xl p-4 text-xl font-bold outline-none transition-all placeholder-gray-300 text-slate-800" />
+                 <div class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" v-if="phone.length > 5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                 </div>
                </div>
              </div>
           </label>
@@ -207,7 +232,15 @@ export default {
         <div class="space-y-4">
             <input v-model="registration.name" placeholder="Имя (ФИО)" class="w-full bg-gray-50 border-2 border-transparent focus:border-yellow-400 rounded-2xl p-4 text-lg font-bold outline-none transition-all" />
             <input v-model="registration.age" type="number" placeholder="Возраст" class="w-full bg-gray-50 border-2 border-transparent focus:border-yellow-400 rounded-2xl p-4 text-lg font-bold outline-none transition-all" />
-            <input v-if="needsPhone" v-model="registration.phone" type="tel" placeholder="+ (Код) Номер телефона" class="w-full bg-gray-50 border-2 border-transparent focus:border-yellow-400 rounded-2xl p-4 text-lg font-bold outline-none transition-all" />
+            
+            <div v-if="needsPhone" class="flex space-x-2">
+                <select v-model="selectedCountry" class="w-1/3 bg-gray-50 border-2 border-transparent focus:border-yellow-400 rounded-2xl p-4 text-lg font-bold outline-none transition-all">
+                    <option v-for="c in countries" :key="'reg-'+c.code + c.name" :value="c.code">
+                        {{ c.flag }} {{ c.code }}
+                    </option>
+                </select>
+                <input v-model="registration.phone" type="tel" placeholder="Номер телефона" class="flex-1 bg-gray-50 border-2 border-transparent focus:border-yellow-400 rounded-2xl p-4 text-lg font-bold outline-none transition-all" />
+            </div>
         </div>
 
         <button @click="handleRegister" :disabled="loading" class="w-full bg-yellow-500 text-white font-bold py-5 rounded-2xl shadow-xl shadow-yellow-500/20 active:scale-[0.98] transition-all hover:-translate-y-1 mt-4">

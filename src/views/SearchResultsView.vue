@@ -343,7 +343,8 @@ export default {
               </div>
               <div class="flex items-center gap-1 text-xs text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                {{ ride.seats }} мест
+                <span v-if="ride.is_passenger_entry">{{ ride.seats }} мест</span>
+                <span v-else>{{ ride.seats - (ride.booked_seats || 0) }} из {{ ride.seats }} свободно</span>
               </div>
             </div>
           </div>
