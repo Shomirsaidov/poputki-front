@@ -31,10 +31,10 @@ export default {
     },
     computed: {
         activeRides() {
-            return this.rides.filter(ride => ride.status !== 'completed');
+            return this.rides.filter(ride => ride.status === 'active');
         },
         pastRides() {
-            return this.rides.filter(ride => ride.status === 'completed')
+            return this.rides.filter(ride => ride.status === 'completed' || ride.status === 'cancelled')
                 .sort((a, b) => new Date(b.date) - new Date(a.date));
         },
         displayedRides() {

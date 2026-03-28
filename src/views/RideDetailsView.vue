@@ -47,9 +47,15 @@ export default {
             this.modal.show = true;
         },
         async fetchRide() {
+            const id = this.$route.params.id;
+            if (!id || id === 'undefined') {
+                console.error('Invalid ride ID:', id);
+                this.$router.push('/');
+                return;
+            }
             this.loading = true;
             try {
-                const res = await api.get(`/rides/${this.$route.params.id}`);
+                const res = await api.get(`/rides/${id}`);
                 this.ride = res.data;
                 this.checkMatchingRides();
             } catch (e) {

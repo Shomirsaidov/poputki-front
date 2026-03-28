@@ -123,11 +123,22 @@ router.beforeEach(async (to, from, next) => {
         const startParam = tg.initDataUnsafe.start_param;
         if (startParam.startsWith('ride_')) {
             const rideId = startParam.replace('ride_', '');
-            return next({ 
-                name: 'ride-details', 
-                params: { id: rideId },
-                query: { ...to.query, processedStartParam: '1' } 
-            });
+            if (rideId) {
+                return next({ 
+                    name: 'ride-details', 
+                    params: { id: rideId },
+                    query: { ...to.query, processedStartParam: '1' } 
+                });
+            }
+        } else if (startParam.startsWith('bus_')) {
+            const busTicketId = startParam.replace('bus_', '');
+            if (busTicketId) {
+                return next({ 
+                    name: 'bus-ticket-details', 
+                    params: { id: busTicketId },
+                    query: { ...to.query, processedStartParam: '1' } 
+                });
+            }
         }
     }
 
@@ -182,7 +193,10 @@ router.beforeEach(async (to, from, next) => {
 
     if (!publicRoutes.includes(to.name)) {
         if (!isAuthenticated || !isComplete) {
-            return next({ name: 'auth' });
+            return next({ 
+                name: 'auth', 
+                query: { redirect: to.fullPath } 
+            });
         }
     }
     

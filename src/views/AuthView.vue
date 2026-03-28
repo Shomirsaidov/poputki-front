@@ -97,9 +97,14 @@ export default {
       this.modal.show = true;
     },
     async handleLogin() {
-      // Combine code and phone, then normalize: keep only + and digits
-      const fullPhone = this.selectedCountry + this.phone;
-      const cleanPhone = fullPhone.replace(/[^\d+]/g, '');
+      // Combine code and phone, then normalize: strip country code if already present at start
+      const digitsOnly = this.phone.replace(/\D/g, '');
+      const countryDigits = this.selectedCountry.replace(/\D/g, '');
+      let phonePart = digitsOnly;
+      if (phonePart.startsWith(countryDigits)) {
+          phonePart = phonePart.substring(countryDigits.length);
+      }
+      const cleanPhone = this.selectedCountry + phonePart;
       if (!cleanPhone || cleanPhone.length < 5) {
         this.showAlert('Внимание', 'Пожалуйста, введите корректный номер телефона', 'warning');
         return;
@@ -133,8 +138,13 @@ export default {
         
         let cleanedPhone = this.registration.phone;
         if (this.needsPhone) {
-             const fullPhone = this.selectedCountry + this.registration.phone;
-             cleanedPhone = fullPhone.replace(/[^\d+]/g, '');
+             const digitsOnly = this.registration.phone.replace(/\D/g, '');
+             const countryDigits = this.selectedCountry.replace(/\D/g, '');
+             let phonePart = digitsOnly;
+             if (phonePart.startsWith(countryDigits)) {
+                 phonePart = phonePart.substring(countryDigits.length);
+             }
+             cleanedPhone = this.selectedCountry + phonePart;
              if (!cleanedPhone || cleanedPhone.length < 5) {
                  this.showAlert('Внимание', 'Пожалуйста, введите корректный номер телефона', 'warning');
                  return;
@@ -156,7 +166,12 @@ export default {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         
-        // If it's a bus driver, go to bus-admin, else go home
+        const redirect = this.$route.query.redirect;
+        if (redirect) {
+            this.$router.push(redirect);
+            return;
+        }
+
         if (user.role === 'bus_driver') {
             this.$router.push({ name: 'bus-admin' });
         } else {
