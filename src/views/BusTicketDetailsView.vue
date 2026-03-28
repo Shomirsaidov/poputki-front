@@ -48,7 +48,9 @@ export default {
             }
             this.loading = true;
             try {
-                const res = await api.get(`/bus-tickets/${id}`);
+                const url = `/bus-tickets/${id}`;
+                console.log(`[DEBUG] Fetching bus ticket from: ${api.defaults.baseURL}${url}`);
+                const res = await api.get(url);
                 this.ticket = res.data;
             } catch (e) {
                 console.error('Bus ticket fetch error:', e);

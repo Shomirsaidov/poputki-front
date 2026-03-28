@@ -55,7 +55,9 @@ export default {
             }
             this.loading = true;
             try {
-                const res = await api.get(`/rides/${id}`);
+                const url = `/rides/${id}`;
+                console.log(`[DEBUG] Fetching ride from: ${api.defaults.baseURL}${url}`);
+                const res = await api.get(url);
                 this.ride = res.data;
                 this.checkMatchingRides();
             } catch (e) {
