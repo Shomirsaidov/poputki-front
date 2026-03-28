@@ -59,8 +59,10 @@ export default {
                 this.ride = res.data;
                 this.checkMatchingRides();
             } catch (e) {
-                console.error(e);
-                this.showAlert('Ошибка', 'Ошибка при загрузке поездки', 'error', () => {
+                console.error('Ride fetch error:', e);
+                const status = e.response?.status || 'Network Error';
+                const message = e.response?.data?.error || e.message;
+                this.showAlert('Ошибка ' + status, `Не удалось загрузить поездку. ${message}. ID: ${id}`, 'error', () => {
                     this.modal.show = false;
                     this.$router.push('/');
                 });

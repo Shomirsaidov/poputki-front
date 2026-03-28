@@ -123,7 +123,7 @@ router.beforeEach(async (to, from, next) => {
         const startParam = tg.initDataUnsafe.start_param;
         if (startParam.startsWith('ride_')) {
             const rideId = startParam.replace('ride_', '');
-            if (rideId) {
+            if (rideId && !(to.name === 'ride-details' && to.params.id === rideId)) {
                 return next({ 
                     name: 'ride-details', 
                     params: { id: rideId },
@@ -132,7 +132,7 @@ router.beforeEach(async (to, from, next) => {
             }
         } else if (startParam.startsWith('bus_')) {
             const busTicketId = startParam.replace('bus_', '');
-            if (busTicketId) {
+            if (busTicketId && !(to.name === 'bus-ticket-details' && to.params.id === busTicketId)) {
                 return next({ 
                     name: 'bus-ticket-details', 
                     params: { id: busTicketId },

@@ -41,12 +41,20 @@ export default {
             this.modal.show = true;
         },
         async fetchTicket() {
+            const id = this.$route.params.id;
+            if (!id || id === 'undefined') {
+                this.$router.push('/');
+                return;
+            }
             this.loading = true;
             try {
-                const res = await api.get(`/bus-tickets/${this.$route.params.id}`);
+                const res = await api.get(`/bus-tickets/${id}`);
                 this.ticket = res.data;
-            } catch {
-                this.showAlert('Ошибка', 'Ошибка загрузки', 'error', () => {
+            } catch (e) {
+                console.error('Bus ticket fetch error:', e);
+                const status = e.response?.status || 'Network Error';
+                const message = e.response?.data?.error || e.message;
+                this.showAlert('Ошибка ' + status, `Ошибка загрузки билета. ${message}. ID: ${id}`, 'error', () => {
                     this.modal.show = false; this.$router.push('/');
                 });
             } finally { this.loading = false; }
