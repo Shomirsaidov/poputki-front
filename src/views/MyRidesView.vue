@@ -83,37 +83,13 @@ export default {
         async fetchMyRides() {
             this.loading = true;
             try {
-                // Fetch all rides, including completed
-                const response = await api.get('/rides', { params: { all_status: true } });
-                const allRides = response.data;
-                
-                // Fetch detailed info for each ride (includes bookings)
-                const detailedRidesPromises = allRides.map(ride => 
-                    api.get(`/rides/${ride.id}`).catch(err => {
-                        console.error(`Failed to fetch ride ${ride.id}:`, err);
-                        return null;
-                    })
-                );
-                
-                const detailedRidesResponses = await Promise.all(detailedRidesPromises);
-                const detailedRides = detailedRidesResponses
-                    .filter(res => res !== null)
-                    .map(res => res.data);
-
-                // Now filter rides where user is driver OR passenger
-                this.rides = detailedRides.filter(ride => {
-                    // User is the driver
-                    if (ride.driver_id === this.user.id) {
-                        return true;
-                    }
-                    // User has a booking
-                    if (ride.bookings && ride.bookings.some(b => b.passenger_id === this.user.id)) {
-                        return true;
-                    }
-                    return false;
+                // Call the optimized endpoint that returns only user's rides
+                const response = await api.get('/rides/my', { 
+                    params: { userId: this.user.id } 
                 });
+                this.rides = response.data;
             } catch (e) {
-                console.error(e);
+                console.error('Fetch my rides error:', e);
                 this.showAlert('Ошибка', 'Ошибка при загрузке поездок', 'error');
             } finally {
                 this.loading = false;
