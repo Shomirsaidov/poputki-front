@@ -412,7 +412,7 @@ export default {
                   </div>
 
                   <!-- Action Button -->
-                  <div class="mt-8 mb-6">
+                  <div class="mt-8 mb-6 flex flex-col space-y-4">
                       <template v-if="isPastRide">
                           <button 
                              v-if="isDriver"
@@ -434,7 +434,7 @@ export default {
                           <button 
                              v-if="matchingDriverRides.length > 0"
                              @click="shareRide(matchingDriverRides[0].id)"
-                             class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-blue-500 text-white shadow-blue-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2 mb-4"
+                             class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-blue-500 text-white shadow-blue-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
                           >
                              <span>Предложить свою поездку</span>
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
@@ -482,7 +482,7 @@ export default {
                       <button 
                          v-if="!isPastRide && ride && !ride.is_passenger_entry && !isDriver"
                          @click="requestDelivery" 
-                         class="w-full mt-4 py-4 rounded-2xl font-bold text-lg shadow-xl bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-amber-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
+                         class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-amber-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
                       >
                          <span>Отдать посылку</span>
                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
