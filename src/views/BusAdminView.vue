@@ -56,7 +56,7 @@ export default {
                 bus_ticket_id: '',
                 passenger_count: 1,
                 passengers_data: [
-                    { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', seatNumber: '' }
+                    { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }
                 ]
             },
             selectedBookingRideId: '',
@@ -279,7 +279,7 @@ export default {
             this.activeTab = 'create-booking';
         },
         addPassenger() {
-            this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', seatNumber: '' });
+            this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' });
             this.bookingForm.passenger_count++;
         },
         removePassenger(index) {
@@ -359,7 +359,7 @@ export default {
                 this.bookingForm = {
                     bus_ticket_id: '',
                     passenger_count: 1,
-                    passengers_data: [{ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', seatNumber: '' }]
+                    passengers_data: [{ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }]
                 };
                 this.activeTab = 'bookings';
                 this.fetchBookings();
@@ -427,12 +427,13 @@ export default {
                         });
                     } else {
                         pData.forEach((p, idx) => {
+                            const passengerPhone = p.phone || b.passenger_phone;
                             manifest.push({
                                 ...p,
                                 seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
-                                contactPhone: b.passenger_phone,
+                                contactPhone: passengerPhone,
                                 paymentStatus: b.total_price === 0 ? 'Ручная' : 'Оплачено',
-                                searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${b.passenger_phone}`.toLowerCase()
+                                searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${passengerPhone}`.toLowerCase()
                             });
                         });
                     }
@@ -832,6 +833,10 @@ watch: {
                                     <div class="space-y-1">
                                         <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Гражданство</label>
                                         <input v-model="p.citizenship" placeholder="Таджикистан" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 outline-none focus:border-amber-500 shadow-sm" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Телефон</label>
+                                        <input v-model="p.phone" placeholder="+992..." class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 outline-none focus:border-amber-500 shadow-sm" />
                                     </div>
                                 </div>
                             </div>
