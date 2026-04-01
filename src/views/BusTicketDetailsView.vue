@@ -1,7 +1,7 @@
 <script>
 import api from '../api';
 import AppModal from '../components/AppModal.vue';
-import { openPhone } from '../telegram';
+
 
 export default {
     name: 'BusTicketDetailsView',
@@ -83,11 +83,7 @@ export default {
             const el = e.target;
             this.currentPhotoIndex = Math.round(el.scrollLeft / el.clientWidth);
         },
-        makeCall() {
-            if (this.ticket?.operator_phone) {
-                openPhone(this.ticket.operator_phone);
-            }
-        }
+
     },
     mounted() { this.fetchTicket(); }
 };
@@ -245,8 +241,7 @@ export default {
 
                 <!-- Call operator -->
                 <div v-if="ticket.operator_phone">
-                    <a :href="`tel:${ticket.operator_phone.replace(/[^\d+]/g, '')}`" 
-                        @click.prevent="makeCall"
+                    <a :href="`tel:${ticket.operator_phone}`" 
                         class="w-full py-4 rounded-2xl font-bold text-lg bg-slate-100 text-slate-500 flex items-center justify-center gap-2 mb-3 active:scale-95 transition-all">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
