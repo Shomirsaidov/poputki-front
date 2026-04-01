@@ -195,7 +195,7 @@ export default {
         async confirmBooking() {
             this.bookingLoading = true;
             try {
-                await api.post('/bus-ticket-bookings', {
+                const res = await api.post('/payments/create-invoice', {
                     bus_ticket_id: Number(this.ticketId),
                     passenger_id: this.user.id,
                     seat_numbers: this.selectedSeats,
@@ -205,14 +205,15 @@ export default {
                     drop_off_city: this.dropOffCity
                 });
                 sessionStorage.removeItem(STATE_KEY(this.ticketId));
-                this.$router.replace({ name: 'my-bus-tickets', query: { booked: 'true' } });
+                // Redirect to SmartPay payment page
+                window.location.href = res.data.payment_link;
             } catch (e) {
                 if (e.response?.status === 401) {
                     this.showAlert('Внимание', 'Приложение работает правильно в телеграм боте', 'info', () => {
                         this.modal.show = false;
                     }, true);
                 } else {
-                    this.showAlert('Ошибка', e.response?.data?.error || 'Ошибка при бронировании', 'error', () => {
+                    this.showAlert('Ошибка', e.response?.data?.error || 'Ошибка при создании платежа', 'error', () => {
                         this.modal.show = false;
                     });
                 }

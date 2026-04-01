@@ -100,6 +100,12 @@ const router = createRouter({
             name: 'admin',
             component: () => import('../views/AdminView.vue'),
             meta: { hideBottomNav: true }
+        },
+        {
+            path: '/payment-result',
+            name: 'payment-result',
+            component: () => import('../views/PaymentResultView.vue'),
+            meta: { hideBottomNav: true }
         }
     ],
     scrollBehavior(to, from, savedPosition) {
@@ -189,7 +195,7 @@ router.beforeEach(async (to, from, next) => {
     const isAuthenticated = !!localStorage.getItem('token');
     user = JSON.parse(localStorage.getItem('user')); // Re-fetch after possible sync
     const isComplete = isProfileComplete(user);
-    const publicRoutes = ['auth', 'admin', 'bus-admin', 'ride-details', 'landing', 'search'];
+    const publicRoutes = ['auth', 'admin', 'bus-admin', 'ride-details', 'landing', 'search', 'payment-result'];
 
     if (!publicRoutes.includes(to.name)) {
         if (!isAuthenticated || !isComplete) {
