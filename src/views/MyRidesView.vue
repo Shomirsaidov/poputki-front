@@ -2,12 +2,13 @@
 import api from '../api';
 import ReviewModal from '../components/ReviewModal.vue';
 import AppModal from '../components/AppModal.vue';
-import { openPhone } from '../telegram';
+import { openPhone, copyToClipboard } from '../telegram';
+import AppToast from '../components/AppToast.vue';
 
 export default {
     components: {
-        ReviewModal,
-        AppModal
+        AppModal,
+        AppToast
     },
     data() {
         return {
@@ -26,6 +27,12 @@ export default {
                 confirmText: 'ОК',
                 showCancel: false,
                 onConfirm: () => { this.modal.show = false; }
+            },
+            phoneExpandedRides: new Set(),
+            toast: {
+                show: false,
+                message: '',
+                type: 'success'
             }
         }
     },
@@ -232,8 +239,26 @@ export default {
                 }
             });
         },
-        makeCall(phoneNumber) {
-            openPhone(phoneNumber);
+        makeCall(phone, rideId) {
+            if (phone) {
+                if (this.phoneExpandedRides.has(rideId)) {
+                    this.phoneExpandedRides.delete(rideId);
+                } else {
+                    this.phoneExpandedRides.add(rideId);
+                }
+                openPhone(phone);
+            }
+        },
+        async copyPhone(phone) {
+            if (phone) {
+                const success = await copyToClipboard(phone);
+                if (success) {
+                    this.toast.message = 'Номер скопирован в буфер обмена';
+                    this.toast.type = 'success';
+                    this.toast.show = true;
+                    setTimeout(() => { this.toast.show = false; }, 3000);
+                }
+            }
         }
     }
 }
@@ -410,12 +435,32 @@ export default {
                                         </div>
                                     </div>
                                 </div>
-                                <a href="#" @click.prevent.stop="makeCall(ride.driver_phone)" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-200 transition-colors" v-if="!isDriver(ride)">
+                                <a href="#" 
+                                    @click.prevent.stop="makeCall(ride.driver_phone, ride.id)" 
+                                    class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 hover:bg-green-200 transition-colors" 
+                                    v-if="!isDriver(ride)"
+                                    :class="{'ring-2 ring-green-600 ring-offset-1': phoneExpandedRides.has(ride.id)}"
+                                >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
                                 </a>
                             </div>
+
+                            <!-- Expandable Phone Number -->
+                            <Transition name="expand">
+                                <div v-if="phoneExpandedRides.has(ride.id)" @click.stop="copyPhone(ride.driver_phone)" class="mt-3 p-3 bg-slate-900 text-white rounded-2xl flex items-center justify-between group cursor-pointer active:scale-95 transition-all shadow-xl shadow-slate-900/20 border border-white/10">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                        </div>
+                                        <span class="font-bold tracking-tight text-sm">{{ ride.driver_phone }}</span>
+                                    </div>
+                                    <div class="p-1.5 bg-white/10 rounded-lg">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                                    </div>
+                                </div>
+                            </Transition>
 
                             <!-- Vehicle Info (if driver) -->
                             <div v-if="ride.vehicle && !ride.is_passenger_entry" class="mt-3 bg-white p-3 rounded-2xl flex items-center space-x-3">
@@ -564,10 +609,22 @@ export default {
             @cancel="modal.show = false"
             @close="modal.show = false"
         />
+        <AppToast :show="toast.show" :message="toast.message" :type="toast.type" />
     </div>
 </template>
 
 <style scoped>
+.expand-enter-active, .expand-leave-active { 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    max-height: 100px; 
+    opacity: 1; 
+    overflow: hidden; 
+}
+.expand-enter-from, .expand-leave-to { 
+    max-height: 0; 
+    opacity: 0; 
+    transform: translateY(-10px); 
+}
 @keyframes blob {
     0%, 100% {
         transform: translate(0px, 0px) scale(1);

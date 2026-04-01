@@ -1,15 +1,25 @@
 <script>
 import api from '../api';
-import { openPhone } from '../telegram';
+import { openPhone, copyToClipboard } from '../telegram';
+import AppToast from '../components/AppToast.vue';
 
 export default {
     name: 'MyBusTicketsView',
+    components: {
+        AppToast
+    },
     data() {
         return {
             user: JSON.parse(localStorage.getItem('user') || 'null'),
             bookings: [],
             loading: true,
-            showSuccessBanner: false
+            showSuccessBanner: false,
+            phoneExpandedBookings: new Set(),
+            toast: {
+                show: false,
+                message: '',
+                type: 'success'
+            }
         };
     },
     computed: {
@@ -45,8 +55,26 @@ export default {
             const m = minutes % 60;
             return `${h} ч.${m > 0 ? ' ' + m + ' м.' : ''}`;
         },
-        makeCall(phoneNumber) {
-            openPhone(phoneNumber);
+        makeCall(phone, bookingId) {
+            if (phone) {
+                if (this.phoneExpandedBookings.has(bookingId)) {
+                    this.phoneExpandedBookings.delete(bookingId);
+                } else {
+                    this.phoneExpandedBookings.add(bookingId);
+                }
+                openPhone(phone);
+            }
+        },
+        async copyPhone(phone) {
+            if (phone) {
+                const success = await copyToClipboard(phone);
+                if (success) {
+                    this.toast.message = 'Номер скопирован в буфер обмена';
+                    this.toast.type = 'success';
+                    this.toast.show = true;
+                    setTimeout(() => { this.toast.show = false; }, 3000);
+                }
+            }
         }
     },
     async mounted() {
@@ -182,11 +210,25 @@ export default {
                                             </span>
                                         </div>
                                     </div>
-                                    <div v-if="b.operator_phone">
-                                        <a href="#" @click.prevent.stop="makeCall(b.operator_phone)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-600 rounded-xl font-bold text-xs ring-1 ring-green-100 active:scale-95 transition-all">
+                                     <div v-if="b.operator_phone" class="space-y-4">
+                                        <a href="#" @click.prevent.stop="makeCall(b.operator_phone, b.id)" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-600 rounded-xl font-bold text-xs ring-1 ring-green-100 active:scale-95 transition-all" :class="{'ring-2 ring-green-500 ring-offset-1': phoneExpandedBookings.has(b.id)}">
                                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                                             Позвонить
                                         </a>
+
+                                        <Transition name="expand">
+                                            <div v-if="phoneExpandedBookings.has(b.id)" @click.stop="copyPhone(b.operator_phone)" class="p-2 bg-slate-900 text-white rounded-xl flex items-center justify-between group cursor-pointer active:scale-95 transition-all shadow-lg border border-white/10 mt-2">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="w-6 h-6 bg-white/10 rounded-lg flex items-center justify-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                                    </div>
+                                                    <span class="font-bold tracking-tight text-[10px]">{{ b.operator_phone }}</span>
+                                                </div>
+                                                <div class="p-1 bg-white/10 rounded-md">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                                                </div>
+                                            </div>
+                                        </Transition>
                                     </div>
                                     <div>
                                         <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Сумма</div>
@@ -264,10 +306,23 @@ export default {
                 </div>
             </div>
         </div>
+        <AppToast :show="toast.show" :message="toast.message" :type="toast.type" />
     </div>
 </template>
 
 <style scoped>
+.expand-enter-active, .expand-leave-active { 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    max-height: 100px; 
+    opacity: 1; 
+    overflow: hidden; 
+}
+.expand-enter-from, .expand-leave-to { 
+    max-height: 0; 
+    opacity: 0; 
+    transform: translateY(-10px); 
+}
+
 .slide-down-enter-active, .slide-down-leave-active { transition: all 0.3s ease; }
 .slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-12px); }
 </style>

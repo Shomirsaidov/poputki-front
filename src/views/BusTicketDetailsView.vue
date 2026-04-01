@@ -1,11 +1,15 @@
 <script>
 import api from '../api';
 import AppModal from '../components/AppModal.vue';
-import { openPhone } from '../telegram';
+import { openPhone, copyToClipboard } from '../telegram';
+import AppToast from '../components/AppToast.vue';
 
 export default {
     name: 'BusTicketDetailsView',
-    components: { AppModal },
+    components: { 
+        AppModal,
+        AppToast 
+    },
     data() {
         return {
             ticket: null,
@@ -17,7 +21,13 @@ export default {
                 onConfirm: () => { this.modal.show = false; }
             },
             showPhotoModal: false,
-            currentPhotoIndex: 0
+            currentPhotoIndex: 0,
+            isPhoneExpanded: false,
+            toast: {
+                show: false,
+                message: '',
+                type: 'success'
+            }
         };
     },
     computed: {
@@ -85,7 +95,19 @@ export default {
         },
         makeCall() {
             if (this.ticket?.operator_phone) {
+                this.isPhoneExpanded = !this.isPhoneExpanded;
                 openPhone(this.ticket.operator_phone);
+            }
+        },
+        async copyPhone() {
+            if (this.ticket?.operator_phone) {
+                const success = await copyToClipboard(this.ticket.operator_phone);
+                if (success) {
+                    this.toast.message = 'Номер скопирован в буфер обмена';
+                    this.toast.type = 'success';
+                    this.toast.show = true;
+                    setTimeout(() => { this.toast.show = false; }, 3000);
+                }
             }
         }
     },
@@ -244,15 +266,31 @@ export default {
                 </div>
 
                 <!-- Call operator -->
-                <div v-if="ticket.operator_phone">
+                <div v-if="ticket.operator_phone" class="space-y-4">
                     <a href="#" 
                         @click.prevent="makeCall"
-                        class="w-full py-4 rounded-2xl font-bold text-lg bg-slate-100 text-slate-500 flex items-center justify-center gap-2 mb-3 active:scale-95 transition-all">
+                        class="w-full py-4 rounded-2xl font-bold text-lg bg-slate-100 text-slate-500 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                        :class="{'ring-4 ring-slate-200': isPhoneExpanded}"
+                    >
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                         Позвонить оператору
                     </a>
+
+                    <Transition name="expand">
+                        <div v-if="isPhoneExpanded" @click="copyPhone" class="w-full py-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between px-5 cursor-pointer active:scale-95 transition-all shadow-xl shadow-slate-900/40 border border-white/10">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                </div>
+                                <span class="text-xl font-bold tracking-tight">{{ ticket.operator_phone }}</span>
+                            </div>
+                            <div class="p-2 bg-white/10 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                            </div>
+                        </div>
+                    </Transition>
                 </div>
             </div>
         </div>
@@ -286,10 +324,22 @@ export default {
             <!-- Safe area bottom spacer for mobile browsers -->
             <div class="h-10 shrink-0"></div>
         </div>
+        <AppToast :show="toast.show" :message="toast.message" :type="toast.type" />
     </div>
 </template>
 
 <style>
+.expand-enter-active, .expand-leave-active { 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    max-height: 100px; 
+    opacity: 1; 
+    overflow: hidden; 
+}
+.expand-enter-from, .expand-leave-to { 
+    max-height: 0; 
+    opacity: 0; 
+    transform: translateY(-10px); 
+}
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

@@ -61,10 +61,37 @@ export function openPhone(phoneNumber) {
     window.location.href = redirectUrl;
 }
 
+/**
+ * Utility to copy text to clipboard.
+ * Works both in modern browsers and typical mobile webviews.
+ */
+export async function copyToClipboard(text) {
+    if (!text) return false;
+    try {
+        if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } else {
+            // Fallback for older browsers/webview
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            return true;
+        }
+    } catch (err) {
+        console.error('Failed to copy text:', err);
+        return false;
+    }
+}
+
 export default {
     init: initTelegram,
     getApp: getTelegramApp,
     getUser: getTelegramUser,
     getInitData: getTelegramInitData,
-    openPhone: openPhone
+    openPhone: openPhone,
+    copy: copyToClipboard
 };

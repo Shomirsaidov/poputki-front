@@ -2,12 +2,13 @@
 import api from '../api';
 import SeatSelector from '../components/SeatSelector.vue';
 import AppModal from '../components/AppModal.vue';
-import { openPhone } from '../telegram';
+import { openPhone, copyToClipboard } from '../telegram';
+import AppToast from '../components/AppToast.vue';
 
 export default {
     components: {
-        SeatSelector,
-        AppModal
+        AppModal,
+        AppToast
     },
     data() {
         return {
@@ -23,6 +24,12 @@ export default {
                 confirmText: 'ОК',
                 showCancel: false,
                 onConfirm: () => { this.modal.show = false; }
+            },
+            isPhoneExpanded: false,
+            toast: {
+                show: false,
+                message: '',
+                type: 'success'
             }
         };
     },
@@ -179,7 +186,19 @@ export default {
         },
         makeCall() {
             if (this.ride?.driver_phone) {
+                this.isPhoneExpanded = !this.isPhoneExpanded;
                 openPhone(this.ride.driver_phone);
+            }
+        },
+        async copyPhone() {
+            if (this.ride?.driver_phone) {
+                const success = await copyToClipboard(this.ride.driver_phone);
+                if (success) {
+                    this.toast.message = 'Номер скопирован в буфер обмена';
+                    this.toast.type = 'success';
+                    this.toast.show = true;
+                    setTimeout(() => { this.toast.show = false; }, 3000);
+                }
             }
         }
     },
@@ -339,16 +358,31 @@ export default {
                             </div>
                         </div>
 
-                        <!-- Call Button -->
                         <a 
                             v-if="hasBooked" 
                             href="#"
                             @click.prevent="makeCall"
                             class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white shadow-lg shadow-green-500/30 active:scale-90 transition-transform"
+                            :class="{'ring-4 ring-green-500/20': isPhoneExpanded}"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                         </a>
                     </div>
+
+                    <!-- Expandable Phone Number -->
+                    <Transition name="expand">
+                        <div v-if="isPhoneExpanded && hasBooked" class="mt-4 px-5 py-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between group cursor-pointer active:scale-95 transition-all shadow-xl shadow-slate-900/20" @click="copyPhone">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                </div>
+                                <div class="text-xl font-bold tracking-tight">{{ ride.driver_phone }}</div>
+                            </div>
+                            <div class="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                            </div>
+                        </div>
+                    </Transition>
 
                     <div v-if="!ride.is_passenger_entry" class="mt-4 flex items-center space-x-2">
                         <div class="px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center space-x-2" :class="ride.allows_delivery ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-400'">
@@ -458,15 +492,31 @@ export default {
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                           </router-link>
                       </template>
-                      <a 
-                         v-else-if="hasBooked"
-                         href="#"
-                         @click.prevent="makeCall"
-                         class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-green-500 text-white shadow-green-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
-                      >
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                         <span>Позвонить водителю</span>
-                      </a>
+                       <div v-else-if="hasBooked" class="w-full space-y-4">
+                           <a 
+                              href="#"
+                              @click.prevent="makeCall"
+                              class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-green-500 text-white shadow-green-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
+                              :class="{'ring-4 ring-green-500/20': isPhoneExpanded}"
+                           >
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                              <span>Позвонить водителю</span>
+                           </a>
+
+                           <Transition name="expand">
+                               <div v-if="isPhoneExpanded" @click="copyPhone" class="w-full py-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between px-5 cursor-pointer active:scale-95 transition-all shadow-xl shadow-slate-900/40">
+                                   <div class="flex items-center space-x-3">
+                                       <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                       </div>
+                                       <span class="text-xl font-bold tracking-tight">{{ ride.driver_phone }}</span>
+                                   </div>
+                                   <div class="p-2 bg-white/10 rounded-lg">
+                                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                                   </div>
+                               </div>
+                           </Transition>
+                       </div>
                       <button 
                          v-else
                          @click="openSeatSelection" 
@@ -503,5 +553,11 @@ export default {
             @cancel="modal.show = false"
             @close="modal.show = false"
         />
+        <AppToast :show="toast.show" :message="toast.message" :type="toast.type" />
     </div>
 </template>
+
+<style scoped>
+.expand-enter-active, .expand-leave-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 100px; opacity: 1; margin-top: 1rem; overflow: hidden; }
+.expand-enter-from, .expand-leave-to { max-height: 0; opacity: 0; transform: translateY(-10px); margin-top: 0; }
+</style>
