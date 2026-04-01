@@ -51,12 +51,14 @@ export function getTelegramInitData() {
 export function openPhone(phoneNumber) {
     if (!phoneNumber) return;
     const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
-    const url = `tel:${cleanPhone}`;
     
-    console.log('Attempting to open phone with workaround:', url);
-    // Workaround for Telegram Mini Apps: use window.open instead of tg.openLink
-    // Some versions of Telegram in-app browser block tel: links via tg.openLink
-    window.open(url, '_blank');
+    // Workaround for Telegram Mini Apps: use a backend redirect to tel:
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    const redirectUrl = `${baseUrl}/call/${cleanPhone}`;
+    
+    console.log('Attempting to open phone with backend redirect:', redirectUrl);
+    // This allows the OS to handle the tel: protocol correctly via an HTTPS link
+    window.location.href = redirectUrl;
 }
 
 export default {
