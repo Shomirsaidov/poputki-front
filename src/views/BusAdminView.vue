@@ -434,7 +434,7 @@ export default {
                             docNumber: '—',
                             citizenship: '—',
                             contactPhone: b.passenger_phone,
-                            paymentStatus: b.total_price === 0 ? 'Ручная' : 'Оплачено',
+                            paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
                             searchContext: `${b.passenger_name} ${b.passenger_phone}`.toLowerCase()
                         });
                     } else {
@@ -446,7 +446,7 @@ export default {
                                     pickup_city: b.pickup_city,
                                     drop_off_city: b.drop_off_city,
                                     contactPhone: passengerPhone,
-                                    paymentStatus: b.total_price === 0 ? 'Ручная' : 'Оплачено',
+                                    paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
                                     searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${passengerPhone} ${b.pickup_city} ${b.drop_off_city}`.toLowerCase()
                                 });
                         });
@@ -762,7 +762,11 @@ watch: {
                                         </td>
                                         <td class="px-6 py-4">
                                             <span class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border leading-none inline-block border-slate-100"
-                                                :class="p.paymentStatus === 'Ручная' ? 'bg-blue-50 text-blue-600 border-blue-100 mb-1' : 'bg-emerald-50 text-emerald-600 border-emerald-100'">
+                                                :class="{
+                                                    'bg-blue-50 text-blue-600 border-blue-100 mb-1': p.paymentStatus === 'Ручная',
+                                                    'bg-emerald-50 text-emerald-600 border-emerald-100': p.paymentStatus === 'Оплачено',
+                                                    'bg-amber-50 text-amber-600 border-amber-100': p.paymentStatus === 'Ожидает оплаты'
+                                                }">
                                                 {{ p.paymentStatus }}
                                             </span>
                                         </td>
