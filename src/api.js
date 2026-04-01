@@ -8,8 +8,11 @@ const api = axios.create({
     }
 });
 
-// Request interceptor to add Admin Token
+// Request interceptor to add Admin Token and Security Header
 api.interceptors.request.use(config => {
+    // Ensure security header is ALWAYS present
+    config.headers['x-mana-man'] = 'nasa.2006';
+    
     const adminToken = localStorage.getItem('adminToken');
     if (adminToken) {
         config.headers['X-Admin-Token'] = adminToken;
