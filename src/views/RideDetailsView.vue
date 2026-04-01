@@ -369,7 +369,7 @@ export default {
                         </div>
                         <div>
                             <p class="text-sm font-bold text-slate-700 tracking-tight">{{ ride.vehicle.make }} {{ ride.vehicle.model }}</p>
-                            <p class="text-[10px] font-mono font-bold text-gray-400 border border-gray-100 px-1.5 py-0.5 rounded-md inline-block mt-0.5">{{ ride.vehicle.plate_number }}</p>
+                            <p class="text-[12px] font-mono font-black text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg inline-block mt-1.5 border border-slate-200 shadow-sm leading-none tracking-wider">{{ ride.vehicle.plate_number }}</p>
                         </div>
                     </div>
 
