@@ -209,4 +209,18 @@ router.beforeEach(async (to, from, next) => {
     next();
 });
 
+// Handle dynamic import errors (e.g. after a new deployment)
+router.onError((error, to) => {
+    const errorsToCheck = [
+        'Failed to fetch dynamically imported module',
+        'Importing a module that was discontinued',
+        'TypeError: Failed to fetch dynamically imported module'
+    ];
+    
+    if (errorsToCheck.some(msg => error.message?.includes(msg))) {
+        console.warn('Dynamic import failed, reloading page to get latest version...');
+        window.location.reload();
+    }
+});
+
 export default router

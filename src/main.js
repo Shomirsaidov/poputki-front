@@ -10,3 +10,9 @@ initTelegram();
 createApp(App)
     .use(router)
     .mount('#app')
+
+// Reload on preload errors (e.g. after a new deployment)
+window.addEventListener('vite:preloadError', (event) => {
+    console.warn('Vite preload error detected, reloading page...');
+    window.location.reload();
+});
