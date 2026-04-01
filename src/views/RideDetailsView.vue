@@ -459,7 +459,7 @@ export default {
                           </router-link>
                       </template>
                       <a 
-                         v-if="hasBooked"
+                         v-else-if="hasBooked"
                          :href="`tel:${ride.driver_phone ? ride.driver_phone.replace(/[^\d+]/g, '') : ''}`" 
                          @click.prevent="makeCall"
                          class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-green-500 text-white shadow-green-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
