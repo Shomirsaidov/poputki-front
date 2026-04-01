@@ -185,9 +185,11 @@ export default {
 
         goToStep3() {
             if (!this.canProceedStep2) {
-                this.showAlert('Внимание', 'Заполните все поля для каждого пассажира и укажите телефон', 'warning');
+                this.showValidationErrors = true;
+                this.showAlert('Внимание', 'Пожалуйста, заполните все обязательные поля (отмечены *) для каждого пассажира, включая пол и контактный телефон.', 'warning');
                 return;
             }
+            this.showValidationErrors = false;
             this.saveState();
             this.$router.push({ name: 'bus-booking', params: { id: this.ticketId, step: 3 } });
         },
@@ -414,13 +416,19 @@ export default {
                                 <!-- Gender -->
                                 <div class="grid grid-cols-2 gap-2">
                                     <button @click="p.gender = 'male'; saveState()"
-                                        :class="p.gender === 'male' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'border-gray-200 text-gray-500 bg-white'"
+                                        :class="[
+                                            p.gender === 'male' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'border-gray-200 text-gray-500 bg-white',
+                                            showValidationErrors && !p.gender ? 'border-red-400 bg-red-50' : ''
+                                        ]"
                                         class="py-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 active:scale-95">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a5 5 0 110 10A5 5 0 0112 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
                                         Мужчина
                                     </button>
                                     <button @click="p.gender = 'female'; saveState()"
-                                        :class="p.gender === 'female' ? 'bg-pink-500 text-white border-pink-500 shadow-lg shadow-pink-500/20' : 'border-gray-200 text-gray-500 bg-white'"
+                                        :class="[
+                                            p.gender === 'female' ? 'bg-pink-500 text-white border-pink-500 shadow-lg shadow-pink-500/20' : 'border-gray-200 text-gray-500 bg-white',
+                                            showValidationErrors && !p.gender ? 'border-red-400 bg-red-50' : ''
+                                        ]"
                                         class="py-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 active:scale-95">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a5 5 0 110 10A5 5 0 0112 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
                                         Женщина
@@ -431,7 +439,8 @@ export default {
                                 <div class="relative">
                                     <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Фамилия *</label>
                                     <input v-model="p.lastName" @input="saveState" type="text" placeholder="Иванов"
-                                        class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"/>
+                                        class="w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"
+                                        :class="showValidationErrors && !p.lastName ? 'border-red-400 bg-red-50' : 'border-gray-200'"/>
                                 </div>
 
                                 <!-- Name + Patronymic -->
@@ -439,12 +448,14 @@ export default {
                                     <div>
                                         <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Имя *</label>
                                         <input v-model="p.firstName" @input="saveState" type="text" placeholder="Иван"
-                                            class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"/>
+                                            class="w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"
+                                        :class="showValidationErrors && !p.firstName ? 'border-red-400 bg-red-50' : 'border-gray-200'"/>
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Отчество</label>
                                         <input v-model="p.middleName" @input="saveState" type="text" placeholder="Иванович"
-                                            class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"/>
+                                            class="w-full px-4 py-3.5 bg-slate-50 border rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"
+                                        :class="showValidationErrors && !p.middleName ? 'border-red-400 bg-red-50' : 'border-gray-200'"/>
                                     </div>
                                 </div>
 
@@ -452,7 +463,8 @@ export default {
                                 <div>
                                     <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Дата рождения *</label>
                                     <input v-model="p.birthDate" @change="saveState" type="date"
-                                        class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"/>
+                                        class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"
+                                        :class="showValidationErrors && !p.birthDate ? 'border-red-400 bg-red-50' : 'border-gray-200'"/>
                                 </div>
 
                                 <!-- Citizenship -->
@@ -460,7 +472,8 @@ export default {
                                     <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Гражданство *</label>
                                     <div class="relative">
                                         <select v-model="p.citizenship" @change="saveState"
-                                            class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium appearance-none cursor-pointer pr-10">
+                                            class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium appearance-none cursor-pointer pr-10"
+                                            :class="showValidationErrors && !p.citizenship ? 'border-red-400 bg-red-50' : 'border-gray-200'">
                                             <option v-for="c in countries" :key="c" :value="c">{{ c }}</option>
                                         </select>
                                         <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -487,7 +500,8 @@ export default {
                                 <div>
                                     <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Серия / Номер документа *</label>
                                     <input v-model="p.docNumber" @input="saveState" type="text" placeholder="АА 1234567"
-                                        class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium tracking-widest"/>
+                                        class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium tracking-widest"
+                                        :class="showValidationErrors && !p.docNumber ? 'border-red-400 bg-red-50' : 'border-gray-200'"/>
                                 </div>
                             </div>
                         </div>

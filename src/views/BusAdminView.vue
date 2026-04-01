@@ -57,11 +57,16 @@ export default {
                 passenger_count: 1,
                 passengers_data: [
                     { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }
-                ]
+                ],
+                pickup_city: '',
+                drop_off_city: ''
             },
             selectedBookingRideId: '',
             photoLoading: false,
-            uploadPreset: 'poputki'
+            uploadPreset: 'poputki',
+            isEditingBooking: false,
+            editingBookingId: null,
+            showEditModal: false
 
         }
     },
@@ -276,11 +281,48 @@ export default {
         },
         initBooking(ticketId) {
             this.bookingForm.bus_ticket_id = ticketId;
+            this.bookingForm.pickup_city = '';
+            this.bookingForm.drop_off_city = '';
             this.activeTab = 'create-booking';
         },
         addPassenger() {
             this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' });
             this.bookingForm.passenger_count++;
+        },
+        initEditBooking(bookingId) {
+            const booking = this.bookings.find(b => b.id === bookingId);
+            if (!booking) return;
+            this.isEditingBooking = true;
+            this.editingBookingId = booking.id;
+            this.bookingForm = {
+                bus_ticket_id: booking.bus_ticket_id,
+                passenger_count: booking.passenger_count,
+                passengers_data: JSON.parse(JSON.stringify(booking.passengers_data || [])),
+                pickup_city: booking.pickup_city || '',
+                drop_off_city: booking.drop_off_city || '',
+                phone: booking.phone || '',
+                passenger_name: booking.passenger_name || ''
+            };
+            this.activeTab = 'create-booking';
+        },
+        async saveBookingUpdate() {
+            this.loading = true;
+            try {
+                const seatNumbers = this.bookingForm.passengers_data.map(p => Number(p.seatNumber)).filter(s => !isNaN(s));
+                await api.put(`/bus-admin/bookings/${this.editingBookingId}`, {
+                    ...this.bookingForm,
+                    seat_numbers: seatNumbers
+                });
+                alert('Бронирование успешно обновлено');
+                this.isEditingBooking = false;
+                this.editingBookingId = null;
+                this.activeTab = 'bookings';
+                this.fetchBookings();
+            } catch (e) {
+                alert('Ошибка при обновлении: ' + (e.response?.data?.error || e.message));
+            } finally {
+                this.loading = false;
+            }
         },
         getTicketRoute(ticketId) {
             const ticket = this.tickets.find(t => t.id === ticketId);
@@ -435,6 +477,7 @@ export default {
                             citizenship: '—',
                             contactPhone: b.passenger_phone,
                             paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
+                            originalBookingId: b.id,
                             searchContext: `${b.passenger_name} ${b.passenger_phone}`.toLowerCase()
                         });
                     } else {
@@ -447,6 +490,7 @@ export default {
                                     drop_off_city: b.drop_off_city,
                                     contactPhone: passengerPhone,
                                     paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
+                                    originalBookingId: b.id,
                                     searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${passengerPhone} ${b.pickup_city} ${b.drop_off_city}`.toLowerCase()
                                 });
                         });
@@ -761,14 +805,19 @@ watch: {
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <span class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border leading-none inline-block border-slate-100"
-                                                :class="{
-                                                    'bg-blue-50 text-blue-600 border-blue-100 mb-1': p.paymentStatus === 'Ручная',
-                                                    'bg-emerald-50 text-emerald-600 border-emerald-100': p.paymentStatus === 'Оплачено',
-                                                    'bg-amber-50 text-amber-600 border-amber-100': p.paymentStatus === 'Ожидает оплаты'
-                                                }">
-                                                {{ p.paymentStatus }}
-                                            </span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border leading-none inline-block border-slate-100"
+                                                    :class="{
+                                                        'bg-blue-50 text-blue-600 border-blue-100 mb-1': p.paymentStatus === 'Ручная',
+                                                        'bg-emerald-50 text-emerald-600 border-emerald-100': p.paymentStatus === 'Оплачено',
+                                                        'bg-amber-50 text-amber-600 border-amber-100': p.paymentStatus === 'Ожидает оплаты'
+                                                    }">
+                                                    {{ p.paymentStatus }}
+                                                </span>
+                                                <button @click="initEditBooking(p.originalBookingId)" class="p-1 text-slate-400 hover:text-amber-500 transition-colors" title="Редактировать">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -778,7 +827,10 @@ watch: {
                 </section>
                 <!-- Create Booking Section -->
                 <section v-if="activeTab === 'create-booking'" class="space-y-6 lg:space-y-8">
-                    <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">Создать бронирование вручную</h2>
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">{{ isEditingBooking ? 'Редактировать бронирование' : 'Создать бронирование вручную' }}</h2>
+                        <button v-if="isEditingBooking" @click="isEditingBooking = false; activeTab = 'bookings'" class="text-xs font-bold text-slate-400 hover:text-slate-600">Отмена</button>
+                    </div>
 
                     <div class="bg-white rounded-[32px] border border-slate-100 p-6 lg:p-8 shadow-sm space-y-6">
                         <!-- Ride selector -->
@@ -796,17 +848,11 @@ watch: {
                         <div v-if="bookingForm.bus_ticket_id" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Город посадки</label>
-                                <select v-model="bookingForm.pickup_city" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 appearance-none cursor-pointer">
-                                    <option value="">По умолчанию</option>
-                                    <option v-for="city in getTicketRoute(bookingForm.bus_ticket_id)" :key="'manual-pickup-'+city" :value="city">{{ city }}</option>
-                                </select>
+                                <input v-model="bookingForm.pickup_city" placeholder="Напр. Душанбе" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500" />
                             </div>
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Город высадки</label>
-                                <select v-model="bookingForm.drop_off_city" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 appearance-none cursor-pointer">
-                                    <option value="">По умолчанию</option>
-                                    <option v-for="city in getTicketRoute(bookingForm.bus_ticket_id)" :key="'manual-dropoff-'+city" :value="city">{{ city }}</option>
-                                </select>
+                                <input v-model="bookingForm.drop_off_city" placeholder="Напр. Худжанд" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500" />
                             </div>
                         </div>
 
@@ -883,13 +929,14 @@ watch: {
                             </div>
                         </div>
 
-                        <div class="flex justify-end pt-4">
-                            <button @click="submitManualBooking" :disabled="loading" class="px-8 py-3.5 bg-amber-500 text-white font-black rounded-2xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-2">
+                        <div class="flex justify-end pt-4 gap-3">
+                            <button v-if="isEditingBooking" @click="isEditingBooking = false; activeTab = 'bookings'" class="px-8 py-3.5 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all">Отмена</button>
+                            <button @click="isEditingBooking ? saveBookingUpdate() : submitManualBooking()" :disabled="loading" class="px-8 py-3.5 bg-amber-500 text-white font-black rounded-2xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-2">
                                 <span v-if="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                Создать бронирование
+                                {{ isEditingBooking ? 'Сохранить изменения' : 'Создать бронирование' }}
                             </button>
                         </div>
-                    </div>
+                </div>
                 </section>
 
                 <!-- Create Bus Section (Copied from Admin View) -->
