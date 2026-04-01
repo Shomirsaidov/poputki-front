@@ -25,6 +25,8 @@ export default {
                 "Туркменистан", "Беларусь", "Армения", "Азербайджан", "Грузия",
                 "Турция", "ОАЭ", "США", "Китай", "Германия", "Другое"
             ],
+            pickupCity: '',
+            dropOffCity: '',
 
             modal: { show: false, title: '', message: '', type: 'info', confirmText: 'ОК', showCancel: false, showBotLink: false, onConfirm: null }
         };
@@ -52,8 +54,8 @@ export default {
         totalPrice() {
             if (!this.ticket) return 0;
             const premiumSeatNums = this.ticket.premiumSeats?.length > 0 
-                ? this.ticket.premiumSeats 
-                : (this.ticket.bus_type === 'double' ? [69, 70, 71, 72, 73, 74, 75, 76] : []);
+                ? [...new Set([...this.ticket.premiumSeats, 1, 2, 3, 4, 69, 70, 71, 72, 73, 74, 75, 76])]
+                : (this.ticket.bus_type === 'double' ? [1, 2, 3, 4, 69, 70, 71, 72, 73, 74, 75, 76] : []);
             const premiumPrice = this.ticket.premium_price || this.ticket.price;
             let total = 0;
             for (const seatNum of this.selectedSeats) {
@@ -73,7 +75,12 @@ export default {
                 p.gender && p.lastName && p.firstName && p.birthDate &&
                 p.citizenship && (p.citizenship !== 'Другое' || p.customCitizenship?.trim()) &&
                 p.docType && p.docNumber
-            ) && this.phone;
+            ) && this.phone && this.pickupCity && this.dropOffCity;
+        },
+        allRouteCities() {
+            if (!this.ticket) return [];
+            const stops = this.ticket.intermediate_stops || [];
+            return [this.ticket.from_city, ...stops.map(s => s.city), this.ticket.to_city];
         },
         stepTitle() {
             return ['', 'Выбор мест', 'Данные пассажиров', 'Подтверждение'][this.step] || '';
@@ -89,7 +96,9 @@ export default {
                 passengerCount: this.passengerCount,
                 selectedSeats: this.selectedSeats,
                 passengersData: this.passengersData,
-                phone: this.phone
+                phone: this.phone,
+                pickupCity: this.pickupCity,
+                dropOffCity: this.dropOffCity
             }));
         },
 
@@ -102,8 +111,12 @@ export default {
                     this.selectedSeats = s.selectedSeats || [];
                     this.passengersData = s.passengersData || this.buildPassengersData(this.passengerCount);
                     this.phone = s.phone || '';
+                    this.pickupCity = s.pickupCity || this.ticket?.from_city || '';
+                    this.dropOffCity = s.dropOffCity || this.ticket?.to_city || '';
                 } else {
                     this.passengersData = this.buildPassengersData(1);
+                    this.pickupCity = this.ticket?.from_city || '';
+                    this.dropOffCity = this.ticket?.to_city || '';
                 }
             } catch {
                 this.passengersData = this.buildPassengersData(1);
@@ -187,7 +200,9 @@ export default {
                     passenger_id: this.user.id,
                     seat_numbers: this.selectedSeats,
                     passengers_data: this.passengersData,
-                    phone: this.phone
+                    phone: this.phone,
+                    pickup_city: this.pickupCity,
+                    drop_off_city: this.dropOffCity
                 });
                 sessionStorage.removeItem(STATE_KEY(this.ticketId));
                 this.$router.replace({ name: 'my-bus-tickets', query: { booked: 'true' } });
@@ -347,6 +362,36 @@ export default {
                     <!-- STEP 2: PASSENGER DATA -->
                     <!-- ============================================================ -->
                     <div v-if="step === 2" class="px-5 pt-6 pb-6 space-y-4">
+                        <!-- Route Selection -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
+                            <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                Где вы сядете и где выйдете?
+                            </h3>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Город посадки *</label>
+                                    <div class="relative">
+                                        <select v-model="pickupCity" @change="saveState"
+                                            class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium appearance-none cursor-pointer pr-10">
+                                            <option v-for="city in allRouteCities" :key="'pickup-'+city" :value="city">{{ city }}</option>
+                                        </select>
+                                        <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Город высадки *</label>
+                                    <div class="relative">
+                                        <select v-model="dropOffCity" @change="saveState"
+                                            class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium appearance-none cursor-pointer pr-10">
+                                            <option v-for="city in allRouteCities" :key="'dropoff-'+city" :value="city">{{ city }}</option>
+                                        </select>
+                                        <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div v-for="(p, i) in passengersData" :key="i"
                             class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                             <!-- Card header -->

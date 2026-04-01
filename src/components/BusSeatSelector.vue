@@ -27,8 +27,12 @@ export default {
         },
 
         doubleDeckPremiumSeats() {
-            if (this.premiumSeats && this.premiumSeats.length > 0) return this.premiumSeats;
-            return [69, 70, 71, 72, 73, 74, 75, 76];
+            // Front seats on 2nd floor (1-4) and table seats on 1st floor (69-76)
+            const defaultVIP = [1, 2, 3, 4, 69, 70, 71, 72, 73, 74, 75, 76];
+            if (this.premiumSeats && this.premiumSeats.length > 0) {
+                return [...new Set([...this.premiumSeats, ...defaultVIP])];
+            }
+            return defaultVIP;
         },
 
         singleFloorLayout() {

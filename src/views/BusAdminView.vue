@@ -282,6 +282,12 @@ export default {
             this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' });
             this.bookingForm.passenger_count++;
         },
+        getTicketRoute(ticketId) {
+            const ticket = this.tickets.find(t => t.id === ticketId);
+            if (!ticket) return [];
+            const stops = ticket.intermediate_stops || [];
+            return [ticket.from_city, ...stops.map(s => s.city), ticket.to_city];
+        },
         removePassenger(index) {
             this.bookingForm.passengers_data.splice(index, 1);
             this.bookingForm.passenger_count--;
@@ -296,6 +302,8 @@ export default {
                 'ДАТА РОЖДЕНИЯ': p.birthDate || '—',
                 'ДОКУМЕНТ': `${p.docType || ''} ${p.docNumber || ''}`.trim(),
                 'ГРАЖДАНСТВО': p.citizenship || '—',
+                'ПОСАДКА': p.pickup_city || '—',
+                'ВЫСАДКА': p.drop_off_city || '—',
                 'КОНТАКТ': p.contactPhone,
                 'ОПЛАТА': p.paymentStatus
             }));
@@ -351,7 +359,9 @@ export default {
                     passenger_name: contactName,
                     seat_numbers: assignedSeats,
                     passengers_data: f.passengers_data,
-                    phone: firstP.phone || '—'
+                    phone: firstP.phone || '—',
+                    pickup_city: f.pickup_city,
+                    drop_off_city: f.drop_off_city
                 });
 
                 alert('Бронь успешно создана!');
@@ -359,7 +369,9 @@ export default {
                 this.bookingForm = {
                     bus_ticket_id: '',
                     passenger_count: 1,
-                    passengers_data: [{ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }]
+                    passengers_data: [{ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }],
+                    pickup_city: '',
+                    drop_off_city: ''
                 };
                 this.activeTab = 'bookings';
                 this.fetchBookings();
@@ -429,12 +441,14 @@ export default {
                         pData.forEach((p, idx) => {
                             const passengerPhone = p.phone || b.passenger_phone;
                             manifest.push({
-                                ...p,
-                                seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
-                                contactPhone: passengerPhone,
-                                paymentStatus: b.total_price === 0 ? 'Ручная' : 'Оплачено',
-                                searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${passengerPhone}`.toLowerCase()
-                            });
+                                    ...p,
+                                    seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
+                                    pickup_city: b.pickup_city,
+                                    drop_off_city: b.drop_off_city,
+                                    contactPhone: passengerPhone,
+                                    paymentStatus: b.total_price === 0 ? 'Ручная' : 'Оплачено',
+                                    searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${passengerPhone} ${b.pickup_city} ${b.drop_off_city}`.toLowerCase()
+                                });
                         });
                     }
                 });
@@ -710,7 +724,7 @@ watch: {
                                         <th class="px-6 py-5">ПОЛ</th>
                                         <th class="px-6 py-5">ДАТА РОЖДЕНИЯ</th>
                                         <th class="px-6 py-5">ДОКУМЕНТ</th>
-                                        <th class="px-6 py-5">ГРАЖДАНСТВО</th>
+                                        <th class="px-6 py-5">МАРШРУТ (П/В)</th>
                                         <th class="px-6 py-5">КОНТАКТ</th>
                                         <th class="px-6 py-5">ОПЛАТА</th>
                                     </tr>
@@ -733,8 +747,13 @@ watch: {
                                         <td class="px-6 py-4 text-[11px] text-slate-600 font-medium tracking-tight">
                                             {{ p.docType }} {{ p.docNumber }}
                                         </td>
-                                        <td class="px-6 py-4 text-[10px] text-slate-500 uppercase font-black tracking-widest">
-                                            {{ p.citizenship || '—' }}
+                                        <td class="px-6 py-4">
+                                            <div class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">
+                                                {{ p.pickup_city || '—' }}
+                                            </div>
+                                            <div class="text-[10px] text-amber-600 uppercase font-black tracking-widest mt-0.5">
+                                                {{ p.drop_off_city || '—' }}
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex items-center gap-1.5 whitespace-nowrap">
@@ -767,6 +786,24 @@ watch: {
                                     {{ t.from_city }} -> {{ t.to_city }} ({{ t.departure_date }} {{ t.departure_time }})
                                 </option>
                             </select>
+                        </div>
+
+                        <!-- Pickup/Dropoff selector for manual booking -->
+                        <div v-if="bookingForm.bus_ticket_id" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Город посадки</label>
+                                <select v-model="bookingForm.pickup_city" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 appearance-none cursor-pointer">
+                                    <option value="">По умолчанию</option>
+                                    <option v-for="city in getTicketRoute(bookingForm.bus_ticket_id)" :key="'manual-pickup-'+city" :value="city">{{ city }}</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Город высадки</label>
+                                <select v-model="bookingForm.drop_off_city" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500 appearance-none cursor-pointer">
+                                    <option value="">По умолчанию</option>
+                                    <option v-for="city in getTicketRoute(bookingForm.bus_ticket_id)" :key="'manual-dropoff-'+city" :value="city">{{ city }}</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Booked seats info hint -->
