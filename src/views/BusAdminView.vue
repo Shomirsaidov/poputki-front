@@ -418,7 +418,7 @@ export default {
 
             const manifest = [];
             this.bookings
-                .filter(b => b.bus_ticket_id === Number(this.selectedBookingRideId))
+                .filter(b => b.bus_ticket_id == this.selectedBookingRideId)
                 .forEach(b => {
                     const pData = b.passengers_data || [];
                     if (pData.length === 0) {
