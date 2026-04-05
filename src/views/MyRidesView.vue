@@ -8,7 +8,8 @@ import AppToast from '../components/AppToast.vue';
 export default {
     components: {
         AppModal,
-        AppToast
+        AppToast,
+        ReviewModal
     },
     data() {
         return {

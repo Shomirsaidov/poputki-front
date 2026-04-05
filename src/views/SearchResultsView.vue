@@ -5,7 +5,7 @@ import { getTelegramUser, getTelegramInitData } from '../telegram';
 export default {
   data() {
     return {
-      activeTab: this.$route.query.tab || 'rides', // 'rides' | 'buses'
+      activeTab: this.$route.query.tab || 'buses', // 'rides' | 'buses'
       rides: [],
       busTickets: [],
       fromCity: this.$route.query.from || '',

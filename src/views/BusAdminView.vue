@@ -476,9 +476,11 @@ export default {
                             docNumber: '—',
                             citizenship: '—',
                             contactPhone: b.passenger_phone,
+                            pickup_city: b.pickup_city,
+                            drop_off_city: b.drop_off_city,
                             paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
                             originalBookingId: b.id,
-                            searchContext: `${b.passenger_name} ${b.passenger_phone}`.toLowerCase()
+                            searchContext: `${b.passenger_name} ${b.passenger_phone} ${b.pickup_city} ${b.drop_off_city}`.toLowerCase()
                         });
                     } else {
                         pData.forEach((p, idx) => {
