@@ -48,6 +48,12 @@ const router = createRouter({
             component: BusAdminView,
             meta: { hideBottomNav: true }
         },
+        {
+            path: '/terms',
+            name: 'terms',
+            component: () => import('../views/TermsView.vue'),
+            meta: { hideBottomNav: true }
+        },
 
         {
             path: '/profile',

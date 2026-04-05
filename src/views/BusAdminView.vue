@@ -39,7 +39,8 @@ export default {
                 bus_type: 'single',
                 passenger_comments: '',
                 intermediate_stops: [],
-                photos: []
+                photos: [],
+                accept_terms: true
             },
             busErrors: {},
             mobileMenuOpen: false,
@@ -155,6 +156,8 @@ export default {
             } else {
                 if (!this.busForm.total_seats || this.busForm.total_seats < 1) e.total_seats = 'Укажите количество мест';
             }
+            if (!this.busForm.accept_terms) e.accept_terms = 'Необходимо согласиться с условиями использования и публичной офертой';
+            
             this.busErrors = e;
             return Object.keys(e).length === 0;
         },
@@ -197,7 +200,8 @@ export default {
                     floor1_seats: 20, floor2_seats: 56,
                     bus_type: 'single', passenger_comments: '',
                     intermediate_stops: [],
-                    photos: []
+                    photos: [],
+                    accept_terms: true
                 };
                 
                 this.activeTab = 'tickets';
@@ -1136,6 +1140,23 @@ watch: {
                                     <span class="text-[9px] font-bold uppercase text-center">{{ photoLoading ? 'Загрузка...' : 'Добавить' }}</span>
                                     <input type="file" multiple accept="image/*" class="hidden" @change="handlePhotoUpload" :disabled="photoLoading" />
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- Terms Checkbox -->
+                        <div class="pt-4 border-t border-slate-50 flex items-start gap-3">
+                            <input 
+                                type="checkbox" 
+                                id="accept_terms" 
+                                v-model="busForm.accept_terms" 
+                                class="mt-1 w-5 h-5 text-amber-500 rounded focus:ring-amber-500 border-gray-300" 
+                            />
+                            <div class="flex-1">
+                                <label for="accept_terms" class="text-sm text-slate-600">
+                                    Создавая поездку вы соглашаетесь с 
+                                    <router-link to="/terms" class="text-blue-600 hover:text-blue-700 underline underline-offset-2">условиями использования и публичной офертой</router-link>.
+                                </label>
+                                <p v-if="busErrors.accept_terms" class="text-red-500 text-xs mt-1">{{ busErrors.accept_terms }}</p>
                             </div>
                         </div>
 
