@@ -443,6 +443,11 @@ export default {
             if (newTab === 'reviews') this.fetchReviews();
             if (newTab === 'cities') this.fetchCities();
         }
+    },
+    mounted() {
+        if (this.isAuthenticated && this.activeTab === 'dashboard') {
+            this.fetchDashboardData();
+        }
     }
 }
 </script>
