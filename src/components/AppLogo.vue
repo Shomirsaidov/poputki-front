@@ -1,8 +1,6 @@
 <template>
   <div :class="['flex items-center', containerClass]">
-    <div :class="['flex items-center justify-center rounded-xl shadow-lg', iconBgClass, iconSizeClass]">
-      <img src="../assets/logo-itself.png" alt="Poputki Logo" class="w-full h-full object-contain p-0.5" />
-    </div>
+    <img src="../assets/logo-itself.png" alt="Poputki Logo" :class="[iconSizeClass, 'object-contain']" />
     <span v-if="showText" :class="['font-black tracking-tight text-slate-900 ml-3', textClass]">
       Poputki
     </span>
