@@ -67,6 +67,9 @@ export default {
             }
             return total;
         },
+        platformFee() {
+            return Math.round(this.totalPrice * 0.1);
+        },
         canProceedStep1() {
             return this.selectedSeats.length === this.passengerCount;
         },
@@ -590,7 +593,7 @@ export default {
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1.5 text-right">К оплате</div>
+                                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1.5 text-right">Стоимость билета</div>
                                         <div class="font-black text-slate-900 text-xl text-right leading-none">{{ totalPrice }} с.</div>
                                     </div>
                                 </div>
@@ -641,6 +644,31 @@ export default {
                             </div>
                         </div>
 
+                        <!-- Platform fee info banner -->
+                        <div class="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
+                            <div class="flex items-start gap-3">
+                                <div class="text-amber-500 text-lg shrink-0 mt-0.5">ℹ️</div>
+                                <div>
+                                    <div class="text-xs font-black text-amber-800 mb-1">Информация об оплате</div>
+                                    <p class="text-[11px] text-amber-700 leading-relaxed">
+                                        Через SmartPay вы оплачиваете только <strong>сервисный сбор платформы — 10%</strong> от стоимости билета.
+                                        Оставшуюся сумму вы оплачиваете перевозчику напрямую.
+                                    </p>
+                                    <div class="mt-3 flex items-center justify-between bg-white/70 rounded-xl px-4 py-2.5 border border-amber-100">
+                                        <div>
+                                            <div class="text-[9px] text-amber-500 font-bold uppercase tracking-widest">Сейчас через SmartPay</div>
+                                            <div class="text-lg font-black text-amber-700">{{ platformFee }} с.</div>
+                                        </div>
+                                        <div class="text-amber-300 font-bold text-lg">+</div>
+                                        <div class="text-right">
+                                            <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Перевозчику напрямую</div>
+                                            <div class="text-lg font-black text-slate-700">{{ totalPrice - platformFee }} с.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Footer disclaimer -->
                         <div class="pt-4 px-6 text-center">
                             <p class="text-[11px] text-gray-400 leading-relaxed max-w-[280px] mx-auto">
@@ -679,7 +707,7 @@ export default {
                     class="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-95 border-b-2 flex items-center justify-center gap-3"
                     :class="bookingLoading ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-blue-600 text-white border-blue-800 shadow-lg shadow-blue-200'">
                     <span v-if="bookingLoading" class="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></span>
-                    <span class="tracking-tight">{{ bookingLoading ? 'Оформляем...' : 'Оплатить и получить билет' }}</span>
+                    <span class="tracking-tight">{{ bookingLoading ? 'Оформляем...' : `Оплатить сервисный сбор — ${platformFee} с.` }}</span>
                 </button>
             </div>
         </template>
