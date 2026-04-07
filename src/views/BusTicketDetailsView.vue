@@ -41,6 +41,11 @@ export default {
             const h = Math.floor(this.ticket.duration_minutes / 60);
             const m = this.ticket.duration_minutes % 60;
             return `${h} ч.${m > 0 ? ' ' + m + ' м.' : ''}`;
+        },
+        isPast() {
+            if (!this.ticket) return false;
+            const departureDateTime = new Date(`${this.ticket.departure_date}T${this.ticket.departure_time}`);
+            return new Date() > departureDateTime;
         }
     },
     methods: {
@@ -257,11 +262,11 @@ export default {
                 <div>
                     <button
                         @click="startBooking"
-                        :disabled="availableSeats === 0"
+                        :disabled="availableSeats === 0 || isPast"
                         class="w-full py-4 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-95 disabled:opacity-40"
-                        :class="availableSeats > 0 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/30 hover:shadow-2xl hover:-translate-y-0.5' : 'bg-gray-200 text-gray-400'"
+                        :class="availableSeats > 0 && !isPast ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/30 hover:shadow-2xl hover:-translate-y-0.5' : 'bg-gray-200 text-gray-400'"
                     >
-                        {{ availableSeats > 0 ? 'Купить билет' : 'Мест нет' }}
+                        {{ isPast ? 'Рейс ушел' : availableSeats > 0 ? 'Купить билет' : 'Мест нет' }}
                     </button>
                 </div>
 

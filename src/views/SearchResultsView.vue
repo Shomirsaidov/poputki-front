@@ -414,8 +414,8 @@ export default {
               <!-- Departure row -->
               <div class="flex items-start justify-between mb-1">
                 <div>
-                  <div class="text-xs text-gray-500 font-medium">{{ formatDate(ticket.departure_date) }}</div>
-                  <div class="text-3xl font-bold text-slate-800 leading-none mt-0.5">{{ ticket.departure_time }}</div>
+                  <div class="text-xs text-gray-500 font-medium">{{ ticket.departure_time }}</div>
+                  <div class="text-3xl font-bold text-slate-800 leading-none mt-0.5">{{ formatDate(ticket.departure_date) }}</div>
                   <div class="text-sm font-bold text-slate-700 mt-1">{{ ticket.from_city }}</div>
                   <div class="text-xs text-slate-500 mt-0.5">{{ ticket.from_address }}</div>
                 </div>
@@ -434,8 +434,8 @@ export default {
 
                 <!-- Arrival -->
                 <div class="text-right">
-                  <div class="text-xs text-gray-500 font-medium">{{ formatDate(ticket.arrival_date) }}</div>
-                  <div class="text-3xl font-bold text-slate-800 leading-none mt-0.5">{{ ticket.arrival_time }}</div>
+                  <div class="text-xs text-gray-500 font-medium">{{ ticket.arrival_time }}</div>
+                  <div class="text-3xl font-bold text-slate-800 leading-none mt-0.5">{{ formatDate(ticket.arrival_date) }}</div>
                   <div class="text-sm font-bold text-slate-700 mt-1 max-w-[120px] ml-auto">{{ ticket.to_city }}</div>
                   <div class="text-xs text-slate-500 mt-0.5 max-w-[120px] ml-auto">{{ ticket.to_address }}</div>
                 </div>
