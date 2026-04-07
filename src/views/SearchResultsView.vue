@@ -76,7 +76,11 @@ export default {
     formatDate(dateStr) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
-      return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', weekday: 'short' });
+      return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    },
+    formatHumanDate(dateStr) {
+      if (!dateStr) return '';
+      return new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
     },
     availableSeats(ticket) {
       try {
@@ -303,8 +307,8 @@ export default {
                :style="{ transitionDelay: `${index * 80}ms` }">
             <div class="flex justify-between items-start mb-4">
               <div>
-                <div class="text-2xl font-bold text-slate-800">{{ ride.time }}</div>
-                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mt-1">{{ ride.date }}</div>
+                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide">{{ ride.time }}</div>
+                <div class="text-2xl font-bold text-slate-800 mt-1">{{ formatHumanDate(ride.date) }}</div>
               </div>
               <div v-if="!ride.is_passenger_entry" class="bg-green-50 px-3 py-1.5 rounded-xl border border-green-100 flex items-center space-x-1">
                 <span class="text-xs font-bold text-green-400">от</span>

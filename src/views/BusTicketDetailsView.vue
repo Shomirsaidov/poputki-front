@@ -82,7 +82,7 @@ export default {
         },
         formatDate(dateStr) {
             if (!dateStr) return '';
-            return new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', weekday: 'short' });
+            return new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
         },
         openFullScreen(idx) {
             this.currentPhotoIndex = idx;
@@ -149,8 +149,8 @@ export default {
                 <!-- Route -->
                 <div class="flex items-center gap-4 relative z-10 mt-4">
                     <div class="flex-1">
-                        <div class="text-white/70 text-xs font-medium mb-1">{{ formatDate(ticket.departure_date) }}</div>
-                        <div class="text-4xl font-bold text-white tracking-tight">{{ ticket.departure_time }}</div>
+                        <div class="text-white/70 text-xs font-medium mb-1">{{ ticket.departure_time }}</div>
+                        <div class="text-4xl font-bold text-white tracking-tight">{{ formatDate(ticket.departure_date) }}</div>
                         <div class="text-white/90 text-sm font-medium mt-1">{{ ticket.from_city }}</div>
                         <div class="text-white/60 text-xs mt-0.5">{{ ticket.from_address }}</div>
                     </div>
@@ -167,8 +167,8 @@ export default {
                     </div>
 
                     <div class="flex-1 text-right">
-                        <div class="text-white/70 text-xs font-medium mb-1">{{ formatDate(ticket.arrival_date) }}</div>
-                        <div class="text-4xl font-bold text-white tracking-tight">{{ ticket.arrival_time }}</div>
+                        <div class="text-white/70 text-xs font-medium mb-1">{{ ticket.arrival_time }}</div>
+                        <div class="text-4xl font-bold text-white tracking-tight">{{ formatDate(ticket.arrival_date) }}</div>
                         <div class="text-white/90 text-sm font-medium mt-1">{{ ticket.to_city }}</div>
                         <div class="text-white/60 text-xs mt-0.5">{{ ticket.to_address }}</div>
                     </div>
