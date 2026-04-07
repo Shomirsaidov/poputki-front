@@ -75,6 +75,7 @@ export default {
                 phone: '',
                 password: ''
             },
+            editingFee: null, // { driverId, value }
             user: JSON.parse(localStorage.getItem('user') || 'null'),
             error: '',
             mobileMenuOpen: false,
@@ -266,6 +267,27 @@ export default {
                  const res = await api.get('/admin/bus-drivers');
                  this.busDrivers = res.data;
              } catch (e) { console.error(e); } finally { this.loading = false; }
+        },
+        startEditFee(driver) {
+            this.editingFee = { driverId: driver.id, value: driver.service_fee_percent ?? 10 };
+        },
+        cancelEditFee() {
+            this.editingFee = null;
+        },
+        async saveDriverFee(driver) {
+            if (!this.editingFee) return;
+            const fee = parseFloat(this.editingFee.value);
+            if (isNaN(fee) || fee < 0 || fee > 100) {
+                alert('Введите корректный процент (0–100)');
+                return;
+            }
+            try {
+                await api.put(`/admin/bus-drivers/${driver.id}/fee`, { service_fee_percent: fee });
+                driver.service_fee_percent = fee;
+                this.editingFee = null;
+            } catch (e) {
+                alert(e.response?.data?.error || 'Ошибка при сохранении');
+            }
         },
         async createBusDriver() {
             if (!this.newBusDriver.phone || !this.newBusDriver.password) {
@@ -721,6 +743,7 @@ export default {
                                 <th class="px-6 py-4 text-slate-500 font-semibold">Имя</th>
                                 <th class="px-6 py-4 text-slate-500 font-semibold">Телефон</th>
                                 <th class="px-6 py-4 text-slate-500 font-semibold">Дата создания</th>
+                                <th class="px-6 py-4 text-slate-500 font-semibold">Сбор (%)</th>
                                 <th class="px-6 py-4 text-slate-500 font-semibold">Действия</th>
                             </tr>
                         </thead>
@@ -730,9 +753,27 @@ export default {
                                 <td class="px-6 py-4 font-bold">{{ driver.name }} {{ driver.surname }}</td>
                                 <td class="px-6 py-4 font-mono">{{ driver.phone }}</td>
                                 <td class="px-6 py-4 text-slate-500 text-sm">{{ new Date(driver.created_at).toLocaleDateString() }}</td>
+                                <!-- Inline fee editor -->
+                                <td class="px-6 py-4">
+                                    <div v-if="editingFee && editingFee.driverId === driver.id" class="flex items-center gap-2">
+                                        <input
+                                            v-model.number="editingFee.value"
+                                            type="number" min="0" max="100" step="0.5"
+                                            class="w-20 bg-slate-50 border border-amber-300 rounded-lg px-2 py-1 text-sm text-slate-900 outline-none focus:border-amber-500 font-mono"
+                                            @keyup.enter="saveDriverFee(driver)"
+                                            @keyup.esc="cancelEditFee"
+                                        />
+                                        <button @click="saveDriverFee(driver)" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Сохр</button>
+                                        <button @click="cancelEditFee" class="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">Итм</button>
+                                    </div>
+                                    <button v-else @click="startEditFee(driver)" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-bold text-sm px-3 py-1 rounded-full transition-colors cursor-pointer">
+                                        {{ driver.service_fee_percent ?? 10 }}%
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
+                                    </button>
+                                </td>
                                 <td class="px-6 py-4 space-x-3">
-                                     <button @click="openEditUserModal(driver)" class="text-amber-600 hover:text-amber-700 font-bold text-sm">Изменить</button>
-                                     <button @click="deleteUser(driver.id)" class="text-red-500 hover:text-red-600 font-bold text-sm">Удалить</button>
+                                     <button @click="openEditUserModal(driver)" class="text-amber-600 hover:text-amber-700 font-bold text-sm cursor-pointer">Изменить</button>
+                                     <button @click="deleteUser(driver.id)" class="text-red-500 hover:text-red-600 font-bold text-sm cursor-pointer">Удалить</button>
                                 </td>
                             </tr>
                         </tbody>

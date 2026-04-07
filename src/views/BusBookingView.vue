@@ -68,7 +68,11 @@ export default {
             return total;
         },
         platformFee() {
-            return Math.round(this.totalPrice * 0.1);
+            const pct = (this.ticket?.service_fee_percent ?? 10);
+            return Math.round(this.totalPrice * pct / 100);
+        },
+        feePercent() {
+            return this.ticket?.service_fee_percent ?? 10;
         },
         canProceedStep1() {
             return this.selectedSeats.length === this.passengerCount;
@@ -647,11 +651,13 @@ export default {
                         <!-- Platform fee info banner -->
                         <div class="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
                             <div class="flex items-start gap-3">
-                                <div class="text-amber-500 text-lg shrink-0 mt-0.5">ℹ️</div>
+                                <div class="text-amber-500 text-lg shrink-0 mt-0.5">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                                </div>
                                 <div>
                                     <div class="text-xs font-black text-amber-800 mb-1">Информация об оплате</div>
                                     <p class="text-[11px] text-amber-700 leading-relaxed">
-                                        Через SmartPay вы оплачиваете только <strong>сервисный сбор платформы — 10%</strong> от стоимости билета.
+                                        Через SmartPay вы оплачиваете только <strong>сервисный сбор платформы — {{ feePercent }}%</strong> от стоимости билета.
                                         Оставшуюся сумму вы оплачиваете перевозчику напрямую.
                                     </p>
                                     <div class="mt-3 flex items-center justify-between bg-white/70 rounded-xl px-4 py-2.5 border border-amber-100">
