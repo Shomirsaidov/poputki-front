@@ -47,7 +47,7 @@ export default {
         formatDate(dateStr) {
             if (!dateStr) return '';
             const d = new Date(dateStr);
-            return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'short' });
+            return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
         },
         formatDuration(minutes) {
             if (!minutes) return '';
@@ -168,7 +168,8 @@ export default {
                             
                             <div class="flex items-center justify-between relative z-10">
                                 <div>
-                                    <div class="text-3xl font-black text-white tracking-tight">{{ b.departure_time }}</div>
+                                    <div class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">{{ b.departure_time }}</div>
+                                    <div class="text-3xl font-black text-white tracking-tight">{{ formatDate(b.departure_date) }}</div>
                                     <div class="text-blue-100 text-sm font-semibold mt-1">{{ b.from_city }}</div>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5 px-4 shrink-0">
@@ -181,7 +182,8 @@ export default {
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-3xl font-black text-white tracking-tight">{{ b.arrival_time }}</div>
+                                    <div class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">{{ b.arrival_time }}</div>
+                                    <div class="text-3xl font-black text-white tracking-tight">{{ formatDate(b.arrival_date || b.departure_date) }}</div>
                                     <div class="text-blue-100 text-sm font-semibold mt-1">{{ b.to_city }}</div>
                                 </div>
                             </div>

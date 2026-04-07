@@ -65,6 +65,20 @@ export default {
           :class="isActive('create-ride') ? 'text-amber-500' : 'text-gray-400'">Создать</span>
       </button>
 
+      <!-- My Tickets -->
+      <button @click="navigate('my-bus-tickets')"
+        class="group flex flex-col items-center justify-center flex-1 gap-1 relative transition-all duration-200 active:scale-95">
+        <div class="absolute inset-x-0 top-0 h-[2.5px] rounded-b-full transition-all duration-300"
+          :class="isActive('my-bus-tickets') ? 'bg-amber-500' : 'bg-transparent'"></div>
+        <svg class="h-6 w-6 transition-colors duration-200"
+          :class="isActive('my-bus-tickets') ? 'text-amber-500' : 'text-gray-400'"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+        </svg>
+        <span class="text-[10px] font-semibold transition-colors duration-200"
+          :class="isActive('my-bus-tickets') ? 'text-amber-500' : 'text-gray-400'">Билеты</span>
+      </button>
+
       <!-- Profile -->
       <button @click="navigate('profile')"
         class="group flex flex-col items-center justify-center flex-1 gap-1 relative transition-all duration-200 active:scale-95">
