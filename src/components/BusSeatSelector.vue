@@ -55,43 +55,52 @@ export default {
                 { type: 'empty' }
             ]});
 
-            const seatRows = [
-                [1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20]
-            ];
-            seatRows.forEach(row => {
+            // Initial rows 1-20 (5 rows of 4)
+            for (let i = 0; i < 5; i++) {
+                const row = [1, 2, 3, 4].map(n => i * 4 + n);
                 const filtered = row.filter(s => s <= maxSeats);
                 if (filtered.length > 0) {
                     layout.push({ type: 'seat-row', left: filtered.slice(0, 2), right: filtered.slice(2) });
                 }
-            });
+            }
 
+            // Intermediate rows near WC and Middle Exit
             if (maxSeats > 20) {
-                layout.push({ type: 'seat-row', 
-                    left: [21, 22].filter(s => s <= maxSeats), right: [],
-                    rightLabels: [{ type: 'label', text: 'TV', variant: 'tv' }, { type: 'label', text: 'WC', variant: 'wc' }]
-                });
+                const filtered = [21, 22].filter(s => s <= maxSeats);
+                if (filtered.length > 0) {
+                    layout.push({ type: 'seat-row', 
+                        left: filtered, right: [],
+                        rightLabels: [{ type: 'label', text: 'TV', variant: 'tv' }, { type: 'label', text: 'WC', variant: 'wc' }]
+                    });
+                }
             }
 
             if (maxSeats > 22) {
-                layout.push({ type: 'seat-row', 
-                    left: [23, 24].filter(s => s <= maxSeats), right: [],
-                    rightLabels: [{ type: 'empty' }, { type: 'label', text: 'exit', variant: 'exit' }]
-                });
+                const filtered = [23, 24].filter(s => s <= maxSeats);
+                if (filtered.length > 0) {
+                    layout.push({ type: 'seat-row', 
+                        left: filtered, right: [],
+                        rightLabels: [{ type: 'empty' }, { type: 'label', text: 'exit', variant: 'exit' }]
+                    });
+                }
             }
 
-            const postExitRows = [
-                [25, 26, 27, 28], [29, 30, 31, 32], [33, 34, 35, 36], [37, 38, 39, 40], [41, 42, 43, 44], [45, 46, 47, 48]
-            ];
-            postExitRows.forEach(row => {
-                const filtered = row.filter(s => s <= maxSeats);
-                if (filtered.length > 0) {
-                    layout.push({ type: 'seat-row', left: filtered.slice(0, 2), right: filtered.slice(2) });
+            // Dynamic rows starting from 25
+            let currentSeat = 25;
+            while (currentSeat <= maxSeats) {
+                const remaining = maxSeats - currentSeat + 1;
+                // If remaining seats are 5 or fewer, they form the final back row
+                if (remaining <= 5) {
+                    const lastRow = [];
+                    for (let s = currentSeat; s <= maxSeats; s++) lastRow.push(s);
+                    layout.push({ type: 'last-row', seats: lastRow });
+                    break;
+                } else {
+                    // Regular row of 4
+                    const row = [currentSeat, currentSeat + 1, currentSeat + 2, currentSeat + 3];
+                    layout.push({ type: 'seat-row', left: row.slice(0, 2), right: row.slice(2) });
+                    currentSeat += 4;
                 }
-            });
-
-            if (maxSeats >= 49) {
-                const lastRow = [49, 50, 51, 52, 53].filter(s => s <= maxSeats);
-                layout.push({ type: 'last-row', seats: lastRow });
             }
 
             return layout;
