@@ -308,11 +308,15 @@ export default {
             
             // Auto-share if originating from a passenger request
             const passengerRequestId = this.$route.query.requestId;
+            let shareFailed = false;
+            let shareErrorStr = '';
             if (passengerRequestId && this.rideRole === 'driver') {
                 try {
                     await api.post(`/rides/${passengerRequestId}/share`, { driver_ride_id: newRideId });
                 } catch (e) {
                     console.error('Failed to auto-share new ride with passenger:', e);
+                    shareFailed = true;
+                    shareErrorStr = e.response?.data?.error || 'Пассажир не активировал бота';
                 }
             }
             
@@ -332,7 +336,11 @@ export default {
             }
             
             // Show success and redirect
-            this.$router.push({ path: '/search', query: { from: this.fromCity, to: this.toCity, date: this.date, success: 'true', message: this.rideRole === 'driver' ? 'Поездка создана!' : 'Заявка создана!' } });
+            if (shareFailed) {
+                this.$router.push({ path: '/search', query: { from: this.fromCity, to: this.toCity, date: this.date, success: 'warning', message: `Поездка создана, но мы не смогли уведомить пользователя: ${shareErrorStr}` } });
+            } else {
+                this.$router.push({ path: '/search', query: { from: this.fromCity, to: this.toCity, date: this.date, success: 'true', message: this.rideRole === 'driver' ? 'Поездка создана!' : 'Заявка создана!' } });
+            }
           } catch (err) {
             console.error(err);
             this.errorMessage = err.response?.data?.error || 'Ошибка при создании';
