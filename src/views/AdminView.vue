@@ -306,6 +306,22 @@ export default {
                 this.loading = false;
             }
         },
+        async blockDriver(id) {
+            if (confirm('Заблокировать водителя? Он не сможет создавать новые рейсы.')) {
+                try {
+                    await api.put(`/admin/bus-drivers/${id}/block`);
+                    this.fetchBusDrivers();
+                } catch (e) { alert('Ошибка при блокировке'); }
+            }
+        },
+        async unblockDriver(id) {
+            if (confirm('Разблокировать водителя?')) {
+                try {
+                    await api.put(`/admin/bus-drivers/${id}/unblock`);
+                    this.fetchBusDrivers();
+                } catch (e) { alert('Ошибка при разблокировке'); }
+            }
+        },
         async fetchRides() {
             this.loading = true;
             try {
@@ -752,7 +768,10 @@ export default {
                                 <td class="px-6 py-4 font-mono text-slate-400">#{{ driver.id }}</td>
                                 <td class="px-6 py-4 font-bold">{{ driver.name }} {{ driver.surname }}</td>
                                 <td class="px-6 py-4 font-mono">{{ driver.phone }}</td>
-                                <td class="px-6 py-4 text-slate-500 text-sm">{{ new Date(driver.created_at).toLocaleDateString() }}</td>
+                                <td class="px-6 py-4">
+                                    <span v-if="driver.is_blocked" class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold border border-red-100 italic">Заблокирован</span>
+                                    <span v-else class="text-slate-500 text-sm">{{ new Date(driver.created_at).toLocaleDateString() }}</span>
+                                </td>
                                 <!-- Inline fee editor -->
                                 <td class="px-6 py-4">
                                     <div v-if="editingFee && editingFee.driverId === driver.id" class="flex items-center gap-2">
@@ -773,7 +792,9 @@ export default {
                                 </td>
                                 <td class="px-6 py-4 space-x-3">
                                      <button @click="openEditUserModal(driver)" class="text-amber-600 hover:text-amber-700 font-bold text-sm cursor-pointer">Изменить</button>
-                                     <button @click="deleteUser(driver.id)" class="text-red-500 hover:text-red-600 font-bold text-sm cursor-pointer">Удалить</button>
+                                     <button v-if="!driver.is_blocked" @click="blockDriver(driver.id)" class="text-slate-400 hover:text-red-500 font-bold text-sm cursor-pointer">Блокировать</button>
+                                     <button v-else @click="unblockDriver(driver.id)" class="text-emerald-600 hover:text-emerald-700 font-bold text-sm cursor-pointer">Разблокировать</button>
+                                     <button @click="deleteUser(driver.id)" class="text-red-500 hover:text-red-600 font-bold text-sm cursor-pointer opacity-30 hover:opacity-100 transition-opacity">Удалить</button>
                                 </td>
                             </tr>
                         </tbody>

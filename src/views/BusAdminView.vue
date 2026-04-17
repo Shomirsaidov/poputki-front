@@ -620,6 +620,19 @@ watch: {
             <!-- Main Content -->
             <main class="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-10 pt-20 lg:pt-10 w-full overflow-x-hidden">
                 
+                <!-- Blocked Alert -->
+                <div v-if="user?.is_blocked" class="mb-8 bg-red-50 border-2 border-red-100 rounded-[32px] p-6 flex flex-col sm:flex-row items-center gap-6 shadow-sm animate-pulse">
+                    <div class="bg-red-500 text-white p-4 rounded-2xl shadow-lg shadow-red-500/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-red-900 mb-1">Ваш аккаунт заблокирован</h3>
+                        <p class="text-red-700 font-medium">Вы временно ограничены в создании новых рейсов. Для уточнения причин свяжитесь с администрацией.</p>
+                    </div>
+                </div>
+
                 <!-- Tickets List -->
                 <section v-if="activeTab === 'tickets'" class="space-y-6 lg:space-y-8">
                     <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">Мои рейсы</h2>
