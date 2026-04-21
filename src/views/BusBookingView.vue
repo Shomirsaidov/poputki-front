@@ -53,9 +53,19 @@ export default {
         },
         totalPrice() {
             if (!this.ticket) return 0;
-            const premiumSeatNums = this.ticket.premiumSeats?.length > 0 
-                ? [...new Set([...this.ticket.premiumSeats, 1, 2, 3, 4, 69, 70, 71, 72, 73, 74, 75, 76])]
-                : (this.ticket.bus_type === 'double' ? [1, 2, 3, 4, 69, 70, 71, 72, 73, 74, 75, 76] : []);
+            // Dynamically compute premium seat numbers based on floor layout
+            const f2 = this.ticket.floor2_seats || 56;
+            const f1 = this.ticket.floor1_seats || 20;
+            const floor2Front = [1, 2, 3, 4];
+            const tableStart = f2 + Math.ceil(f1 / 2) - 3;
+            const floor1Table = [];
+            for (let i = tableStart; i < tableStart + 8; i++) {
+                if (i > f2 && i <= f2 + f1) floor1Table.push(i);
+            }
+            const defaultVIP = [...floor2Front, ...floor1Table];
+            const premiumSeatNums = this.ticket.premiumSeats?.length > 0
+                ? [...new Set([...this.ticket.premiumSeats, ...defaultVIP])]
+                : (this.ticket.bus_type === 'double' ? defaultVIP : []);
             const premiumPrice = this.ticket.premium_price || this.ticket.price;
             let total = 0;
             for (const seatNum of this.selectedSeats) {

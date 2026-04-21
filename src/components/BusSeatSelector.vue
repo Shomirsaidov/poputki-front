@@ -27,8 +27,16 @@ export default {
         },
 
         doubleDeckPremiumSeats() {
-            // Front seats on 2nd floor (1-4) and table seats on 1st floor (69-76)
-            const defaultVIP = [1, 2, 3, 4, 69, 70, 71, 72, 73, 74, 75, 76];
+            // Floor 2 front seats (first 4) are always premium on a double-decker
+            const floor2Front = [1, 2, 3, 4];
+            // Floor 1 table area: 8 seats around the midpoint of floor 1
+            const f2 = this.floor2Seats;
+            const tableStart = f2 + Math.ceil(this.floor1Seats / 2) - 3;
+            const floor1Table = [];
+            for (let i = tableStart; i < tableStart + 8; i++) {
+                if (i > f2 && i <= f2 + this.floor1Seats) floor1Table.push(i);
+            }
+            const defaultVIP = [...floor2Front, ...floor1Table];
             if (this.premiumSeats && this.premiumSeats.length > 0) {
                 return [...new Set([...this.premiumSeats, ...defaultVIP])];
             }
@@ -106,9 +114,44 @@ export default {
             return layout;
         },
 
+
+
+
+
+        // ---------------------------------------------------------------
+        // Double-deck Floor 2 (upper): seats 1..floor2Seats
+        // Rows of 4: left=[4i+1, 4i+2], right=[4i+4, 4i+3], trimmed from back
+        // ---------------------------------------------------------------
+        doubleFloor2Layout() {
+            const max = this.floor2Seats;
+            const layout = [];
+
+            layout.push({ type: 'header', items: [
+                { type: 'empty' }, { type: 'empty' }, { type: 'spacer' },
+                { type: 'label', text: 'Лестница', variant: 'stairs' }, { type: 'empty' }
+            ]});
+
+            let seat = 1;
+            while (seat <= max) {
+                const left = [seat, seat + 1].filter(s => s <= max);
+                const right = [seat + 3, seat + 2].filter(s => s <= max);
+                if (left.length > 0 || right.length > 0) {
+                    layout.push({ type: 'seat-row', left, right });
+                }
+                seat += 4;
+            }
+
+            layout.push({ type: 'footer-label', text: 'Лестница', variant: 'stairs' });
+            return layout;
+        },
+
+        // ---------------------------------------------------------------
+        // Double-deck Floor 1 (lower): seats (floor2Seats+1)..(floor2Seats+floor1Seats)
+        // First row has staircase on the left. Optional table row at midpoint.
+        // ---------------------------------------------------------------
         doubleFloor1Layout() {
-            const maxSeats = this.floor1Seats;
-            const floor1Max = 56 + maxSeats;
+            const f2 = this.floor2Seats;
+            const max = f2 + this.floor1Seats;
             const layout = [];
 
             layout.push({ type: 'header', items: [
@@ -117,75 +160,33 @@ export default {
                 { type: 'label', text: 'Вход', variant: 'exit' }
             ]});
 
-            const allFloor1Seats = [
-                // Row 1: Stairs | [78, 77]
-                { left: 'stairs', right: [78, 77] },
-                // Row 2: [71, 72] | [76, 75] (Premium)
-                { left: [71, 72], right: [76, 75] },
-                // Table Row
-                { type: 'table-row', left: 'table', right: 'table' },
-                // Row 3: [69, 70] | [74, 73] (Premium)
-                { left: [69, 70], right: [74, 73] },
-                // Row 4: [65, 66] | [68, 67]
-                { left: [65, 66], right: [68, 67] },
-                // Row 5: [61, 62] | [64, 63]
-                { left: [61, 62], right: [64, 63] },
-                // Row 6: [57, 58] | [60, 59]
-                { left: [57, 58], right: [60, 59] },
-            ];
+            // First row: stairs on left, 2 seats on right
+            const firstRight = [f2 + 2, f2 + 1].filter(s => s <= max);
+            if (firstRight.length > 0) {
+                layout.push({ type: 'seat-row', left: 'stairs', right: firstRight });
+            }
 
-            allFloor1Seats.forEach(row => {
-                if (row.type === 'table-row') {
-                    // Adapt tables only if adjacent seats exist according to floor1Max
-                    // Actually, let's always show them if available seats > 12 (approx)
+            const hasTable = this.floor1Seats >= 10;
+            const tableMidpoint = f2 + Math.ceil(this.floor1Seats / 2);
+            let tableInserted = false;
+            let seat = f2 + 3;
+
+            while (seat <= max) {
+                if (hasTable && !tableInserted && seat >= tableMidpoint) {
                     layout.push({ type: 'table-row', left: 'table', right: 'table' });
-                    return;
+                    tableInserted = true;
                 }
-                const left = row.left === 'stairs' ? 'stairs' : (row.left || []).filter(s => s <= floor1Max);
-                const right = (row.right || []).filter(s => s <= floor1Max);
-
-                if (left === 'stairs' || left.length > 0 || right.length > 0) {
+                const left = [seat, seat + 1].filter(s => s <= max);
+                const right = [seat + 3, seat + 2].filter(s => s <= max);
+                if (left.length > 0 || right.length > 0) {
                     layout.push({ type: 'seat-row', left, right });
                 }
-            });
+                seat += 4;
+            }
 
             layout.push({ type: 'footer-label', text: 'Выход', variant: 'exit' });
             layout.push({ type: 'facilities', items: ['Туалет', 'Мини Кухня', 'Лестница'] });
             layout.push({ type: 'baggage', text: 'Багажное отделение' });
-
-            return layout;
-        },
-
-        doubleFloor2Layout() {
-            const maxSeats = this.floor2Seats;
-            const layout = [];
-
-            layout.push({ type: 'header', items: [
-                { type: 'empty' }, { type: 'empty' }, { type: 'spacer' },
-                { type: 'label', text: 'Лестница', variant: 'stairs' }, { type: 'empty' }
-            ]});
-
-            const allFloor2Rows = [
-                { left: [1, 2], right: [4, 3] }, { left: [5, 6], right: [8, 7] },
-                { left: [9, 10], right: [12, 11] }, { left: [13, 14], right: [16, 15] },
-                { left: [17, 18], right: [20, 19] }, { left: [21, 22], right: [24, 23] },
-                { left: [25, 26], right: [28, 27] }, { left: [29, 30], right: [32, 31] },
-                { left: [33, 34], right: [36, 35] }, { left: [37, 38], right: [40, 39] },
-                { left: [41, 42], right: [44, 43] }, { left: [45, 46], right: [48, 47] },
-                { left: [49, 50], right: [52, 51] }, 
-                { left: [53, 54], right: [56, 55] }, // COMBINED (NO TABLE)
-            ];
-
-            allFloor2Rows.forEach(row => {
-                const filteredLeft = (row.left || []).filter(s => s <= maxSeats);
-                const filteredRight = (row.right || []).filter(s => s <= maxSeats);
-                if (filteredLeft.length > 0 || filteredRight.length > 0) {
-                    layout.push({ type: 'seat-row', left: filteredLeft, right: filteredRight });
-                }
-            });
-
-            layout.push({ type: 'footer-label', text: 'Лестница', variant: 'stairs' });
-
             return layout;
         },
 
