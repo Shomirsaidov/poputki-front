@@ -717,8 +717,8 @@ export default {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            <tr v-for="user in users" :key="user.id" class="hover:bg-slate-50 transition-colors text-slate-700">
-                                <td class="px-6 py-4 font-mono text-slate-400">#{{ user.id }}</td>
+                            <tr v-for="(user, index) in users" :key="user.id" class="hover:bg-slate-50 transition-colors text-slate-700">
+                                <td class="px-6 py-4 font-mono text-slate-400">#{{ index + 1 }}</td>
                                 <td class="px-6 py-4 font-bold">{{ user.name }} {{ user.surname }}</td>
                                 <td class="px-6 py-4 font-mono">{{ user.phone }}</td>
                                 <td class="px-6 py-4">
