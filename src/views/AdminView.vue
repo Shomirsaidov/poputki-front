@@ -80,6 +80,14 @@ export default {
             error: '',
             mobileMenuOpen: false,
             editingUser: null,
+            // Drill-down: bus ticket bookings
+            selectedBusTicket: null,
+            selectedBusTicketBookings: [],
+            ticketBookingsLoading: false,
+            // Drill-down: bus driver rides
+            selectedBusDriver: null,
+            selectedBusDriverTickets: [],
+            driverDetailLoading: false,
             editingRide: null,
             showUserEditModal: false,
             showRideEditModal: false,
@@ -443,7 +451,7 @@ export default {
             try {
                 await api.post('/bus-tickets', {
                     ...this.busForm,
-                    operator_id: this.user?.id || 1, // Fallback to admin if no user
+                    operator_id: this.user?.id || 1,
                     duration_minutes: Number(this.busForm.duration_hours) * 60,
                     price: Number(this.busForm.price),
                     total_seats: Number(this.busForm.total_seats)
@@ -451,7 +459,6 @@ export default {
                 alert('Рейс успешно создан!');
                 this.isCreatingBus = false;
                 this.fetchBusTickets();
-                // Reset form
                 this.busForm = {
                     transport_company: '', from_city: '', from_address: '',
                     to_city: '', to_address: '', departure_date: '',
@@ -465,6 +472,82 @@ export default {
             } finally {
                 this.loading = false;
             }
+        },
+
+        // ─── Drill-down: Bus Ticket Bookings ───────────────────────────
+        async openBusTicketBookings(ticket) {
+            this.selectedBusTicket = ticket;
+            this.selectedBusTicketBookings = [];
+            this.ticketBookingsLoading = true;
+            try {
+                const res = await api.get(`/admin/bus-tickets/${ticket.id}/bookings`);
+                this.selectedBusTicketBookings = res.data;
+            } catch (e) {
+                alert('Ошибка загрузки бронирований: ' + (e.response?.data?.error || e.message));
+            } finally {
+                this.ticketBookingsLoading = false;
+            }
+        },
+        closeBusTicketBookings() {
+            this.selectedBusTicket = null;
+            this.selectedBusTicketBookings = [];
+        },
+        async deleteAdminBooking(bookingId) {
+            if (!confirm('Полностью удалить это бронирование? Места будут освобождены.')) return;
+            try {
+                await api.delete(`/bus-admin/bookings/${bookingId}`);
+                this.selectedBusTicketBookings = this.selectedBusTicketBookings.filter(b => b.id !== bookingId);
+            } catch (e) {
+                alert('Ошибка при удалении: ' + (e.response?.data?.error || e.message));
+            }
+        },
+        passengerManifestForBookings(bookings) {
+            const manifest = [];
+            (bookings || []).forEach(b => {
+                const pData = b.passengers_data || [];
+                if (pData.length === 0) {
+                    manifest.push({
+                        lastName: b.passenger_name || '—', firstName: '', middleName: '',
+                        seat: (b.seat_numbers || []).join(', '),
+                        gender: '—', birthDate: '—', docType: '—', docNumber: '—',
+                        contactPhone: b.passenger_phone || b.phone,
+                        pickup_city: b.pickup_city, drop_off_city: b.drop_off_city,
+                        paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
+                        originalBookingId: b.id
+                    });
+                } else {
+                    pData.forEach((p, idx) => {
+                        manifest.push({
+                            ...p,
+                            seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
+                            contactPhone: p.phone || b.passenger_phone || b.phone,
+                            pickup_city: b.pickup_city, drop_off_city: b.drop_off_city,
+                            paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
+                            originalBookingId: b.id
+                        });
+                    });
+                }
+            });
+            return manifest;
+        },
+
+        // ─── Drill-down: Bus Driver Rides ──────────────────────────────
+        async openBusDriverDetail(driver) {
+            this.selectedBusDriver = driver;
+            this.selectedBusDriverTickets = [];
+            this.driverDetailLoading = true;
+            try {
+                const res = await api.get(`/admin/bus-drivers/${driver.id}/tickets`);
+                this.selectedBusDriverTickets = res.data;
+            } catch (e) {
+                alert('Ошибка загрузки рейсов: ' + (e.response?.data?.error || e.message));
+            } finally {
+                this.driverDetailLoading = false;
+            }
+        },
+        closeBusDriverDetail() {
+            this.selectedBusDriver = null;
+            this.selectedBusDriverTickets = [];
         }
     },
     watch: {
@@ -764,16 +847,21 @@ export default {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            <tr v-for="driver in busDrivers" :key="driver.id" class="hover:bg-slate-50 transition-colors text-slate-700">
+                            <tr v-for="driver in busDrivers" :key="driver.id" @click="openBusDriverDetail(driver)" class="hover:bg-amber-50 cursor-pointer transition-colors text-slate-700">
                                 <td class="px-6 py-4 font-mono text-slate-400">#{{ driver.id }}</td>
-                                <td class="px-6 py-4 font-bold">{{ driver.name }} {{ driver.surname }}</td>
+                                <td class="px-6 py-4 font-bold">
+                                    <div class="flex items-center gap-2">
+                                        {{ driver.name }} {{ driver.surname }}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 font-mono">{{ driver.phone }}</td>
                                 <td class="px-6 py-4">
                                     <span v-if="driver.is_blocked" class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold border border-red-100 italic">Заблокирован</span>
                                     <span v-else class="text-slate-500 text-sm">{{ new Date(driver.created_at).toLocaleDateString() }}</span>
                                 </td>
                                 <!-- Inline fee editor -->
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4" @click.stop>
                                     <div v-if="editingFee && editingFee.driverId === driver.id" class="flex items-center gap-2">
                                         <input
                                             v-model.number="editingFee.value"
@@ -782,23 +870,84 @@ export default {
                                             @keyup.enter="saveDriverFee(driver)"
                                             @keyup.esc="cancelEditFee"
                                         />
-                                        <button @click="saveDriverFee(driver)" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Сохр</button>
-                                        <button @click="cancelEditFee" class="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">Итм</button>
+                                        <button @click.stop="saveDriverFee(driver)" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer">Сохр</button>
+                                        <button @click.stop="cancelEditFee" class="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">Итм</button>
                                     </div>
-                                    <button v-else @click="startEditFee(driver)" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-bold text-sm px-3 py-1 rounded-full transition-colors cursor-pointer">
+                                    <button v-else @click.stop="startEditFee(driver)" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-bold text-sm px-3 py-1 rounded-full transition-colors cursor-pointer">
                                         {{ driver.service_fee_percent ?? 10 }}%
                                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
                                     </button>
                                 </td>
-                                <td class="px-6 py-4 space-x-3">
-                                     <button @click="openEditUserModal(driver)" class="text-amber-600 hover:text-amber-700 font-bold text-sm cursor-pointer">Изменить</button>
-                                     <button v-if="!driver.is_blocked" @click="blockDriver(driver.id)" class="text-slate-400 hover:text-red-500 font-bold text-sm cursor-pointer">Блокировать</button>
-                                     <button v-else @click="unblockDriver(driver.id)" class="text-emerald-600 hover:text-emerald-700 font-bold text-sm cursor-pointer">Разблокировать</button>
-                                     <button @click="deleteUser(driver.id)" class="text-red-500 hover:text-red-600 font-bold text-sm cursor-pointer opacity-30 hover:opacity-100 transition-opacity">Удалить</button>
+                                <td class="px-6 py-4 space-x-3" @click.stop>
+                                     <button @click.stop="openEditUserModal(driver)" class="text-amber-600 hover:text-amber-700 font-bold text-sm cursor-pointer">Изменить</button>
+                                     <button v-if="!driver.is_blocked" @click.stop="blockDriver(driver.id)" class="text-slate-400 hover:text-red-500 font-bold text-sm cursor-pointer">Блокировать</button>
+                                     <button v-else @click.stop="unblockDriver(driver.id)" class="text-emerald-600 hover:text-emerald-700 font-bold text-sm cursor-pointer">Разблокировать</button>
+                                     <button @click.stop="deleteUser(driver.id)" class="text-red-500 hover:text-red-600 font-bold text-sm cursor-pointer opacity-30 hover:opacity-100 transition-opacity">Удалить</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- ── Driver Detail Overlay ── -->
+                <div v-if="selectedBusDriver" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-end" @click.self="closeBusDriverDetail">
+                    <div class="w-full max-w-5xl bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+                        <!-- Header -->
+                        <div class="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center gap-4 z-10">
+                            <button @click="closeBusDriverDetail" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <div>
+                                <h3 class="text-xl font-black text-slate-900">{{ selectedBusDriver.name }} {{ selectedBusDriver.surname }}</h3>
+                                <p class="text-sm text-slate-400 font-mono">{{ selectedBusDriver.phone }} · Сбор: {{ selectedBusDriver.service_fee_percent ?? 10 }}%</p>
+                            </div>
+                            <span v-if="selectedBusDriver.is_blocked" class="ml-auto bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold border border-red-100">Заблокирован</span>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="p-8 flex-1">
+                            <div v-if="driverDetailLoading" class="flex items-center justify-center py-20">
+                                <span class="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></span>
+                            </div>
+                            <div v-else-if="selectedBusDriverTickets.length === 0" class="text-center py-20 text-slate-400">
+                                <p class="text-lg font-medium">У этого водителя нет рейсов</p>
+                            </div>
+                            <div v-else class="overflow-x-auto rounded-2xl border border-slate-100">
+                                <table class="w-full text-left min-w-[800px]">
+                                    <thead class="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-400 font-bold tracking-widest">
+                                        <tr>
+                                            <th class="px-5 py-4">Маршрут</th>
+                                            <th class="px-5 py-4">Компания</th>
+                                            <th class="px-5 py-4">Дата / Время</th>
+                                            <th class="px-5 py-4">Мест (своб./всего)</th>
+                                            <th class="px-5 py-4">Цена</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-50">
+                                        <tr v-for="ticket in selectedBusDriverTickets" :key="ticket.id"
+                                            @click="openBusTicketBookings(ticket)"
+                                            class="hover:bg-amber-50 cursor-pointer transition-colors text-slate-700">
+                                            <td class="px-5 py-4">
+                                                <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                                                    {{ ticket.from_city }}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                                    {{ ticket.to_city }}
+                                                </div>
+                                                <div class="text-xs text-slate-400">{{ ticket.from_address }}</div>
+                                            </td>
+                                            <td class="px-5 py-4 text-sm text-slate-600">{{ ticket.transport_company }}</td>
+                                            <td class="px-5 py-4 font-mono text-sm text-slate-500">{{ ticket.departure_date }} {{ ticket.departure_time }}</td>
+                                            <td class="px-5 py-4">
+                                                <span class="font-bold" :class="ticket.free_seats === 0 ? 'text-red-500' : 'text-emerald-600'">{{ ticket.free_seats }}</span>
+                                                <span class="text-slate-400"> / {{ ticket.total_seats }}</span>
+                                            </td>
+                                            <td class="px-5 py-4 font-bold text-emerald-600">{{ ticket.price }} с.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1100,10 +1249,14 @@ export default {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            <tr v-for="ticket in busTickets" :key="ticket.id" class="hover:bg-slate-50 transition-colors text-slate-700">
+                            <tr v-for="ticket in busTickets" :key="ticket.id" @click="openBusTicketBookings(ticket)" class="hover:bg-amber-50 cursor-pointer transition-colors text-slate-700">
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
-                                        <span class="font-bold text-slate-800">{{ ticket.from_city }} → {{ ticket.to_city }}</span>
+                                        <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                                            {{ ticket.from_city }}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                            {{ ticket.to_city }}
+                                        </span>
                                         <span class="text-xs text-slate-400">{{ ticket.from_address }}</span>
                                     </div>
                                 </td>
@@ -1113,12 +1266,80 @@ export default {
                                      <span class="text-amber-600 font-bold">{{ ticket.total_seats }}</span>
                                 </td>
                                 <td class="px-6 py-4 font-bold text-emerald-600">{{ ticket.price }} с.</td>
-                                <td class="px-6 py-4 text-right">
-                                    <button @click="deleteBusTicket(ticket.id)" class="text-red-500 hover:text-red-600 transition-colors text-sm font-bold">Удалить</button>
+                                <td class="px-6 py-4 text-right" @click.stop>
+                                    <button @click.stop="deleteBusTicket(ticket.id)" class="text-red-500 hover:text-red-600 transition-colors text-sm font-bold">Удалить</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- ── Booking Manifest Overlay ── -->
+                <div v-if="selectedBusTicket" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-end" @click.self="closeBusTicketBookings">
+                    <div class="w-full max-w-6xl bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+                        <div class="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center gap-4 z-10">
+                            <button @click="closeBusTicketBookings" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <div>
+                                <h3 class="text-xl font-black text-slate-900">{{ selectedBusTicket.from_city }} → {{ selectedBusTicket.to_city }}</h3>
+                                <p class="text-sm text-slate-400">{{ selectedBusTicket.transport_company }} · {{ selectedBusTicket.departure_date }} {{ selectedBusTicket.departure_time }}</p>
+                            </div>
+                            <span class="ml-auto text-sm font-bold text-slate-500">{{ selectedBusTicketBookings.length }} бронирований</span>
+                        </div>
+                        <div class="p-8 flex-1 overflow-x-auto">
+                            <div v-if="ticketBookingsLoading" class="flex items-center justify-center py-20">
+                                <span class="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></span>
+                            </div>
+                            <div v-else-if="selectedBusTicketBookings.length === 0" class="text-center py-20 text-slate-400">
+                                <p class="text-lg font-medium">Нет бронирований для этого рейса</p>
+                            </div>
+                            <table v-else class="w-full text-left min-w-[1100px]">
+                                <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase text-slate-400 font-black tracking-widest">
+                                    <tr>
+                                        <th class="px-4 py-4">#</th>
+                                        <th class="px-4 py-4">ФИО</th>
+                                        <th class="px-4 py-4">Место</th>
+                                        <th class="px-4 py-4">Пол</th>
+                                        <th class="px-4 py-4">Дата рождения</th>
+                                        <th class="px-4 py-4">Документ</th>
+                                        <th class="px-4 py-4">Маршрут (П/В)</th>
+                                        <th class="px-4 py-4">Контакт</th>
+                                        <th class="px-4 py-4">Оплата</th>
+                                        <th class="px-4 py-4">Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    <tr v-for="(p, idx) in passengerManifestForBookings(selectedBusTicketBookings)" :key="idx" class="hover:bg-slate-50/50 transition-colors text-slate-700 text-sm">
+                                        <td class="px-4 py-3 text-slate-400 font-mono text-xs">{{ idx + 1 }}</td>
+                                        <td class="px-4 py-3 font-bold text-slate-800 whitespace-nowrap">{{ p.lastName }} {{ p.firstName }} {{ p.middleName }}</td>
+                                        <td class="px-4 py-3"><span class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-black border border-amber-100">{{ p.seat }}</span></td>
+                                        <td class="px-4 py-3 text-xs font-bold uppercase text-slate-500">{{ p.gender === 'male' ? 'Муж' : p.gender === 'female' ? 'Жен' : '—' }}</td>
+                                        <td class="px-4 py-3 text-xs font-mono text-slate-500">{{ p.birthDate || '—' }}</td>
+                                        <td class="px-4 py-3 text-xs text-slate-500">{{ p.docType }} {{ p.docNumber }}</td>
+                                        <td class="px-4 py-3">
+                                            <div class="text-[10px] text-slate-500 font-bold uppercase">{{ p.pickup_city || '—' }}</div>
+                                            <div class="text-[10px] text-amber-600 font-black uppercase">{{ p.drop_off_city || '—' }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-xs font-mono text-slate-700">{{ p.contactPhone || '—' }}</td>
+                                        <td class="px-4 py-3">
+                                            <span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border"
+                                                :class="{
+                                                    'bg-blue-50 text-blue-600 border-blue-100': p.paymentStatus === 'Ручная',
+                                                    'bg-emerald-50 text-emerald-600 border-emerald-100': p.paymentStatus === 'Оплачено',
+                                                    'bg-amber-50 text-amber-600 border-amber-100': p.paymentStatus === 'Ожидает оплаты'
+                                                }">{{ p.paymentStatus }}</span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <button @click="deleteAdminBooking(p.originalBookingId)" class="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Удалить бронь">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </section>
 
