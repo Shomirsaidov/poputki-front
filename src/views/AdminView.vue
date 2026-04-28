@@ -1412,7 +1412,6 @@ export default {
                 </div>
             </div>
         </div>
-        </main>
     </div>
 </template>
 
