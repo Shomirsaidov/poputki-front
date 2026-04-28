@@ -509,7 +509,7 @@ export default {
                     manifest.push({
                         lastName: b.passenger_name || '—', firstName: '', middleName: '',
                         seat: (b.seat_numbers || []).join(', '),
-                        gender: '—', birthDate: '—', docType: '—', docNumber: '—',
+                        gender: '—', birthDate: '—', docType: '—', docNumber: '—', citizenship: '—',
                         contactPhone: b.passenger_phone || b.phone,
                         pickup_city: b.pickup_city, drop_off_city: b.drop_off_city,
                         paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
@@ -1303,6 +1303,7 @@ export default {
                                         <th class="px-4 py-4">Пол</th>
                                         <th class="px-4 py-4">Дата рождения</th>
                                         <th class="px-4 py-4">Документ</th>
+                                        <th class="px-4 py-4">Гражданство</th>
                                         <th class="px-4 py-4">Маршрут (П/В)</th>
                                         <th class="px-4 py-4">Контакт</th>
                                         <th class="px-4 py-4">Оплата</th>
@@ -1317,6 +1318,7 @@ export default {
                                         <td class="px-4 py-3 text-xs font-bold uppercase text-slate-500">{{ p.gender === 'male' ? 'Муж' : p.gender === 'female' ? 'Жен' : '—' }}</td>
                                         <td class="px-4 py-3 text-xs font-mono text-slate-500">{{ p.birthDate || '—' }}</td>
                                         <td class="px-4 py-3 text-xs text-slate-500">{{ p.docType }} {{ p.docNumber }}</td>
+                                        <td class="px-4 py-3 text-xs text-slate-500">{{ p.citizenship || '—' }}</td>
                                         <td class="px-4 py-3">
                                             <div class="text-[10px] text-slate-500 font-bold uppercase">{{ p.pickup_city || '—' }}</div>
                                             <div class="text-[10px] text-amber-600 font-black uppercase">{{ p.drop_off_city || '—' }}</div>

@@ -800,6 +800,7 @@ watch: {
                                         <th class="px-6 py-5">ПОЛ</th>
                                         <th class="px-6 py-5">ДАТА РОЖДЕНИЯ</th>
                                         <th class="px-6 py-5">ДОКУМЕНТ</th>
+                                        <th class="px-6 py-5">ГРАЖДАНСТВО</th>
                                         <th class="px-6 py-5">МАРШРУТ (П/В)</th>
                                         <th class="px-6 py-5">КОНТАКТ</th>
                                         <th class="px-6 py-5">ОПЛАТА</th>
@@ -823,6 +824,9 @@ watch: {
                                         <td class="px-6 py-4 text-xs text-slate-600 font-medium font-mono tracking-tighter">{{ p.birthDate || '—' }}</td>
                                         <td class="px-6 py-4 text-[11px] text-slate-600 font-medium tracking-tight">
                                             {{ p.docType }} {{ p.docNumber }}
+                                         </td>
+                                         <td class="px-6 py-4 text-xs text-slate-600 font-medium tracking-tighter">
+                                             {{ p.citizenship || '—' }}
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">
