@@ -889,66 +889,7 @@ export default {
                     </table>
                 </div>
 
-                <!-- ── Driver Detail Overlay ── -->
-                <div v-if="selectedBusDriver" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-center" @click.self="closeBusDriverDetail">
-                    <div class="w-full bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
-                        <!-- Header -->
-                        <div class="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center gap-4 z-10">
-                            <button @click="closeBusDriverDetail" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                            </button>
-                            <div>
-                                <h3 class="text-xl font-black text-slate-900">{{ selectedBusDriver.name }} {{ selectedBusDriver.surname }}</h3>
-                                <p class="text-sm text-slate-400 font-mono">{{ selectedBusDriver.phone }} · Сбор: {{ selectedBusDriver.service_fee_percent ?? 10 }}%</p>
-                            </div>
-                            <span v-if="selectedBusDriver.is_blocked" class="ml-auto bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold border border-red-100">Заблокирован</span>
-                        </div>
 
-                        <!-- Body -->
-                        <div class="p-8 flex-1">
-                            <div v-if="driverDetailLoading" class="flex items-center justify-center py-20">
-                                <span class="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></span>
-                            </div>
-                            <div v-else-if="selectedBusDriverTickets.length === 0" class="text-center py-20 text-slate-400">
-                                <p class="text-lg font-medium">У этого водителя нет рейсов</p>
-                            </div>
-                            <div v-else class="overflow-x-auto rounded-2xl border border-slate-100">
-                                <table class="w-full text-left min-w-[800px]">
-                                    <thead class="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-400 font-bold tracking-widest">
-                                        <tr>
-                                            <th class="px-5 py-4">Маршрут</th>
-                                            <th class="px-5 py-4">Компания</th>
-                                            <th class="px-5 py-4">Дата / Время</th>
-                                            <th class="px-5 py-4">Мест (своб./всего)</th>
-                                            <th class="px-5 py-4">Цена</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-50">
-                                        <tr v-for="ticket in selectedBusDriverTickets" :key="ticket.id"
-                                            @click="openBusTicketBookings(ticket)"
-                                            class="hover:bg-amber-50 cursor-pointer transition-colors text-slate-700">
-                                            <td class="px-5 py-4">
-                                                <div class="font-bold text-slate-800 flex items-center gap-1.5">
-                                                    {{ ticket.from_city }}
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                                    {{ ticket.to_city }}
-                                                </div>
-                                                <div class="text-xs text-slate-400">{{ ticket.from_address }}</div>
-                                            </td>
-                                            <td class="px-5 py-4 text-sm text-slate-600">{{ ticket.transport_company }}</td>
-                                            <td class="px-5 py-4 font-mono text-sm text-slate-500">{{ ticket.departure_date }} {{ ticket.departure_time }}</td>
-                                            <td class="px-5 py-4">
-                                                <span class="font-bold" :class="ticket.free_seats === 0 ? 'text-red-500' : 'text-emerald-600'">{{ ticket.free_seats }}</span>
-                                                <span class="text-slate-400"> / {{ ticket.total_seats }}</span>
-                                            </td>
-                                            <td class="px-5 py-4 font-bold text-emerald-600">{{ ticket.price }} с.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </section>
 
              <!-- Rides Section -->
@@ -1274,75 +1215,7 @@ export default {
                     </table>
                 </div>
 
-                <!-- ── Booking Manifest Overlay ── -->
-                <div v-if="selectedBusTicket" class="fixed inset-0 z-[210] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-center" @click.self="closeBusTicketBookings">
-                    <div class="w-full bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
-                        <div class="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center gap-4 z-10">
-                            <button @click="closeBusTicketBookings" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                            </button>
-                            <div>
-                                <h3 class="text-xl font-black text-slate-900">{{ selectedBusTicket.from_city }} → {{ selectedBusTicket.to_city }}</h3>
-                                <p class="text-sm text-slate-400">{{ selectedBusTicket.transport_company }} · {{ selectedBusTicket.departure_date }} {{ selectedBusTicket.departure_time }}</p>
-                            </div>
-                            <span class="ml-auto text-sm font-bold text-slate-500">{{ selectedBusTicketBookings.length }} бронирований</span>
-                        </div>
-                        <div class="p-8 flex-1 overflow-x-auto">
-                            <div v-if="ticketBookingsLoading" class="flex items-center justify-center py-20">
-                                <span class="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></span>
-                            </div>
-                            <div v-else-if="selectedBusTicketBookings.length === 0" class="text-center py-20 text-slate-400">
-                                <p class="text-lg font-medium">Нет бронирований для этого рейса</p>
-                            </div>
-                            <table v-else class="w-full text-left min-w-[1100px]">
-                                <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase text-slate-400 font-black tracking-widest">
-                                    <tr>
-                                        <th class="px-4 py-4">#</th>
-                                        <th class="px-4 py-4">ФИО</th>
-                                        <th class="px-4 py-4">Место</th>
-                                        <th class="px-4 py-4">Пол</th>
-                                        <th class="px-4 py-4">Дата рождения</th>
-                                        <th class="px-4 py-4">Документ</th>
-                                        <th class="px-4 py-4">Гражданство</th>
-                                        <th class="px-4 py-4">Маршрут (П/В)</th>
-                                        <th class="px-4 py-4">Контакт</th>
-                                        <th class="px-4 py-4">Оплата</th>
-                                        <th class="px-4 py-4">Действия</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-50">
-                                    <tr v-for="(p, idx) in passengerManifestForBookings(selectedBusTicketBookings)" :key="idx" class="hover:bg-slate-50/50 transition-colors text-slate-700 text-sm">
-                                        <td class="px-4 py-3 text-slate-400 font-mono text-xs">{{ idx + 1 }}</td>
-                                        <td class="px-4 py-3 font-bold text-slate-800 whitespace-nowrap">{{ p.lastName }} {{ p.firstName }} {{ p.middleName }}</td>
-                                        <td class="px-4 py-3"><span class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-black border border-amber-100">{{ p.seat }}</span></td>
-                                        <td class="px-4 py-3 text-xs font-bold uppercase text-slate-500">{{ p.gender === 'male' ? 'Муж' : p.gender === 'female' ? 'Жен' : '—' }}</td>
-                                        <td class="px-4 py-3 text-xs font-mono text-slate-500">{{ p.birthDate || '—' }}</td>
-                                        <td class="px-4 py-3 text-xs text-slate-500">{{ p.docType }} {{ p.docNumber }}</td>
-                                        <td class="px-4 py-3 text-xs text-slate-500">{{ p.citizenship || '—' }}</td>
-                                        <td class="px-4 py-3">
-                                            <div class="text-[10px] text-slate-500 font-bold uppercase">{{ p.pickup_city || '—' }}</div>
-                                            <div class="text-[10px] text-amber-600 font-black uppercase">{{ p.drop_off_city || '—' }}</div>
-                                        </td>
-                                        <td class="px-4 py-3 text-xs font-mono text-slate-700">{{ p.contactPhone || '—' }}</td>
-                                        <td class="px-4 py-3">
-                                            <span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border"
-                                                :class="{
-                                                    'bg-blue-50 text-blue-600 border-blue-100': p.paymentStatus === 'Ручная',
-                                                    'bg-emerald-50 text-emerald-600 border-emerald-100': p.paymentStatus === 'Оплачено',
-                                                    'bg-amber-50 text-amber-600 border-amber-100': p.paymentStatus === 'Ожидает оплаты'
-                                                }">{{ p.paymentStatus }}</span>
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            <button @click="deleteAdminBooking(p.originalBookingId)" class="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Удалить бронь">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+
             </section>
 
              <!-- Reviews Section -->
@@ -1408,6 +1281,137 @@ export default {
                 </div>
             </div>
 
+        </main>
+
+        <!-- ── GLOBAL DRILL-DOWN OVERLAYS ── -->
+        
+        <!-- Driver Detail Overlay -->
+        <div v-if="selectedBusDriver" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-center" @click.self="closeBusDriverDetail">
+            <div class="w-full bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+                <div class="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center gap-4 z-10">
+                    <button @click="closeBusDriverDetail" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900">{{ selectedBusDriver.name }} {{ selectedBusDriver.surname }}</h3>
+                        <p class="text-sm text-slate-400 font-mono">{{ selectedBusDriver.phone }} · Сбор: {{ selectedBusDriver.service_fee_percent ?? 10 }}%</p>
+                    </div>
+                    <span v-if="selectedBusDriver.is_blocked" class="ml-auto bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold border border-red-100">Заблокирован</span>
+                </div>
+                <div class="p-8 flex-1">
+                    <div v-if="driverDetailLoading" class="flex items-center justify-center py-20">
+                        <span class="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></span>
+                    </div>
+                    <div v-else-if="selectedBusDriverTickets.length === 0" class="text-center py-20 text-slate-400">
+                        <p class="text-lg font-medium">У этого водителя нет рейсов</p>
+                    </div>
+                    <div v-else class="overflow-x-auto rounded-2xl border border-slate-100">
+                        <table class="w-full text-left min-w-[800px]">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-400 font-bold tracking-widest">
+                                <tr>
+                                    <th class="px-5 py-4">Маршрут</th>
+                                    <th class="px-5 py-4">Компания</th>
+                                    <th class="px-5 py-4">Дата / Время</th>
+                                    <th class="px-5 py-4">Мест (своб./всего)</th>
+                                    <th class="px-5 py-4">Цена</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                <tr v-for="ticket in selectedBusDriverTickets" :key="ticket.id"
+                                    @click="openBusTicketBookings(ticket)"
+                                    class="hover:bg-amber-50 cursor-pointer transition-colors text-slate-700">
+                                    <td class="px-5 py-4">
+                                        <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                                            {{ ticket.from_city }}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                            {{ ticket.to_city }}
+                                        </div>
+                                        <div class="text-xs text-slate-400">{{ ticket.from_address }}</div>
+                                    </td>
+                                    <td class="px-5 py-4 text-sm text-slate-600">{{ ticket.transport_company }}</td>
+                                    <td class="px-5 py-4 font-mono text-sm text-slate-500">{{ ticket.departure_date }} {{ ticket.departure_time }}</td>
+                                    <td class="px-5 py-4">
+                                        <span class="font-bold" :class="ticket.free_seats === 0 ? 'text-red-500' : 'text-emerald-600'">{{ ticket.free_seats }}</span>
+                                        <span class="text-slate-400"> / {{ ticket.total_seats }}</span>
+                                    </td>
+                                    <td class="px-5 py-4 font-bold text-emerald-600">{{ ticket.price }} с.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Manifest Overlay -->
+        <div v-if="selectedBusTicket" class="fixed inset-0 z-[210] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-center" @click.self="closeBusTicketBookings">
+            <div class="w-full bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+                <div class="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center gap-4 z-10">
+                    <button @click="closeBusTicketBookings" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900">{{ selectedBusTicket.from_city }} → {{ selectedBusTicket.to_city }}</h3>
+                        <p class="text-sm text-slate-400">{{ selectedBusTicket.transport_company }} · {{ selectedBusTicket.departure_date }} {{ selectedBusTicket.departure_time }}</p>
+                    </div>
+                    <span class="ml-auto text-sm font-bold text-slate-500">{{ selectedBusTicketBookings.length }} бронирований</span>
+                </div>
+                <div class="p-8 flex-1 overflow-x-auto">
+                    <div v-if="ticketBookingsLoading" class="flex items-center justify-center py-20">
+                        <span class="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></span>
+                    </div>
+                    <div v-else-if="selectedBusTicketBookings.length === 0" class="text-center py-20 text-slate-400">
+                        <p class="text-lg font-medium">Нет бронирований для этого рейса</p>
+                    </div>
+                    <table v-else class="w-full text-left min-w-[1100px]">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase text-slate-400 font-black tracking-widest">
+                            <tr>
+                                <th class="px-4 py-4">#</th>
+                                <th class="px-4 py-4">ФИО</th>
+                                <th class="px-4 py-4">Место</th>
+                                <th class="px-4 py-4">Пол</th>
+                                <th class="px-4 py-4">Дата рождения</th>
+                                <th class="px-4 py-4">Документ</th>
+                                <th class="px-4 py-4">Гражданство</th>
+                                <th class="px-4 py-4">Маршрут (П/В)</th>
+                                <th class="px-4 py-4">Контакт</th>
+                                <th class="px-4 py-4">Оплата</th>
+                                <th class="px-4 py-4">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <tr v-for="(p, idx) in passengerManifestForBookings(selectedBusTicketBookings)" :key="idx" class="hover:bg-slate-50/50 transition-colors text-slate-700 text-sm">
+                                <td class="px-4 py-3 text-slate-400 font-mono text-xs">{{ idx + 1 }}</td>
+                                <td class="px-4 py-3 font-bold text-slate-800 whitespace-nowrap">{{ p.lastName }} {{ p.firstName }} {{ p.middleName }}</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-black border border-amber-100">{{ p.seat }}</span></td>
+                                <td class="px-4 py-3 text-xs font-bold uppercase text-slate-500">{{ p.gender === 'male' ? 'Муж' : p.gender === 'female' ? 'Жен' : '—' }}</td>
+                                <td class="px-4 py-3 text-xs font-mono text-slate-500">{{ p.birthDate || '—' }}</td>
+                                <td class="px-4 py-3 text-xs text-slate-500">{{ p.docType }} {{ p.docNumber }}</td>
+                                <td class="px-4 py-3 text-xs text-slate-500">{{ p.citizenship || '—' }}</td>
+                                <td class="px-4 py-3">
+                                    <div class="text-[10px] text-slate-500 font-bold uppercase">{{ p.pickup_city || '—' }}</div>
+                                    <div class="text-[10px] text-amber-600 font-black uppercase">{{ p.drop_off_city || '—' }}</div>
+                                </td>
+                                <td class="px-4 py-3 text-xs font-mono text-slate-700">{{ p.contactPhone || '—' }}</td>
+                                <td class="px-4 py-3">
+                                    <span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border"
+                                        :class="{
+                                            'bg-blue-50 text-blue-600 border-blue-100': p.paymentStatus === 'Ручная',
+                                            'bg-emerald-50 text-emerald-600 border-emerald-100': p.paymentStatus === 'Оплачено',
+                                            'bg-amber-50 text-amber-600 border-amber-100': p.paymentStatus === 'Ожидает оплаты'
+                                        }">{{ p.paymentStatus }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <button @click="deleteAdminBooking(p.originalBookingId)" class="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Удалить бронь">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         </main>
     </div>
 </template>
