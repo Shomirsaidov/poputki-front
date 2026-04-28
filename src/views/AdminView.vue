@@ -801,7 +801,7 @@ export default {
                         </thead>
                         <tbody class="divide-y divide-slate-50">
                             <tr v-for="(user, index) in users" :key="user.id" class="hover:bg-slate-50 transition-colors text-slate-700">
-                                <td class="px-6 py-4 font-mono text-slate-400">#{{ index + 1 }}</td>
+                                <td class="px-6 py-4 font-mono text-slate-400">#{{ users.length - index }}</td>
                                 <td class="px-6 py-4 font-bold">{{ user.name }} {{ user.surname }}</td>
                                 <td class="px-6 py-4 font-mono">{{ user.phone }}</td>
                                 <td class="px-6 py-4">
@@ -890,8 +890,8 @@ export default {
                 </div>
 
                 <!-- ── Driver Detail Overlay ── -->
-                <div v-if="selectedBusDriver" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-end" @click.self="closeBusDriverDetail">
-                    <div class="w-full max-w-5xl bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+                <div v-if="selectedBusDriver" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-center" @click.self="closeBusDriverDetail">
+                    <div class="w-full bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
                         <!-- Header -->
                         <div class="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center gap-4 z-10">
                             <button @click="closeBusDriverDetail" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
@@ -1275,8 +1275,8 @@ export default {
                 </div>
 
                 <!-- ── Booking Manifest Overlay ── -->
-                <div v-if="selectedBusTicket" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-end" @click.self="closeBusTicketBookings">
-                    <div class="w-full max-w-6xl bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+                <div v-if="selectedBusTicket" class="fixed inset-0 z-[210] bg-slate-900/40 backdrop-blur-sm flex items-stretch justify-center" @click.self="closeBusTicketBookings">
+                    <div class="w-full bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
                         <div class="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center gap-4 z-10">
                             <button @click="closeBusTicketBookings" class="p-2 rounded-xl hover:bg-slate-100 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
