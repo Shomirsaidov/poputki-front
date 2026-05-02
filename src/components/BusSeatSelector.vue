@@ -379,26 +379,26 @@ export default {
 </template>
 
 <style scoped>
-.bus-selector { width: 100%; max-width: 320px; margin: 0 auto; }
+.bus-selector { width: 100%; margin: 0 auto; }
 .selector-hint { font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 12px; }
-.bus-body { background: #fff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+.bus-body { background: transparent; display: flex; flex-direction: column; gap: 8px; width: 100%; }
 
-/* Fixed 5-column grid: 42+42 (left) + 20 (aisle) + 42+42 (right) = 188px content width */
+/* Dynamic grid columns: larger seats */
 .layout-row {
     display: grid;
-    grid-template-columns: 42px 42px 20px 42px 42px;
+    grid-template-columns: 60px 60px 30px 60px 60px;
     align-items: center;
-    gap: 2px; /* Small gap between columns */
+    gap: 4px;
     justify-content: center;
 }
 
 .seat-pair { display: contents; } /* Act as direct children of the grid */
-.aisle { width: 20px; height: 100%; grid-column: 3; }
+.aisle { width: 30px; height: 100%; grid-column: 3; }
 
-.empty-cell { width: 42px; height: 42px; }
+.empty-cell { width: 60px; height: 60px; }
 
 .seat-btn {
-    width: 42px; height: 42px; border-radius: 6px; border: 1.5px solid #e2e8f0;
+    width: 60px; height: 60px; border-radius: 12px; border: 2px solid #e2e8f0;
     background: #fff; display: flex; align-items: center; justify-content: center;
     position: relative; cursor: pointer; transition: 0.1s; padding: 0;
 }
@@ -409,15 +409,15 @@ export default {
 .booked-female { background: #fdf2f8; border-color: #fbcfe8; }
 .seat-premium { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
 
-.num { font-size: 12px; font-weight: 700; }
-.star { position: absolute; top: 1px; right: 1px; font-size: 8px; color: #f59e0b; }
-.gender-icon { width: 16px; height: 16px; }
+.num { font-size: 16px; font-weight: 900; }
+.star { position: absolute; top: 2px; right: 2px; font-size: 12px; color: #f59e0b; }
+.gender-icon { width: 24px; height: 24px; }
 .gender-icon.male { color: #3b82f6; }
 .gender-icon.female { color: #ec4899; }
 
 .label-tile {
-    height: 38px; display: flex; align-items: center; justify-content: center;
-    font-size: 9px; font-weight: 800; text-transform: uppercase; border-radius: 6px; padding: 0 4px; border: 1px solid #cbd5e1;
+    height: 50px; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 900; text-transform: uppercase; border-radius: 10px; padding: 0 8px; border: 1px solid #cbd5e1;
 }
 .label-default { background: #f8fafc; color: #64748b; }
 .label-exit { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
@@ -427,14 +427,14 @@ export default {
 .span-2 { grid-column: span 2; }
 
 .table-cell {
-    grid-column: span 2; height: 26px; background: #f1f5f9; border: 1px dashed #cbd5e1;
-    border-radius: 13px; display: flex; align-items: center; justify-content: center;
-    font-size: 9px; font-weight: 700; color: #94a3b8; margin: 4px 0;
+    grid-column: span 2; height: 40px; background: #f1f5f9; border: 2px dashed #cbd5e1;
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 900; color: #94a3b8; margin: 8px 0;
 }
 
-.driver-cell { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 21px; }
-.driver-icon { width: 20px; height: 20px; color: #cbd5e1; }
-.guide-cell { width: 42px; height: 42px; border: 1.5px dashed #cbd5e1; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 10px; font-weight: 700; }
+.driver-cell { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 30px; }
+.driver-icon { width: 28px; height: 28px; color: #cbd5e1; }
+.guide-cell { width: 60px; height: 60px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 12px; font-weight: 900; }
 
 .floor-switcher { display: flex; gap: 4px; background: #f1f5f9; padding: 3px; border-radius: 10px; margin-bottom: 12px; }
 .floor-switcher button { flex: 1; border: none; background: none; padding: 6px; font-size: 11px; font-weight: 700; color: #64748b; border-radius: 7px; cursor: pointer; }
