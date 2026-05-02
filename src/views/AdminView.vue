@@ -199,6 +199,37 @@ export default {
                     borderWidth: 0
                 }]
             };
+        },
+        busRidesChartData() {
+            if (!this.stats || !this.stats.busTicketsLast7Days) return null;
+            const labels = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toISOString().split('T')[0]);
+            }
+            const busMap = Object.fromEntries(this.stats.busTicketsLast7Days.map(b => [b.date, b.count]));
+            return {
+                labels,
+                datasets: [{
+                    label: 'Автобусные рейсы',
+                    data: labels.map(l => busMap[l] || 0),
+                    borderColor: '#6366f1',
+                    backgroundColor: '#6366f1',
+                    tension: 0.4
+                }]
+            };
+        },
+        ridesComparisonChartData() {
+            if (!this.stats) return null;
+            return {
+                labels: ['Авто (Попутки)', 'Автобусы'],
+                datasets: [{
+                    data: [this.stats.totalRides || 0, this.stats.totalBusTickets || 0],
+                    backgroundColor: ['#f59e0b', '#6366f1'],
+                    borderWidth: 0
+                }]
+            };
         }
     },
     methods: {
@@ -672,7 +703,7 @@ export default {
                     </div>
                 </div>
 
-                <div v-if="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-6">
+                <div v-if="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
                         <p class="text-slate-400 text-xs lg:text-sm font-black uppercase tracking-widest mb-2">Пользователи</p>
                         <h3 class="text-3xl lg:text-4xl font-black text-slate-900 font-mono">{{ stats.totalUsers }}</h3>
@@ -680,6 +711,14 @@ export default {
                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm border-l-[6px] border-l-amber-500">
                         <p class="text-slate-400 text-xs lg:text-sm font-black uppercase tracking-widest mb-2">Активные поездки</p>
                         <h3 class="text-3xl lg:text-4xl font-black text-amber-500 font-mono">{{ stats.activeRides }}</h3>
+                    </div>
+                    <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm border-l-[6px] border-l-indigo-500">
+                        <p class="text-slate-400 text-xs lg:text-sm font-black uppercase tracking-widest mb-2">Автобусы (рейсы)</p>
+                        <h3 class="text-3xl lg:text-4xl font-black text-indigo-500 font-mono">{{ stats.totalBusTickets }}</h3>
+                    </div>
+                    <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm border-l-[6px] border-l-emerald-500">
+                        <p class="text-slate-400 text-xs lg:text-sm font-black uppercase tracking-widest mb-2">Выручка (Брони)</p>
+                        <h3 class="text-3xl lg:text-4xl font-black text-emerald-500 font-mono">{{ stats.revenue }} с.</h3>
                     </div>
                 </div>
 
@@ -741,6 +780,27 @@ export default {
                         </div>
                     </div>
 
+                    <!-- Bus Growth Chart -->
+                    <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
+                        <h4 class="text-lg lg:text-xl font-bold mb-6 flex justify-between items-center text-slate-800">
+                            <span>Автобусные рейсы</span>
+                            <span class="text-xs text-slate-400 font-normal">Последние 7 дней</span>
+                        </h4>
+                        <div class="h-[300px]">
+                            <LineChart :data="busRidesChartData" :options="chartOptions" />
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+                    <!-- Rides Comparison -->
+                    <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
+                        <h4 class="text-lg lg:text-xl font-bold mb-6 text-slate-800">Соотношение поездок</h4>
+                        <div class="h-[300px]">
+                            <PieChart :data="ridesComparisonChartData" :options="pieOptions" />
+                        </div>
+                    </div>
+
                     <!-- Vehicle Distribution -->
                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
                         <h4 class="text-lg lg:text-xl font-bold mb-6 text-slate-800">Наличие авто</h4>
@@ -763,7 +823,7 @@ export default {
                     </div>
                 </div>
 
-                <div v-if="stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+                <div v-if="stats" class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
                         <h4 class="text-lg lg:text-xl font-bold mb-4 lg:mb-6 text-slate-800">Новые пользователи</h4>
                         <div class="space-y-4">
@@ -779,6 +839,15 @@ export default {
                             <div v-for="d in stats.popularDestinations" :key="d.to_city" class="flex justify-between items-center border-b border-slate-50 pb-3 last:border-0">
                                 <span class="font-medium text-sm lg:text-base text-slate-700">{{ d.to_city }}</span>
                                 <span class="bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-xs font-bold">{{ d.count }} поездок</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
+                        <h4 class="text-lg lg:text-xl font-bold mb-4 lg:mb-6 text-slate-800">Топ маршрутов (Автобус)</h4>
+                        <div class="space-y-4">
+                            <div v-for="r in stats.popularBusRoutes" :key="r.route" class="flex justify-between items-center border-b border-slate-50 pb-3 last:border-0">
+                                <span class="font-medium text-xs lg:text-sm text-slate-700">{{ r.route }}</span>
+                                <span class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-bold">{{ r.count }} рейсов</span>
                             </div>
                         </div>
                     </div>

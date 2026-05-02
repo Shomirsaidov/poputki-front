@@ -29,14 +29,18 @@ export default {
         doubleDeckPremiumSeats() {
             // Floor 2 front seats (first 4) are always premium on a double-decker
             const floor2Front = [1, 2, 3, 4];
-            // Floor 1 table area: 8 seats around the midpoint of floor 1
+            
+            // Floor 1: First 3 rows (first 10 seats) are always VIP
             const f2 = this.floor2Seats;
-            const tableStart = f2 + Math.ceil(this.floor1Seats / 2) - 3;
-            const floor1Table = [];
-            for (let i = tableStart; i < tableStart + 8; i++) {
-                if (i > f2 && i <= f2 + this.floor1Seats) floor1Table.push(i);
+            const floor1VIP = [];
+            for (let i = 1; i <= 10; i++) {
+                const seatNum = f2 + i;
+                if (seatNum <= f2 + this.floor1Seats) {
+                    floor1VIP.push(seatNum);
+                }
             }
-            const defaultVIP = [...floor2Front, ...floor1Table];
+            
+            const defaultVIP = [...floor2Front, ...floor1VIP];
             if (this.premiumSeats && this.premiumSeats.length > 0) {
                 return [...new Set([...this.premiumSeats, ...defaultVIP])];
             }
@@ -166,16 +170,13 @@ export default {
                 layout.push({ type: 'seat-row', left: 'stairs', right: firstRight });
             }
 
-            const hasTable = this.floor1Seats >= 10;
-            const tableMidpoint = f2 + Math.ceil(this.floor1Seats / 2);
-            let tableInserted = false;
-            let seat = f2 + 3;
+            // Tables always come right after the first row
+            if (this.floor1Seats >= 6) {
+                layout.push({ type: 'table-row', left: 'table', right: 'table' });
+            }
 
+            let seat = f2 + 3;
             while (seat <= max) {
-                if (hasTable && !tableInserted && seat >= tableMidpoint) {
-                    layout.push({ type: 'table-row', left: 'table', right: 'table' });
-                    tableInserted = true;
-                }
                 const left = [seat, seat + 1].filter(s => s <= max);
                 const right = [seat + 3, seat + 2].filter(s => s <= max);
                 if (left.length > 0 || right.length > 0) {

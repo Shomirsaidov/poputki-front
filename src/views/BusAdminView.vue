@@ -4,10 +4,38 @@ import AppLogo from '../components/AppLogo.vue';
 import * as XLSX from 'xlsx';
 import { compressImage } from '../utils/imageCompression';
 import { uploadToCloudinaryDirect } from '../utils/cloudinary';
+import { 
+  Chart as ChartJS, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  LineElement, 
+  PointElement, 
+  CategoryScale, 
+  LinearScale,
+  ArcElement,
+  BarElement
+} from 'chart.js';
+import { Line, Pie, Bar } from 'vue-chartjs';
+
+ChartJS.register(
+  Title, 
+  Tooltip, 
+  Legend, 
+  LineElement, 
+  PointElement, 
+  CategoryScale, 
+  LinearScale,
+  ArcElement,
+  BarElement
+);
 
 export default {
     components: {
-        AppLogo
+        AppLogo,
+        LineChart: Line,
+        PieChart: Pie,
+        BarChart: Bar
     },
     data() {
         return {
@@ -15,8 +43,9 @@ export default {
             phone: '',
             password: '',
             user: null,
-            activeTab: 'tickets', // 'tickets', 'create', 'bookings'
+            activeTab: 'dashboard', // 'dashboard', 'tickets', 'create', 'bookings'
             loading: false,
+            stats: null,
             tickets: [],
             bookings: [],
             cities: [],
@@ -45,6 +74,7 @@ export default {
             busErrors: {},
             mobileMenuOpen: false,
             navItems: [
+                { id: 'dashboard', label: 'Дашборд' },
                 { id: 'tickets', label: 'Мои рейсы' },
                 { id: 'create', label: 'Создать рейс' },
                 { id: 'create-booking', label: 'Создать бронь' },
@@ -67,7 +97,36 @@ export default {
             uploadPreset: 'poputki',
             isEditingBooking: false,
             editingBookingId: null,
-            showEditModal: false
+            showEditModal: false,
+            chartOptions: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#475569' }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: { color: '#f1f5f9' },
+                        ticks: { color: '#64748b' }
+                    },
+                    x: {
+                        grid: { color: '#f1f5f9' },
+                        ticks: { color: '#64748b' }
+                    }
+                }
+            },
+            pieOptions: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#475569' }
+                    }
+                }
+            }
 
         }
     },
@@ -92,11 +151,20 @@ export default {
         async fetchData() {
             if (!this.user) return;
             this.fetchCities();
-            if (this.activeTab === 'tickets') {
+            if (this.activeTab === 'dashboard') {
+                this.fetchStats();
+            } else if (this.activeTab === 'tickets') {
                 this.fetchTickets();
             } else if (this.activeTab === 'bookings') {
                 this.fetchBookings();
             }
+        },
+        async fetchStats() {
+            this.loading = true;
+            try {
+                const res = await api.get(`/bus-admin/stats?operator_id=${this.user.id}`);
+                this.stats = res.data;
+            } catch (e) { console.error('Error fetching stats', e); } finally { this.loading = false; }
         },
         async fetchCities() {
             if (this.cities.length > 0) return;
@@ -519,6 +587,32 @@ export default {
             if (!this.bookingSearch) return manifest;
             const s = this.bookingSearch.toLowerCase();
             return manifest.filter(p => p.searchContext.includes(s));
+        },
+        dailyBookingsChartData() {
+            if (!this.stats || !this.stats.dailyBookings) return null;
+            return {
+                labels: this.stats.dailyBookings.map(d => d.date),
+                datasets: [{
+                    label: 'Бронирований в день',
+                    data: this.stats.dailyBookings.map(d => d.count),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            };
+        },
+        fillRateChartData() {
+            if (!this.stats) return null;
+            const avg = parseFloat(this.stats.avgFillRate) || 0;
+            return {
+                labels: ['Заполнено', 'Свободно'],
+                datasets: [{
+                    data: [avg, 100 - avg],
+                    backgroundColor: ['#10b981', '#f1f5f9'],
+                    borderWidth: 0
+                }]
+            };
         }
     },
 watch: {
@@ -633,18 +727,72 @@ watch: {
             <!-- Main Content -->
             <main class="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-10 pt-20 lg:pt-10 w-full overflow-x-hidden">
                 
-                <!-- Blocked Alert -->
-                <div v-if="user?.is_blocked" class="mb-8 bg-red-50 border-2 border-red-100 rounded-[32px] p-6 flex flex-col sm:flex-row items-center gap-6 shadow-sm animate-pulse">
-                    <div class="bg-red-500 text-white p-4 rounded-2xl shadow-lg shadow-red-500/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
+                <!-- Dashboard Section -->
+                <section v-if="activeTab === 'dashboard'" class="space-y-6 lg:space-y-10">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="text-3xl font-bold text-slate-900">Дашборд</h2>
+                            <p class="text-slate-500 mt-2 uppercase tracking-widest font-black text-xs">Обзор вашей деятельности</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-xl font-black text-red-900 mb-1">Ваш аккаунт заблокирован</h3>
-                        <p class="text-red-700 font-medium">Вы временно ограничены в создании новых рейсов. Для уточнения причин свяжитесь с администрацией.</p>
+
+                    <!-- Stats Grid -->
+                    <div v-if="loading && !stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
+                        <div v-for="i in 4" :key="'stat-skel-'+i" class="bg-white p-8 rounded-[32px] border border-slate-100 h-32"></div>
                     </div>
-                </div>
+                    <div v-else-if="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Выручка</p>
+                            <h3 class="text-3xl font-black text-slate-900">{{ stats.totalRevenue }} <span class="text-lg">с.</span></h3>
+                        </div>
+                        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm border-l-4 border-amber-500">
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Всего броней</p>
+                            <h3 class="text-3xl font-black text-amber-500">{{ stats.totalBookings }}</h3>
+                        </div>
+                        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Активные рейсы</p>
+                            <h3 class="text-3xl font-black text-slate-900">{{ stats.activeRides }}</h3>
+                        </div>
+                        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm border-l-4 border-emerald-500">
+                            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Сред. загрузка</p>
+                            <h3 class="text-3xl font-black text-emerald-500">{{ stats.avgFillRate }} <span class="text-lg">%</span></h3>
+                        </div>
+                    </div>
+
+                    <div v-if="stats" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Daily Bookings Chart -->
+                        <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                            <h4 class="text-lg font-bold mb-6 text-slate-800">Динамика бронирований</h4>
+                            <div class="h-[300px]">
+                                <LineChart :data="dailyBookingsChartData" :options="chartOptions" />
+                            </div>
+                        </div>
+
+                        <!-- Routes and Distribution -->
+                        <div class="space-y-8">
+                            <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                                <h4 class="text-lg font-bold mb-6 text-slate-800">Популярные маршруты</h4>
+                                <div class="space-y-4">
+                                    <div v-for="r in stats.popularRoutes" :key="r.route" class="flex justify-between items-center pb-3 border-b border-slate-50 last:border-0">
+                                        <span class="font-bold text-slate-700">{{ r.route }}</span>
+                                        <span class="bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-xs font-black">{{ r.count }} рейсов</span>
+                                    </div>
+                                    <div v-if="!stats.popularRoutes || stats.popularRoutes.length === 0" class="text-center text-slate-300 py-4">Нет данных</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-8">
+                                <div class="h-32 w-32 shrink-0">
+                                    <PieChart :data="fillRateChartData" :options="pieOptions" />
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-800 mb-1">Загрузка мест</h4>
+                                    <p class="text-sm text-slate-400">Средний показатель наполняемости ваших автобусов</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- Tickets List -->
                 <section v-if="activeTab === 'tickets'" class="space-y-6 lg:space-y-8">
