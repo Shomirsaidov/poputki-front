@@ -236,10 +236,10 @@ export default {
             return {
                 labels: this.stats.bookingDynamics.map(d => d.date),
                 datasets: [{
-                    label: 'Всего бронирований (Авто + Автобусы)',
+                    label: 'Бронирования автобусов',
                     data: this.stats.bookingDynamics.map(d => d.count),
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
                     fill: true,
                     tension: 0.4
                 }]
@@ -789,7 +789,7 @@ export default {
                     <!-- Global Booking Dynamics -->
                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm lg:col-span-2">
                         <h4 class="text-lg lg:text-xl font-bold mb-6 flex justify-between items-center text-slate-800">
-                            <span>Общая динамика бронирований</span>
+                            <span>Динамика бронирований (Автобусы)</span>
                             <span class="text-xs text-slate-400 font-normal">Последние 30 дней</span>
                         </h4>
                         <div class="h-[350px]">
