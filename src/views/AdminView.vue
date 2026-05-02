@@ -230,6 +230,20 @@ export default {
                     borderWidth: 0
                 }]
             };
+        },
+        bookingDynamicsChartData() {
+            if (!this.stats || !this.stats.bookingDynamics) return null;
+            return {
+                labels: this.stats.bookingDynamics.map(d => d.date),
+                datasets: [{
+                    label: 'Всего бронирований (Авто + Автобусы)',
+                    data: this.stats.bookingDynamics.map(d => d.count),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            };
         }
     },
     methods: {
@@ -772,8 +786,19 @@ export default {
                 </div>
 
                 <div v-if="stats" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-                     <!-- Age Distribution -->
-                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
+                    <!-- Global Booking Dynamics -->
+                    <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm lg:col-span-2">
+                        <h4 class="text-lg lg:text-xl font-bold mb-6 flex justify-between items-center text-slate-800">
+                            <span>Общая динамика бронирований</span>
+                            <span class="text-xs text-slate-400 font-normal">Последние 30 дней</span>
+                        </h4>
+                        <div class="h-[350px]">
+                            <LineChart :data="bookingDynamicsChartData" :options="chartOptions" />
+                        </div>
+                    </div>
+
+                    <!-- Age Distribution -->
+                    <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
                         <h4 class="text-lg lg:text-xl font-bold mb-6 text-slate-800">Возраст пользователей</h4>
                         <div class="h-[300px]">
                             <BarChart :data="ageChartData" :options="chartOptions" />
