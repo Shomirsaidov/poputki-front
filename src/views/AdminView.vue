@@ -189,13 +189,14 @@ export default {
                 }]
             };
         },
-        vehicleChartData() {
-            if (!this.stats) return null;
+        bookingStatusChartData() {
+            if (!this.stats || !this.stats.bookingStatusDistribution) return null;
+            const dist = this.stats.bookingStatusDistribution;
             return {
-                labels: ['С авто', 'Без авто'],
+                labels: ['Оплачено', 'Ручная', 'Прочее'],
                 datasets: [{
-                    data: [this.stats.usersWithCars || 0, this.stats.usersWithoutCars || 0],
-                    backgroundColor: ['#10b981', '#f43f5e'],
+                    data: [dist.paid, dist.manual, dist.other],
+                    backgroundColor: ['#10b981', '#3b82f6', '#f43f5e'],
                     borderWidth: 0
                 }]
             };
@@ -826,11 +827,15 @@ export default {
                         </div>
                     </div>
 
-                    <!-- Vehicle Distribution -->
+                    <!-- Booking Status Distribution -->
                     <div class="bg-white p-6 lg:p-8 rounded-2xl lg:rounded-[32px] border border-slate-100 shadow-sm">
-                        <h4 class="text-lg lg:text-xl font-bold mb-6 text-slate-800">Наличие авто</h4>
+                        <h4 class="text-lg lg:text-xl font-bold mb-6 text-slate-800">Статистика бронирований</h4>
                         <div class="h-[300px]">
-                            <PieChart :data="vehicleChartData" :options="pieOptions" />
+                            <PieChart :data="bookingStatusChartData" :options="pieOptions" />
+                        </div>
+                        <div v-if="stats.bookingStatusDistribution" class="mt-4 flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest px-2">
+                            <span>Всего: {{ stats.bookingStatusDistribution.total }}</span>
+                            <span class="text-emerald-500">Оплачено: {{ ((stats.bookingStatusDistribution.paid / stats.bookingStatusDistribution.total) * 100 || 0).toFixed(1) }}%</span>
                         </div>
                     </div>
                 </div>
