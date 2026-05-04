@@ -37,6 +37,19 @@ export default {
         PieChart: Pie,
         BarChart: Bar
     },
+    async mounted() {
+        const savedUser = localStorage.getItem('busUser');
+        if (savedUser) {
+            try {
+                this.user = JSON.parse(savedUser);
+                this.isAuthenticated = true;
+                await this.fetchData();
+            } catch (e) {
+                console.error('Error restoring session', e);
+                localStorage.removeItem('busUser');
+            }
+        }
+    },
     data() {
         return {
             isAuthenticated: false,
@@ -141,7 +154,8 @@ export default {
                 const res = await api.post('/auth/bus-login', { phone: this.phone, password: this.password });
                 this.user = res.data.user;
                 this.isAuthenticated = true;
-                this.fetchData();
+                localStorage.setItem('busUser', JSON.stringify(this.user));
+                await this.fetchData();
             } catch (e) {
                 alert(e.response?.data?.error || 'Ошибка входа');
             } finally {
@@ -151,13 +165,17 @@ export default {
         async fetchData() {
             if (!this.user) return;
             this.fetchCities();
+            
+            // Parallel fetch to avoid long sequential waits
+            const promises = [];
             if (this.activeTab === 'dashboard') {
-                this.fetchStats();
+                promises.push(this.fetchStats());
             } else if (this.activeTab === 'tickets') {
-                this.fetchTickets();
+                promises.push(this.fetchTickets());
             } else if (this.activeTab === 'bookings') {
-                this.fetchBookings();
+                promises.push(this.fetchBookings());
             }
+            await Promise.all(promises);
         },
         async fetchStats() {
             this.loading = true;
@@ -198,6 +216,7 @@ export default {
             this.password = '';
             this.tickets = [];
             this.bookings = [];
+            localStorage.removeItem('busUser');
         },
         // Bus Creation logic borrowed from AdminView.vue
         addStop() {
