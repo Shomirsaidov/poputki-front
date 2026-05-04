@@ -1415,6 +1415,7 @@ export default {
                                     <th class="px-5 py-4">Бронь (всего)</th>
                                     <th class="px-5 py-4">Ручная</th>
                                     <th class="px-5 py-4">Оплачено</th>
+                                    <th class="px-5 py-4">Ожидает</th>
                                     <th class="px-5 py-4">Цена</th>
                                 </tr>
                             </thead>
@@ -1444,6 +1445,9 @@ export default {
                                     </td>
                                     <td class="px-5 py-4">
                                         <span class="bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg text-xs font-bold border border-emerald-100">{{ ticket.paid_booked || 0 }}</span>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span class="bg-amber-50 text-amber-600 px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-100">{{ ticket.pending_booked || 0 }}</span>
                                     </td>
                                     <td class="px-5 py-4 font-bold text-emerald-600">{{ ticket.price }} с.</td>
                                 </tr>
