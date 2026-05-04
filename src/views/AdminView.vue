@@ -193,7 +193,7 @@ export default {
             if (!this.stats || !this.stats.bookingStatusDistribution) return null;
             const dist = this.stats.bookingStatusDistribution;
             return {
-                labels: ['Оплачено', 'Ручная', 'Прочее'],
+                labels: ['Оплачено', 'Ручная', 'Ожидает оплаты'],
                 datasets: [{
                     data: [dist.paid, dist.manual, dist.other],
                     backgroundColor: ['#10b981', '#3b82f6', '#f43f5e'],
