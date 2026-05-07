@@ -48,7 +48,7 @@ export default {
           <circle cx="17" cy="17" r="2" />
         </svg>
         <span class="text-[10px] font-semibold transition-colors duration-200"
-          :class="isActive('my-rides') ? 'text-amber-500' : 'text-gray-400'">Поездки</span>
+          :class="isActive('my-rides') ? 'text-amber-500' : 'text-gray-400'">Попутки</span>
       </button>
 
       <!-- Create Ride -->

@@ -222,7 +222,7 @@ export default {
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 17h6" />
           <circle cx="17" cy="17" r="2" />
           </svg>
-          Поездки
+          Попутки
         </button>
         <button
           @click="switchTab('buses')"
@@ -243,7 +243,7 @@ export default {
       </div>
 
       <h1 class="text-white text-2xl font-bold mb-5 relative z-10 tracking-tight">
-        {{ activeTab === 'rides' ? 'Поиск поездки' : 'Билеты на автобус' }}
+        {{ activeTab === 'rides' ? 'Поиск попутки' : 'Билеты на автобус' }}
       </h1>
 
       <!-- Search form -->
@@ -282,7 +282,7 @@ export default {
 
         <button @click="search" class="w-full font-bold py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all hover:shadow-xl hover:-translate-y-0.5 mt-2 flex items-center justify-center space-x-2 text-white"
           :class="activeTab === 'rides' ? 'bg-slate-900 shadow-slate-900/30' : 'bg-blue-600 shadow-blue-500/30'">
-          <span>{{ activeTab === 'rides' ? 'Найти поездку' : 'Найти билеты' }}</span>
+          <span>{{ activeTab === 'rides' ? 'Найти попутку' : 'Найти билеты' }}</span>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
           </svg>
@@ -377,7 +377,7 @@ export default {
               
               <div class="flex-1 min-w-0">
                 <h3 class="text-slate-800 font-extrabold text-sm leading-tight truncate">
-                  {{ altOfferType === 'buses' ? 'Нашли рейсы автобусов' : 'Нашли частные поездки' }}
+                  {{ altOfferType === 'buses' ? 'Нашли рейсы автобусов' : 'Нашли частные попутки' }}
                 </h3>
                 <p class="text-slate-500 text-[11px] font-medium leading-tight mt-0.5">
                   {{ altOfferType === 'buses' ? 'По вашему маршруту есть билеты' : 'Посмотрите доступные предложения' }}
@@ -398,7 +398,7 @@ export default {
           <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </div>
-          <p class="text-gray-500 font-medium">Поездок пока нет</p>
+          <p class="text-gray-500 font-medium">Попуток пока нет</p>
           <p class="text-gray-400 text-sm mt-1">Попробуйте изменить дату или параметры</p>
         </div>
       </template>

@@ -95,7 +95,7 @@ export default {
                 { id: 'dashboard', label: 'Дашборд' },
                 { id: 'users', label: 'Пользователи' },
                 { id: 'bus-drivers', label: 'Водители автобусов' },
-                { id: 'rides', label: 'Поездки' },
+                { id: 'rides', label: 'Попутки' },
                 { id: 'bus-tickets', label: 'Автобусы' },
                 { id: 'reviews', label: 'Отзывы' },
                 { id: 'cities', label: 'Города' }

@@ -111,10 +111,10 @@ export default {
                 <div class="flex items-center space-x-4">
                     <button @click="$router.push('/create')" class="text-sm font-bold text-slate-700 hover:text-amber-500 transition-colors hidden md:flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
-                        Создать поездку
+                        Создать попутку
                     </button>
                     <button @click="$router.push('/search')" class="text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-full transition-all shadow-md active:scale-95">
-                        Найти поездку
+                        Найти попутку
                     </button>
                 </div>
             </nav>
@@ -152,7 +152,7 @@ export default {
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 17h6" />
           <circle cx="17" cy="17" r="2" />
                                 </svg>
-                                Совместные поездки
+                                Попутки
                             </button>
                             <button @click="activeTab = 'buses'" 
                                 :class="activeTab === 'buses' ? 'bg-white text-slate-900 shadow-md shadow-gray-200/50 border-gray-100/50' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 border-transparent'"
@@ -388,7 +388,7 @@ export default {
             <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">Готовы в путь?</h2>
             <p class="text-slate-500 text-lg mb-8 max-w-xl mx-auto">Присоединяйтесь к тысячам пользователей, которые уже экономят на поездках вместе с нами.</p>
             <button @click="$router.push('/search')" class="bg-blue-600 text-white font-bold text-lg px-8 py-4 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all">
-                Начать поиск поездки
+                Начать поиск попутки
             </button>
         </div>
     </div>
