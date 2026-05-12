@@ -2,6 +2,7 @@
 import api from '../api';
 import BusSeatSelector from '../components/BusSeatSelector.vue';
 import AppModal from '../components/AppModal.vue';
+import { uploadToCloudinaryDirect } from '../utils/cloudinary';
 
 const STATE_KEY = (id) => `bus_booking_${id}`;
 
@@ -258,40 +259,80 @@ export default {
 
             this.ocrLoading = true;
             try {
-                // 1. Convert to Base64
+                // 1. Convert to Base64 (raw, no Data URI prefix)
                 const base64 = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
+                    reader.onload = () => {
+                        const dataUri = reader.result;
+                        // Strip "data:image/...;base64," prefix
+                        const raw = dataUri.includes(',') ? dataUri.split(',')[1] : dataUri;
+                        resolve(raw);
+                    };
                     reader.onerror = reject;
                     reader.readAsDataURL(file);
                 });
 
-                // 2. Call OCR API
-                const res = await api.post('/ocr/passport', { image: base64 });
-                const ocrData = res.data;
+                // 2. Upload to Cloudinary for storage (fire and forget)
+                uploadToCloudinaryDirect(file, { uploadPreset: 'ml_default' }).catch(e => {
+                    console.warn('[OCR] Cloudinary upload failed (non-critical):', e);
+                });
 
-                // 3. Find first empty or update first passenger
-                // If we have multiple passengers, we might want to fill the one that is currently empty
+                // 3. Call 100OCRAPI directly from browser (bypasses Cloudflare TLS fingerprinting)
+                const formBody = `img=${encodeURIComponent(base64)}`;
+                const ocrRes = await fetch('https://api.100ocrapi.com/v1/passport', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-API-Key': 'nkIXg5z3fkwFdApQB1lVYVheMn9XkYXr'
+                    },
+                    body: formBody
+                });
+
+                const data = await ocrRes.json();
+                console.log('[OCR] 100OCRAPI response:', data);
+
+                if (data.status !== 'OK') {
+                    throw new Error(data.message || 'OCR recognition failed');
+                }
+
+                // 4. Map response to passenger format
+                const msg = data.message;
+
+                // Parse name — API returns "LASTNAME FIRSTNAME"
+                let lastName = '';
+                let firstName = '';
+                if (msg.name) {
+                    const nameParts = msg.name.replace(',', '').trim().split(/\s+/);
+                    lastName = nameParts[0] || '';
+                    firstName = nameParts.slice(1).join(' ') || '';
+                }
+
+                // Parse birthDay "YYYYMMDD" → "YYYY-MM-DD"
+                let birthDate = '';
+                if (msg.birthDay && msg.birthDay.length === 8) {
+                    birthDate = `${msg.birthDay.slice(0, 4)}-${msg.birthDay.slice(4, 6)}-${msg.birthDay.slice(6, 8)}`;
+                }
+
+                // 5. Fill passenger data
                 let targetIndex = this.passengersData.findIndex(p => !p.lastName && !p.firstName);
-                if (targetIndex === -1) targetIndex = 0; // Default to first if all have some data
+                if (targetIndex === -1) targetIndex = 0;
 
                 const p = this.passengersData[targetIndex];
-                if (ocrData.lastName) p.lastName = ocrData.lastName;
-                if (ocrData.firstName) p.firstName = ocrData.firstName;
-                if (ocrData.middleName) p.middleName = ocrData.middleName;
-                if (ocrData.birthDate) p.birthDate = ocrData.birthDate;
-                if (ocrData.docNumber) p.docNumber = ocrData.docNumber;
-                if (ocrData.gender) p.gender = ocrData.gender;
-                if (ocrData.citizenship) p.citizenship = ocrData.citizenship;
+                if (lastName) p.lastName = lastName;
+                if (firstName) p.firstName = firstName;
+                if (birthDate) p.birthDate = birthDate;
+                if (msg.passportNumber) p.docNumber = msg.passportNumber;
+                if (msg.gender) p.gender = msg.gender === 'M' ? 'male' : (msg.gender === 'F' ? 'female' : '');
+                if (msg.nationality) p.citizenship = msg.nationality;
 
                 this.saveState();
-                this.showAlert('Успешно', 'Данные паспорта успешно распознаны и заполнены.', 'success');
+                this.showAlert('Успешно', `Данные паспорта пассажира ${targetIndex + 1} успешно распознаны.`, 'success');
             } catch (e) {
                 console.error('OCR Error:', e);
-                this.showAlert('Ошибка', 'Не удалось распознать паспорт. Попробуйте еще раз или введите данные вручную.', 'error');
+                this.showAlert('Ошибка', e.message || 'Не удалось распознать паспорт. Попробуйте еще раз или введите данные вручную.', 'error');
             } finally {
                 this.ocrLoading = false;
-                event.target.value = ''; // Reset input
+                event.target.value = '';
             }
         }
     },
