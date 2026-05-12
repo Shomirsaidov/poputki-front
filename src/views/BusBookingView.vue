@@ -312,29 +312,33 @@ export default {
                     firstName = nameParts.slice(1).join(' ') || '';
                 }
 
-                // Parse birthDay "YYYYMMDD" → "YYYY-MM-DD"
+                // Parse birthDay "YYYYMMDD" or "YYYY-MM-DD" → "YYYY-MM-DD"
                 const rawBirth = msg.birthDay || msg.birth_day || msg.dateOfBirth || msg.date_of_birth;
                 let birthDate = '';
-                if (rawBirth && rawBirth.length === 8) {
-                    birthDate = `${rawBirth.slice(0, 4)}-${rawBirth.slice(4, 6)}-${rawBirth.slice(6, 8)}`;
+                if (rawBirth) {
+                    if (rawBirth.includes('-')) {
+                        birthDate = rawBirth;
+                    } else if (rawBirth.length === 8) {
+                        birthDate = `${rawBirth.slice(0, 4)}-${rawBirth.slice(4, 6)}-${rawBirth.slice(6, 8)}`;
+                    }
                 }
 
-                // Map nationality codes to Russian names
+                // Map nationality codes/names to Russian names
                 const natMap = {
-                    'TJK': 'Таджикистан',
-                    'RUS': 'Россия',
-                    'UZB': 'Узбекистан',
-                    'KAZ': 'Казахстан',
-                    'KGZ': 'Кыргызстан',
-                    'TKM': 'Туркменистан',
-                    'BLR': 'Беларусь',
-                    'UKR': 'Украина',
-                    'AZE': 'Азербайджан',
-                    'ARM': 'Армения',
-                    'GEO': 'Грузия'
+                    'TJK': 'Таджикистан', 'TAJIKISTAN': 'Таджикистан',
+                    'RUS': 'Россия', 'RUSSIA': 'Россия',
+                    'UZB': 'Узбекистан', 'UZBEKISTAN': 'Узбекистан',
+                    'KAZ': 'Казахстан', 'KAZAKHSTAN': 'Казахстан',
+                    'KGZ': 'Кыргызстан', 'KYRGYZSTAN': 'Кыргызстан',
+                    'TKM': 'Туркменистан', 'TURKMENISTAN': 'Туркменистан',
+                    'BLR': 'Беларусь', 'BELARUS': 'Беларусь',
+                    'UKR': 'Украина', 'UKRAINE': 'Украина',
+                    'AZE': 'Азербайджан', 'AZERBAIJAN': 'Азербайджан',
+                    'ARM': 'Армения', 'ARMENIA': 'Армения',
+                    'GEO': 'Грузия', 'GEORGIA': 'Грузия'
                 };
-                const rawNat = msg.nationality || msg.country;
-                const citizenship = natMap[rawNat] || rawNat;
+                const rawNat = (msg.nationality || msg.country || '').toUpperCase();
+                const citizenship = natMap[rawNat] || (msg.nationality || msg.country);
 
                 // 5. Fill passenger data
                 const p = { ...this.passengersData[targetIndex] };
