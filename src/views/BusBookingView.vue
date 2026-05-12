@@ -293,21 +293,42 @@ export default {
 
                 // 4. Map response to passenger format
                 const msg = data.message;
+                console.log('[OCR] Mapping message:', msg);
 
-                // Parse name — API returns "LASTNAME FIRSTNAME"
+                // Parse name — API can return "LASTNAME FIRSTNAME" or "LASTNAME<FIRSTNAME"
                 let lastName = '';
                 let firstName = '';
                 if (msg.name) {
-                    const nameParts = msg.name.replace(',', '').trim().split(/\s+/);
+                    const cleanName = msg.name.replace(/<+/g, ' ').replace(',', '').trim();
+                    const nameParts = cleanName.split(/\s+/);
                     lastName = nameParts[0] || '';
                     firstName = nameParts.slice(1).join(' ') || '';
                 }
 
                 // Parse birthDay "YYYYMMDD" → "YYYY-MM-DD"
+                // Support both birthDay and birth_day
+                const rawBirth = msg.birthDay || msg.birth_day;
                 let birthDate = '';
-                if (msg.birthDay && msg.birthDay.length === 8) {
-                    birthDate = `${msg.birthDay.slice(0, 4)}-${msg.birthDay.slice(4, 6)}-${msg.birthDay.slice(6, 8)}`;
+                if (rawBirth && rawBirth.length === 8) {
+                    birthDate = `${rawBirth.slice(0, 4)}-${rawBirth.slice(4, 6)}-${rawBirth.slice(6, 8)}`;
                 }
+
+                // Map nationality codes to Russian names
+                const natMap = {
+                    'TJK': 'Таджикистан',
+                    'RUS': 'Россия',
+                    'UZB': 'Узбекистан',
+                    'KAZ': 'Казахстан',
+                    'KGZ': 'Кыргызстан',
+                    'TKM': 'Туркменистан',
+                    'BLR': 'Беларусь',
+                    'UKR': 'Украина',
+                    'AZE': 'Азербайджан',
+                    'ARM': 'Армения',
+                    'GEO': 'Грузия'
+                };
+                const rawNat = msg.nationality || msg.country;
+                const citizenship = natMap[rawNat] || rawNat;
 
                 // 5. Fill passenger data
                 let targetIndex = this.passengersData.findIndex(p => !p.lastName && !p.firstName);
@@ -317,9 +338,26 @@ export default {
                 if (lastName) p.lastName = lastName;
                 if (firstName) p.firstName = firstName;
                 if (birthDate) p.birthDate = birthDate;
-                if (msg.passportNumber) p.docNumber = msg.passportNumber;
-                if (msg.gender) p.gender = msg.gender === 'M' ? 'male' : (msg.gender === 'F' ? 'female' : '');
-                if (msg.nationality) p.citizenship = msg.nationality;
+                
+                const docNum = msg.passportNumber || msg.passport_number || msg.doc_number;
+                if (docNum) p.docNumber = docNum;
+                
+                const rawGender = msg.gender || msg.sex;
+                if (rawGender) {
+                    p.gender = (rawGender === 'M' || rawGender === 'MALE') ? 'male' : 
+                               (rawGender === 'F' || rawGender === 'FEMALE') ? 'female' : '';
+                }
+                
+                if (citizenship) {
+                    // Check if citizenship exists in our predefined list, if not set to 'Другое'
+                    if (this.countries.includes(citizenship)) {
+                        p.citizenship = citizenship;
+                    } else {
+                        p.citizenship = 'Другое';
+                        p.customCitizenship = citizenship;
+                    }
+                }
+                
                 p.docType = 'Загран паспорт';
 
                 // Use splice to ensure Vue reactivity
