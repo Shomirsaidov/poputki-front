@@ -277,19 +277,15 @@ export default {
                     console.warn('[OCR] Cloudinary upload failed (non-critical):', e);
                 });
 
-                // 3. Call 100OCRAPI directly from browser (bypasses Cloudflare TLS fingerprinting)
-                const formBody = `img=${encodeURIComponent(base64)}`;
-                const ocrRes = await fetch('https://api.100ocrapi.com/v1/passport', {
+                // 3. Call OCR via Supabase Edge Function proxy (avoids CORS + Cloudflare blocks)
+                const ocrRes = await fetch('https://xzvtjcqwmuezxyeerkki.supabase.co/functions/v1/ocr-passport', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-API-Key': 'nkIXg5z3fkwFdApQB1lVYVheMn9XkYXr'
-                    },
-                    body: formBody
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ img: base64 })
                 });
 
                 const data = await ocrRes.json();
-                console.log('[OCR] 100OCRAPI response:', data);
+                console.log('[OCR] Response:', data);
 
                 if (data.status !== 'OK') {
                     throw new Error(data.message || 'OCR recognition failed');
