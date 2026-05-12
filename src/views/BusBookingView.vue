@@ -107,7 +107,13 @@ export default {
     },
     methods: {
         showAlert(title, message, type = 'info', onConfirm = null, showBotLink = false) {
-            this.modal = { show: true, title, message, type, confirmText: 'ОК', showCancel: false, showBotLink, onConfirm };
+            this.modal = { 
+                show: true, title, message, type, confirmText: 'ОК', showCancel: false, showBotLink, 
+                onConfirm: () => {
+                    this.modal.show = false;
+                    if (onConfirm) onConfirm();
+                }
+            };
         },
 
         saveState() {
@@ -307,16 +313,20 @@ export default {
                 let targetIndex = this.passengersData.findIndex(p => !p.lastName && !p.firstName);
                 if (targetIndex === -1) targetIndex = 0;
 
-                const p = this.passengersData[targetIndex];
+                const p = { ...this.passengersData[targetIndex] };
                 if (lastName) p.lastName = lastName;
                 if (firstName) p.firstName = firstName;
                 if (birthDate) p.birthDate = birthDate;
                 if (msg.passportNumber) p.docNumber = msg.passportNumber;
                 if (msg.gender) p.gender = msg.gender === 'M' ? 'male' : (msg.gender === 'F' ? 'female' : '');
                 if (msg.nationality) p.citizenship = msg.nationality;
+                p.docType = 'Загран паспорт';
+
+                // Use splice to ensure Vue reactivity
+                this.passengersData.splice(targetIndex, 1, p);
 
                 this.saveState();
-                this.showAlert('Успешно', `Данные паспорта пассажира ${targetIndex + 1} успешно распознаны.`, 'success');
+                this.showAlert('Успешно', `Данные пассажира ${targetIndex + 1} (${p.lastName} ${p.firstName}) успешно распознаны.`, 'success');
             } catch (e) {
                 console.error('OCR Error:', e);
                 this.showAlert('Ошибка', e.message || 'Не удалось распознать паспорт. Попробуйте еще раз или введите данные вручную.', 'error');
