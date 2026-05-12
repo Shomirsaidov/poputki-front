@@ -27,6 +27,7 @@ export default {
             ],
             pickupCity: '',
             dropOffCity: '',
+            ocrLoading: false,
 
             modal: { show: false, title: '', message: '', type: 'info', confirmText: 'ОК', showCancel: false, showBotLink: false, onConfirm: null }
         };
@@ -245,6 +246,53 @@ export default {
             if (!dateStr) return '';
             const d = new Date(dateStr);
             return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', weekday: 'short' });
+        },
+
+        triggerScanner() {
+            this.$refs.passportInput.click();
+        },
+
+        async handlePassportUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            this.ocrLoading = true;
+            try {
+                // 1. Convert to Base64
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                // 2. Call OCR API
+                const res = await api.post('/ocr/passport', { image: base64 });
+                const ocrData = res.data;
+
+                // 3. Find first empty or update first passenger
+                // If we have multiple passengers, we might want to fill the one that is currently empty
+                let targetIndex = this.passengersData.findIndex(p => !p.lastName && !p.firstName);
+                if (targetIndex === -1) targetIndex = 0; // Default to first if all have some data
+
+                const p = this.passengersData[targetIndex];
+                if (ocrData.lastName) p.lastName = ocrData.lastName;
+                if (ocrData.firstName) p.firstName = ocrData.firstName;
+                if (ocrData.middleName) p.middleName = ocrData.middleName;
+                if (ocrData.birthDate) p.birthDate = ocrData.birthDate;
+                if (ocrData.docNumber) p.docNumber = ocrData.docNumber;
+                if (ocrData.gender) p.gender = ocrData.gender;
+                if (ocrData.citizenship) p.citizenship = ocrData.citizenship;
+
+                this.saveState();
+                this.showAlert('Успешно', 'Данные паспорта успешно распознаны и заполнены.', 'success');
+            } catch (e) {
+                console.error('OCR Error:', e);
+                this.showAlert('Ошибка', 'Не удалось распознать паспорт. Попробуйте еще раз или введите данные вручную.', 'error');
+            } finally {
+                this.ocrLoading = false;
+                event.target.value = ''; // Reset input
+            }
         }
     },
 
@@ -410,6 +458,34 @@ export default {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- OCR Passport Scanner Button -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative overflow-hidden group transition-all hover:border-blue-200">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50"></div>
+                            
+                            <div class="relative z-10 flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                                        <svg v-if="!ocrLoading" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        <div v-else class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-slate-800">Заполнить по паспорту</h3>
+                                        <p class="text-xs text-gray-400 mt-0.5">Загрузите фото для автозаполнения</p>
+                                    </div>
+                                </div>
+                                <button @click="triggerScanner" :disabled="ocrLoading"
+                                    class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold active:scale-95 transition-all disabled:opacity-50">
+                                    {{ ocrLoading ? 'Распознаем...' : 'Сканировать' }}
+                                </button>
+                            </div>
+                            
+                            <!-- Hidden File Input -->
+                            <input type="file" ref="passportInput" class="hidden" accept="image/*" @change="handlePassportUpload" />
                         </div>
 
                         <div v-for="(p, i) in passengersData" :key="i"
