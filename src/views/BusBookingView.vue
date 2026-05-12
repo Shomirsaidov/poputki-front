@@ -266,9 +266,10 @@ export default {
                     quality: 0.6
                 });
 
-                // Strip Data URI prefix to get raw base64
-                const base64 = compressedDataUri.split(',')[1];
-                console.log('[OCR] Compressed image size:', Math.round(base64.length * 0.75 / 1024), 'KB');
+                // Send the full data URI so the API can identify image type
+                const base64 = compressedDataUri;
+                const sizeKB = Math.round(compressedDataUri.split(',')[1].length * 0.75 / 1024);
+                console.log('[OCR] Compressed image size:', sizeKB, 'KB');
 
                 // 2. Call OCR via Supabase Edge Function proxy
                 const ocrRes = await fetch('https://xzvtjcqwmuezxyeerkki.supabase.co/functions/v1/ocr-passport', {
