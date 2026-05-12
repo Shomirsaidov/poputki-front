@@ -2,7 +2,7 @@
 import api from '../api';
 import BusSeatSelector from '../components/BusSeatSelector.vue';
 import AppModal from '../components/AppModal.vue';
-import { uploadToCloudinaryDirect } from '../utils/cloudinary';
+import { compressImage } from '../utils/imageCompression';
 
 const STATE_KEY = (id) => `bus_booking_${id}`;
 
@@ -259,25 +259,18 @@ export default {
 
             this.ocrLoading = true;
             try {
-                // 1. Convert to Base64 (raw, no Data URI prefix)
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        const dataUri = reader.result;
-                        // Strip "data:image/...;base64," prefix
-                        const raw = dataUri.includes(',') ? dataUri.split(',')[1] : dataUri;
-                        resolve(raw);
-                    };
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
+                // 1. Compress image to < 200KB (OCR API recommendation)
+                const compressedDataUri = await compressImage(file, {
+                    maxWidth: 1200,
+                    maxHeight: 1200,
+                    quality: 0.6
                 });
 
-                // 2. Upload to Cloudinary for storage (fire and forget)
-                uploadToCloudinaryDirect(file, { uploadPreset: 'ml_default' }).catch(e => {
-                    console.warn('[OCR] Cloudinary upload failed (non-critical):', e);
-                });
+                // Strip Data URI prefix to get raw base64
+                const base64 = compressedDataUri.split(',')[1];
+                console.log('[OCR] Compressed image size:', Math.round(base64.length * 0.75 / 1024), 'KB');
 
-                // 3. Call OCR via Supabase Edge Function proxy (avoids CORS + Cloudflare blocks)
+                // 2. Call OCR via Supabase Edge Function proxy
                 const ocrRes = await fetch('https://xzvtjcqwmuezxyeerkki.supabase.co/functions/v1/ocr-passport', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
