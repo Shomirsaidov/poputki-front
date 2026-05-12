@@ -172,6 +172,7 @@ export default {
         buildPassengersData(count) {
             return Array.from({ length: count }, (_, i) => ({
                 index: i + 1,
+                isExpanded: false,
                 gender: '',
                 lastName: '',
                 firstName: '',
@@ -366,12 +367,12 @@ export default {
                 }
                 
                 p.docType = 'Загран паспорт';
+                p.isExpanded = true;
 
                 // Use splice to ensure Vue reactivity
                 this.passengersData.splice(targetIndex, 1, p);
 
                 this.saveState();
-                this.showAlert('Успешно', `Данные пассажира ${targetIndex + 1} (${p.lastName} ${p.firstName}) успешно распознаны.`, 'success');
             } catch (e) {
                 console.error('OCR Error:', e);
                 this.showAlert('Ошибка', e.message || 'Не удалось распознать паспорт. Попробуйте еще раз или введите данные вручную.', 'error');
@@ -567,8 +568,8 @@ export default {
                             </div>
 
                             <div class="p-5 space-y-3">
-                                <!-- OCR Scanner for this passenger -->
-                                <div class="bg-blue-50/50 rounded-xl p-3 flex items-center justify-between border border-blue-100/50 mb-2">
+                                <!-- OCR Scanner for this passenger (Small, if expanded) -->
+                                <div v-if="p.isExpanded" class="bg-blue-50/50 rounded-xl p-3 flex items-center justify-between border border-blue-100/50 mb-2">
                                     <div class="flex items-center gap-3">
                                         <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
                                             <svg v-if="ocrLoadingIndex !== i" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -585,7 +586,27 @@ export default {
                                     </button>
                                 </div>
 
-                                <!-- Gender -->
+                                <!-- Big Scanner if not expanded -->
+                                <div v-else class="bg-slate-50 rounded-2xl p-6 border border-gray-100 text-center">
+                                    <div class="w-16 h-16 mx-auto bg-blue-600 text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-blue-200">
+                                        <svg v-if="ocrLoadingIndex !== i" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        <div v-else class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                    <h3 class="font-black text-slate-800 text-lg mb-1">Сканировать паспорт</h3>
+                                    <p class="text-sm text-gray-500 mb-5">Автоматическое заполнение всех данных</p>
+                                    <button @click="triggerScanner(i)" :disabled="ocrLoadingIndex !== -1"
+                                        class="w-full py-4 bg-slate-900 text-white rounded-xl text-sm font-bold active:scale-95 transition-all disabled:opacity-50">
+                                        {{ ocrLoadingIndex === i ? 'Распознаем...' : 'Выбрать фото паспорта' }}
+                                    </button>
+                                    <button @click="p.isExpanded = true; saveState()" class="mt-4 text-xs font-bold text-blue-600 tracking-wider uppercase inline-flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                        Заполнить вручную
+                                    </button>
+                                </div>
+
+                                <!-- Expandable Forms block -->
+                                <div v-if="p.isExpanded" class="space-y-3 animate-fade-in-down">
+                                    <!-- Gender -->
                                 <div class="grid grid-cols-2 gap-2">
                                     <button @click="p.gender = 'male'; saveState()"
                                         :class="[
@@ -674,6 +695,7 @@ export default {
                                     <input v-model="p.docNumber" @input="saveState" type="text" placeholder="АА 1234567"
                                         class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium tracking-widest"
                                         :class="showValidationErrors && !p.docNumber ? 'border-red-400 bg-red-50' : 'border-gray-200'"/>
+                                </div>
                                 </div>
                             </div>
                         </div>
