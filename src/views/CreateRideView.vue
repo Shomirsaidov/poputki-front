@@ -153,6 +153,13 @@ export default {
             }
             this.rideRole = role;
             this.step = 2;
+            if (role === 'passenger') {
+                this.seats = 1;
+            } else if (this.hasVehicle) {
+                this.seats = this.vehicleTotalSeats - 1;
+            } else {
+                this.seats = 4;
+            }
         },
         proceedToSeatSelection() {
             // Validation
@@ -288,12 +295,12 @@ export default {
               date: this.date,
               time: this.time,
               price: this.rideRole === 'driver' ? parseInt(this.price) : 0,
-              seats: this.rideRole === 'driver' ? this.seats : 1,
+              seats: this.seats,
               description: '',
               is_passenger_entry: this.rideRole === 'passenger',
               reserved_seats: this.rideRole === 'driver' ? this.reservedSeats : [],
               allows_delivery: this.rideRole === 'driver' ? this.allows_delivery : false,
-              total_seats: this.rideRole === 'driver' ? this.vehicleTotalSeats : 1,
+              total_seats: this.rideRole === 'driver' ? this.vehicleTotalSeats : this.seats,
               row_prices: this.showRowPrices ? {
                   front: parseInt(this.rowPrices.front) || parseInt(this.price),
                   row2: parseInt(this.rowPrices.row2) || parseInt(this.price),
@@ -603,6 +610,25 @@ export default {
                     </div>
                 </div>
             </div>
+        </div>
+      </section>
+
+      <!-- Number of Passengers (Passenger only) -->
+      <section v-if="rideRole === 'passenger'" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+        <div class="flex justify-between items-center">
+          <div class="flex flex-col">
+            <span class="text-slate-600 font-bold text-sm">Количество пассажиров</span>
+            <span class="text-xs text-gray-400">Сколько человек едет с вами</span>
+          </div>
+          <div class="flex items-center space-x-4 bg-gray-50 p-1.5 rounded-xl">
+            <button type="button" @click="seats > 1 && seats--" class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:bg-gray-100 active:scale-90 transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+            </button>
+            <span class="font-bold w-6 text-center text-lg text-slate-800">{{ seats }}</span>
+            <button type="button" @click="seats < 8 && seats++" class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:bg-gray-100 active:scale-90 transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+            </button>
+          </div>
         </div>
       </section>
 

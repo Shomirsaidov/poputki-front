@@ -325,6 +325,21 @@ export default {
                      </div>
                  </div>
 
+                  <!-- Passenger Count Card (Passenger Request Only) -->
+                  <div v-if="ride.is_passenger_entry" class="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 p-6 rounded-3xl flex items-center justify-between border border-blue-100/50 shadow-soft">
+                      <div>
+                          <p class="text-sm font-bold text-slate-400 uppercase tracking-wider">Количество пассажиров</p>
+                          <p class="text-3xl font-black text-blue-600 mt-1">
+                            {{ ride.seats }}&nbsp;<span class="text-lg text-blue-500 font-medium ml-1">пасс.</span>
+                          </p>
+                      </div>
+                      <div class="h-12 w-12 rounded-full bg-blue-100/60 flex items-center justify-center text-blue-600 shadow-inner">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                      </div>
+                  </div>
+
                   <!-- Premium Info Alert for Passenger Proposals -->
                   <div v-if="ride.is_passenger_entry" class="relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50/50 p-6 rounded-[32px] border border-blue-100/60 flex items-start space-x-5 backdrop-blur-sm shadow-sm ring-1 ring-blue-900/5">
                       <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-400 opacity-[0.05] rounded-full blur-2xl animate-pulse"></div>
@@ -437,10 +452,20 @@ export default {
 
                           <!-- Booked Seats -->
                            <div v-for="booking in ride.bookings" :key="booking.id" class="flex items-center space-x-4 p-3 rounded-2xl" :class="booking.passenger_gender === 'female' ? 'bg-pink-50 border border-pink-100' : 'bg-blue-50 border border-blue-100'">
-                               <router-link :to="`/user/${booking.passenger_id}`" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" :class="booking.passenger_gender === 'female' ? 'bg-pink-200 text-pink-700' : 'bg-blue-200 text-blue-700'">
+                               <router-link :to="`/user/${booking.passenger_id}`" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0" :class="booking.passenger_gender === 'female' ? 'bg-pink-200 text-pink-700' : 'bg-blue-200 text-blue-700'">
                                     {{ booking.passenger_gender === 'female' ? '👩' : (booking.passenger_gender === 'male' ? '👨' : (booking.passenger_name ? booking.passenger_name[0] : 'P')) }}
                                </router-link>
-                               <router-link :to="`/user/${booking.passenger_id}`" class="text-slate-700 font-bold hover:text-blue-600 transition-colors">{{ booking.passenger_name || 'Попутчик' }}</router-link>
+                               <div class="flex-1 min-w-0">
+                                   <router-link :to="`/user/${booking.passenger_id}`" class="block text-slate-700 font-bold hover:text-blue-600 transition-colors truncate">{{ booking.passenger_name || 'Попутчик' }}</router-link>
+                                   <a
+                                       v-if="isDriver && booking.passenger_phone"
+                                       :href="`tel:${booking.passenger_phone}`"
+                                       class="inline-flex items-center space-x-1 mt-1 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
+                                   >
+                                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                       <span class="tracking-tight">{{ booking.passenger_phone }}</span>
+                                   </a>
+                               </div>
                            </div>
                      </div>
                   </div>
