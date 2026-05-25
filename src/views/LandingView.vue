@@ -106,23 +106,23 @@ export default {
 
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
             <!-- Navigation -->
-            <nav class="flex items-center justify-between mb-16 md:mb-24 flex-wrap gap-3">
-                <AppLogo @click="$router.push('/')" class="cursor-pointer" />
-                <div class="flex items-center space-x-3 flex-wrap">
-                    <button @click="$router.push('/create')" class="text-sm font-bold text-slate-700 hover:text-amber-500 transition-colors hidden md:flex items-center gap-1">
+            <nav class="flex items-center justify-between mb-16 md:mb-24 gap-4">
+                <AppLogo @click="$router.push('/')" class="cursor-pointer shrink-0" />
+                <div class="flex items-center gap-3 flex-wrap justify-end">
+                    <button @click="$router.push('/create')" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors hidden md:flex items-center gap-1.5">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                         Создать попутку
                     </button>
                     <a
                         href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
-                        class="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1 bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-100"
+                        class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg border border-blue-200"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
                         </svg>
                         Приложение
                     </a>
-                    <button @click="$router.push('/search')" class="text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-full transition-all shadow-md active:scale-95">
+                    <button @click="$router.push('/search')" class="text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg transition-all shadow-md shadow-blue-600/20 active:scale-95">
                         Найти попутку
                     </button>
                 </div>
@@ -394,15 +394,15 @@ export default {
                 </div>
             </div>
 
-            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">Готовы в путь?</h2>
-            <p class="text-slate-500 text-lg mb-8 max-w-xl mx-auto">Присоединяйтесь к тысячам пользователей, которые уже экономят на поездках вместе с нами.</p>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">Готовы в путь?</h2>
+            <p class="text-slate-600 text-lg mb-10 max-w-2xl mx-auto font-medium">Выбирайте удобный способ поиска поездок — веб или мобильное приложение. На обе платформы нужна одна учетная запись.</p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button @click="$router.push('/search')" class="bg-blue-600 text-white font-bold text-lg px-8 py-4 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all">
-                    Начать поиск попутки
+                <button @click="$router.push('/search')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-base md:text-lg px-8 py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+                    Поиск на сайте
                 </button>
-                <a href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk" class="bg-slate-200 text-slate-700 font-bold text-lg px-8 py-4 rounded-2xl shadow-lg shadow-slate-200/30 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                <a href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-base md:text-lg px-8 py-4 rounded-xl border border-slate-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
                     </svg>
                     Скачать приложение
                 </a>
@@ -411,76 +411,123 @@ export default {
     </div>
 
     <!-- Mobile App Download Section -->
-    <div class="py-20 md:py-24 bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden">
-        <!-- Background decorations -->
-        <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[100px] pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
-        <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none transform -translate-x-1/2 translate-y-1/2"></div>
-
-        <div class="container mx-auto px-4 max-w-4xl relative z-10">
-            <div class="text-center space-y-8">
-                <!-- Icon -->
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-500/20 rounded-full border border-blue-400/50 backdrop-blur-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                </div>
-
-                <!-- Heading -->
-                <div class="space-y-3">
-                    <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-                        Поппутки везде с вами
-                    </h2>
-                    <p class="text-lg text-slate-300 max-w-2xl mx-auto font-medium">
-                        Загрузите мобильное приложение и получайте доступ к поездкам из любого места. Быстро, удобно и всегда рядом.
-                    </p>
-                </div>
-
-                <!-- Download Button -->
-                <div class="pt-6">
-                    <a
-                        href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
-                        class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg rounded-2xl shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 group"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+    <div class="py-16 md:py-20 bg-gradient-to-b from-blue-50 to-white relative overflow-hidden border-y border-blue-100/50">
+        <div class="container mx-auto px-4 max-w-5xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <!-- Left: Text and CTA -->
+                <div class="space-y-6">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center space-x-2 bg-blue-100 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-blue-600 border border-blue-200/50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
                         </svg>
-                        <span>Скачать для Android</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12.31 6.65c-.26-.26-.67-.26-.93 0l-1.41 1.41c-.26.26-.26.67 0 .93L9.72 11H7c-.55 0-1 .45-1 1s.45 1 1 1h2.72l-1.75 1.71c-.26.26-.26.67 0 .93l1.41 1.41c.26.26.67.26.93 0l4.39-4.39c.26-.26.26-.67 0-.93l-4.39-4.39zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-                        </svg>
-                    </a>
-                </div>
-
-                <!-- Features list -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8">
-                    <div class="text-center space-y-2">
-                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mx-auto border border-white/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                        </div>
-                        <p class="text-sm font-semibold text-slate-200">Быстрый поиск</p>
-                        <p class="text-xs text-slate-400">Найдите рейс в пару кликов</p>
+                        Android приложение
                     </div>
 
-                    <div class="text-center space-y-2">
-                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mx-auto border border-white/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <p class="text-sm font-semibold text-slate-200">Всегда доступно</p>
-                        <p class="text-xs text-slate-400">Пользуйтесь 24/7 без ограничений</p>
+                    <!-- Heading -->
+                    <div class="space-y-3">
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                            Поездки в кармане
+                        </h2>
+                        <p class="text-lg text-slate-600 font-medium leading-relaxed max-w-lg">
+                            Загрузите приложение для быстрого поиска, управления бронированиями и уведомлений о новых рейсах в реальном времени.
+                        </p>
                     </div>
 
-                    <div class="text-center space-y-2">
-                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mx-auto border border-white/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
+                    <!-- Features List -->
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-start gap-3">
+                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-medium text-slate-700">Мгновенный поиск рейсов по дате и маршруту</p>
                         </div>
-                        <p class="text-sm font-semibold text-slate-200">Безопасно</p>
-                        <p class="text-xs text-slate-400">Надежная система рейтингов</p>
+                        <div class="flex items-start gap-3">
+                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-medium text-slate-700">Управление бронированиями в одном месте</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-medium text-slate-700">Уведомления о новых попутках и изменениях</p>
+                        </div>
+                    </div>
+
+                    <!-- Download Button -->
+                    <div class="pt-4">
+                        <a
+                            href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
+                            class="inline-flex items-center gap-3 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 hover:shadow-xl hover:bg-blue-700 transition-all active:scale-95 group"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                            </svg>
+                            <span>Скачать для Android</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Visual Mockup -->
+                <div class="hidden md:flex justify-center relative">
+                    <div class="relative w-full max-w-sm">
+                        <!-- Glow effect -->
+                        <div class="absolute -inset-4 bg-gradient-to-br from-blue-200 to-blue-100 rounded-[40px] opacity-30 blur-xl"></div>
+
+                        <!-- Phone frame -->
+                        <div class="relative bg-white rounded-[40px] border-8 border-slate-900 shadow-2xl overflow-hidden aspect-[9/19.5]">
+                            <!-- Notch -->
+                            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-slate-900 rounded-b-3xl z-20"></div>
+
+                            <!-- Screen content -->
+                            <div class="h-full bg-gradient-to-b from-blue-50 to-white p-6 pt-10 flex flex-col gap-4">
+                                <!-- Header -->
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] font-bold text-slate-700">9:41</span>
+                                    <div class="flex gap-1">
+                                        <div class="w-1 h-1.5 bg-slate-900 rounded-sm"></div>
+                                        <div class="w-1 h-1.5 bg-slate-900 rounded-sm"></div>
+                                        <div class="w-1.5 h-1.5 bg-slate-900 rounded-sm"></div>
+                                    </div>
+                                </div>
+
+                                <!-- App demo -->
+                                <div class="space-y-3 text-center">
+                                    <div class="w-8 h-8 rounded-full bg-blue-600 mx-auto"></div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-800">Душанбе → Худжанд</p>
+                                        <p class="text-[10px] text-slate-500">25 май, 10:00</p>
+                                    </div>
+                                </div>
+
+                                <!-- Cards -->
+                                <div class="space-y-2 mt-4">
+                                    <div class="bg-white border border-slate-200 rounded-2xl p-3">
+                                        <p class="text-[10px] font-bold text-slate-700">150 сом</p>
+                                        <p class="text-[8px] text-slate-500 mt-1">2 свободных места</p>
+                                    </div>
+                                    <div class="bg-white border border-slate-200 rounded-2xl p-3">
+                                        <p class="text-[10px] font-bold text-slate-700">120 сом</p>
+                                        <p class="text-[8px] text-slate-500 mt-1">5 свободных мест</p>
+                                    </div>
+                                </div>
+
+                                <!-- Bottom CTA -->
+                                <div class="mt-auto pt-2">
+                                    <button class="w-full bg-blue-600 text-white text-[10px] font-bold py-2 rounded-xl">
+                                        Найти рейс
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
