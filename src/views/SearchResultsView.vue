@@ -351,6 +351,7 @@ export default {
                 <span v-else>{{ ride.seats - (ride.booked_seats || 0) }} из {{ ride.seats }} свободно</span>
               </div>
             </div>
+            </div>
 
             <!-- Mobile App Promo Card after 3rd ride -->
             <div v-if="index === 2" class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/50 flex flex-col items-center justify-center text-center space-y-4"
@@ -505,6 +506,7 @@ export default {
                   <div class="text-xs text-gray-400">за 1 пассажира</div>
                 </div>
               </div>
+            </div>
             </div>
 
             <!-- Mobile App Promo Card after 3rd bus ticket -->
