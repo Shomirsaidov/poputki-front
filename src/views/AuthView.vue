@@ -64,7 +64,8 @@ export default {
       if (!this.tgUser) return;
 
       const user = JSON.parse(localStorage.getItem('user') || 'null');
-      
+      console.log('[AuthView] Syncing Telegram user:', this.tgUser.first_name, 'ID:', this.tgUser.id);
+
       try {
         const res = await api.post('/auth/telegram-login', {
           id: this.tgUser.id,
@@ -76,10 +77,13 @@ export default {
           initData: getTelegramInitData() // Send raw string for backend verification
         });
 
+        console.log('[AuthView] Telegram sync response:', res.data);
+
         if (res.data.user) {
           localStorage.setItem('user', JSON.stringify(res.data.user));
           if (res.data.token) localStorage.setItem('token', res.data.token);
-          
+          console.log('[AuthView] Telegram user synced:', res.data.user.id);
+
           // Re-update registration if we are in step 2
           if (this.step === 2) {
              this.registration.id = res.data.user.id;
@@ -87,7 +91,12 @@ export default {
           }
         }
       } catch (e) {
-        console.error("Sync TG error:", e);
+        console.error("[AuthView] Telegram sync error:", {
+          message: e.message,
+          status: e.response?.status,
+          data: e.response?.data,
+          fullError: e
+        });
       }
     },
     showAlert(title, message, type = 'info') {
@@ -112,26 +121,52 @@ export default {
 
       this.loading = true;
       try {
+        console.log('[AuthView] Attempting login with phone:', cleanPhone);
         const res = await api.post('/auth/login', {
            phone: cleanPhone
         });
 
+        console.log('[AuthView] Login response:', res.data);
+
         // Save token immediately
         if (res.data.token) {
           localStorage.setItem('token', res.data.token);
+          console.log('[AuthView] Token saved:', res.data.token);
+        }
+
+        if (!res.data.user) {
+          throw new Error('Сервер не вернул данные пользователя. Попробуйте позже.');
         }
 
         if (res.data.user.isNew || !res.data.user.name || !res.data.user.age) {
+            console.log('[AuthView] User needs profile completion. isNew:', res.data.user.isNew);
             this.registration.id = res.data.user.id;
             this.registration.phone = res.data.user.phone || '';
             this.step = 2;
         } else {
+            console.log('[AuthView] User profile complete, logging in');
             this.completeAuth(res.data.user, res.data.token);
         }
       } catch (e) {
-        console.error('Login error:', e);
-        const errorMsg = e.response?.data?.error || 'Ошибка входа. Пожалуйста, попробуйте позже.';
-        this.showAlert('Ошибка', errorMsg, 'error');
+        console.error('[AuthView] Login error details:', {
+          message: e.message,
+          status: e.response?.status,
+          data: e.response?.data,
+          fullError: e
+        });
+
+        let errorMsg = 'Ошибка входа. ';
+        if (e.response?.status === 400) {
+          errorMsg += 'Проверьте номер телефона. ' + (e.response?.data?.error || '');
+        } else if (e.response?.status === 500) {
+          errorMsg += 'Ошибка сервера. ' + (e.response?.data?.error || '');
+        } else if (e.message) {
+          errorMsg += e.message;
+        } else {
+          errorMsg += 'Пожалуйста, попробуйте позже.';
+        }
+
+        this.showAlert('Ошибка входа', errorMsg, 'error');
       } finally {
         this.loading = false;
       }
