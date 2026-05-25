@@ -109,17 +109,13 @@ export default {
             <nav class="flex items-center justify-between mb-16 md:mb-24 gap-4">
                 <AppLogo @click="$router.push('/')" class="cursor-pointer shrink-0" />
                 <div class="flex items-center gap-3 flex-wrap justify-end">
-                    <button @click="$router.push('/create')" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors hidden md:flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    <button @click="$router.push('/create')" class="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors hidden md:block">
                         Создать попутку
                     </button>
                     <a
                         href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
-                        class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg border border-blue-200"
+                        class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors hidden md:block bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg border border-blue-200"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-                        </svg>
                         Приложение
                     </a>
                     <button @click="$router.push('/search')" class="text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg transition-all shadow-md shadow-blue-600/20 active:scale-95">
@@ -396,14 +392,11 @@ export default {
 
             <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">Готовы в путь?</h2>
             <p class="text-slate-600 text-lg mb-10 max-w-2xl mx-auto font-medium">Выбирайте удобный способ поиска поездок — веб или мобильное приложение. На обе платформы нужна одна учетная запись.</p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button @click="$router.push('/search')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-base md:text-lg px-8 py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+            <div class="flex items-center justify-center gap-4">
+                <button @click="$router.push('/search')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-base md:text-lg px-8 py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95">
                     Поиск на сайте
                 </button>
-                <a href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-base md:text-lg px-8 py-4 rounded-xl border border-slate-200 transition-all active:scale-95 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-                    </svg>
+                <a href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk" class="hidden md:block bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg px-8 py-4 rounded-xl border border-slate-200 transition-all active:scale-95">
                     Скачать приложение
                 </a>
             </div>
@@ -466,12 +459,9 @@ export default {
                     <div class="pt-4">
                         <a
                             href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
-                            class="inline-flex items-center gap-3 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 hover:shadow-xl hover:bg-blue-700 transition-all active:scale-95 group"
+                            class="inline-block px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 hover:shadow-xl hover:bg-blue-700 transition-all active:scale-95"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-                            </svg>
-                            <span>Скачать для Android</span>
+                            Скачать для Android
                         </a>
                     </div>
                 </div>
