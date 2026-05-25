@@ -126,26 +126,40 @@ export default {
            phone: cleanPhone
         });
 
-        console.log('[AuthView] Login response:', res.data);
+        console.log('[AuthView] Login response:', JSON.stringify(res.data, null, 2));
+
+        // Check if response has user data
+        if (!res.data || !res.data.user) {
+          console.error('[AuthView] Invalid response structure:', res.data);
+          const errorMsg = res.data?.message || res.data?.error || 'Неверный формат ответа сервера';
+          throw new Error(errorMsg);
+        }
 
         // Save token immediately
         if (res.data.token) {
           localStorage.setItem('token', res.data.token);
           console.log('[AuthView] Token saved:', res.data.token);
+        } else {
+          console.warn('[AuthView] No token in response');
         }
 
-        if (!res.data.user) {
-          throw new Error('Сервер не вернул данные пользователя. Попробуйте позже.');
-        }
+        const user = res.data.user;
+        console.log('[AuthView] User object:', {
+          id: user.id,
+          phone: user.phone,
+          name: user.name,
+          age: user.age,
+          isNew: user.isNew
+        });
 
-        if (res.data.user.isNew || !res.data.user.name || !res.data.user.age) {
-            console.log('[AuthView] User needs profile completion. isNew:', res.data.user.isNew);
-            this.registration.id = res.data.user.id;
-            this.registration.phone = res.data.user.phone || '';
+        if (user.isNew || !user.name || !user.age || user.age <= 0) {
+            console.log('[AuthView] User needs profile completion. isNew:', user.isNew);
+            this.registration.id = user.id;
+            this.registration.phone = user.phone || '';
             this.step = 2;
         } else {
             console.log('[AuthView] User profile complete, logging in');
-            this.completeAuth(res.data.user, res.data.token);
+            this.completeAuth(user, res.data.token);
         }
       } catch (e) {
         console.error('[AuthView] Login error details:', {
