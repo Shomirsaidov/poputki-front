@@ -109,15 +109,21 @@ export default {
         this.showAlert('Внимание', 'Пожалуйста, введите корректный номер телефона', 'warning');
         return;
       }
-      
+
       this.loading = true;
       try {
-        const res = await api.post('/auth/login', { 
-           phone: cleanPhone 
+        const res = await api.post('/auth/login', {
+           phone: cleanPhone
         });
-        
-        if (res.data.user.isNew) {
+
+        // Save token immediately
+        if (res.data.token) {
+          localStorage.setItem('token', res.data.token);
+        }
+
+        if (res.data.user.isNew || !res.data.user.name || !res.data.user.age) {
             this.registration.id = res.data.user.id;
+            this.registration.phone = res.data.user.phone || '';
             this.step = 2;
         } else {
             this.completeAuth(res.data.user, res.data.token);
@@ -135,7 +141,7 @@ export default {
             this.showAlert('Заполните поля', 'Пожалуйста, заполните все обязательные поля', 'warning');
             return;
         }
-        
+
         let cleanedPhone = this.registration.phone;
         if (this.needsPhone) {
              const digitsOnly = this.registration.phone.replace(/\D/g, '');
@@ -155,9 +161,12 @@ export default {
         try {
             const payload = { ...this.registration, phone: cleanedPhone };
             const res = await api.post('/auth/register', payload);
-            this.completeAuth(res.data.user, localStorage.getItem('token') || ('mock-token-' + res.data.user.id));
+            const token = localStorage.getItem('token') || ('mock-token-' + res.data.user.id);
+            this.completeAuth(res.data.user, token);
         } catch (e) {
-            this.showAlert('Ошибка', 'Ошибка регистрации', 'error');
+            console.error('Register error:', e);
+            const errorMsg = e.response?.data?.error || 'Ошибка регистрации. Пожалуйста, попробуйте позже.';
+            this.showAlert('Ошибка', errorMsg, 'error');
         } finally {
             this.loading = false;
         }
