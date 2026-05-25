@@ -106,13 +106,22 @@ export default {
 
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
             <!-- Navigation -->
-            <nav class="flex items-center justify-between mb-16 md:mb-24">
+            <nav class="flex items-center justify-between mb-16 md:mb-24 flex-wrap gap-3">
                 <AppLogo @click="$router.push('/')" class="cursor-pointer" />
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3 flex-wrap">
                     <button @click="$router.push('/create')" class="text-sm font-bold text-slate-700 hover:text-amber-500 transition-colors hidden md:flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                         Создать попутку
                     </button>
+                    <a
+                        href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
+                        class="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1 bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-100"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                        </svg>
+                        Приложение
+                    </a>
                     <button @click="$router.push('/search')" class="text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 px-5 py-2.5 rounded-full transition-all shadow-md active:scale-95">
                         Найти попутку
                     </button>
@@ -387,9 +396,94 @@ export default {
 
             <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">Готовы в путь?</h2>
             <p class="text-slate-500 text-lg mb-8 max-w-xl mx-auto">Присоединяйтесь к тысячам пользователей, которые уже экономят на поездках вместе с нами.</p>
-            <button @click="$router.push('/search')" class="bg-blue-600 text-white font-bold text-lg px-8 py-4 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all">
-                Начать поиск попутки
-            </button>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button @click="$router.push('/search')" class="bg-blue-600 text-white font-bold text-lg px-8 py-4 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all">
+                    Начать поиск попутки
+                </button>
+                <a href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk" class="bg-slate-200 text-slate-700 font-bold text-lg px-8 py-4 rounded-2xl shadow-lg shadow-slate-200/30 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                    </svg>
+                    Скачать приложение
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile App Download Section -->
+    <div class="py-20 md:py-24 bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden">
+        <!-- Background decorations -->
+        <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[100px] pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
+        <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none transform -translate-x-1/2 translate-y-1/2"></div>
+
+        <div class="container mx-auto px-4 max-w-4xl relative z-10">
+            <div class="text-center space-y-8">
+                <!-- Icon -->
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-500/20 rounded-full border border-blue-400/50 backdrop-blur-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                </div>
+
+                <!-- Heading -->
+                <div class="space-y-3">
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+                        Поппутки везде с вами
+                    </h2>
+                    <p class="text-lg text-slate-300 max-w-2xl mx-auto font-medium">
+                        Загрузите мобильное приложение и получайте доступ к поездкам из любого места. Быстро, удобно и всегда рядом.
+                    </p>
+                </div>
+
+                <!-- Download Button -->
+                <div class="pt-6">
+                    <a
+                        href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
+                        class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg rounded-2xl shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 group"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                        </svg>
+                        <span>Скачать для Android</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12.31 6.65c-.26-.26-.67-.26-.93 0l-1.41 1.41c-.26.26-.26.67 0 .93L9.72 11H7c-.55 0-1 .45-1 1s.45 1 1 1h2.72l-1.75 1.71c-.26.26-.26.67 0 .93l1.41 1.41c.26.26.67.26.93 0l4.39-4.39c.26-.26.26-.67 0-.93l-4.39-4.39zM19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Features list -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8">
+                    <div class="text-center space-y-2">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mx-auto border border-white/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-200">Быстрый поиск</p>
+                        <p class="text-xs text-slate-400">Найдите рейс в пару кликов</p>
+                    </div>
+
+                    <div class="text-center space-y-2">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mx-auto border border-white/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-200">Всегда доступно</p>
+                        <p class="text-xs text-slate-400">Пользуйтесь 24/7 без ограничений</p>
+                    </div>
+
+                    <div class="text-center space-y-2">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mx-auto border border-white/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-200">Безопасно</p>
+                        <p class="text-xs text-slate-400">Надежная система рейтингов</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
