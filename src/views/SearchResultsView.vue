@@ -301,10 +301,10 @@ export default {
       <!-- ======== RIDES RESULTS ======== -->
       <template v-if="!isLoading && activeTab === 'rides'">
         <TransitionGroup name="list" tag="div" class="space-y-4">
-          <div v-for="(ride, index) in rides" :key="ride.id"
-               @click="$router.push({ name: 'ride-details', params: { id: ride.id } })"
-               class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/50 hover:shadow-xl hover:shadow-yellow-500/10 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group"
-               :style="{ transitionDelay: `${index * 80}ms` }">
+          <template v-for="(ride, index) in rides" :key="`ride-${ride.id}`">
+            <div @click="$router.push({ name: 'ride-details', params: { id: ride.id } })"
+                 class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/50 hover:shadow-xl hover:shadow-yellow-500/10 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group"
+                 :style="{ transitionDelay: `${index * 80}ms` }">
             <div class="flex justify-between items-start mb-4">
               <div>
                 <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide">{{ ride.time }}</div>
@@ -351,7 +351,28 @@ export default {
                 <span v-else>{{ ride.seats - (ride.booked_seats || 0) }} из {{ ride.seats }} свободно</span>
               </div>
             </div>
-          </div>
+
+            <!-- Mobile App Promo Card after 3rd ride -->
+            <div v-if="index === 2" class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/50 flex flex-col items-center justify-center text-center space-y-4"
+                 :style="{ transitionDelay: `${(index + 1) * 80}ms` }">
+              <div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div class="space-y-1">
+                <h3 class="text-lg font-bold text-slate-800">Поездки в кармане</h3>
+                <p class="text-sm text-slate-600">Скачайте приложение для удобного поиска и управления бронированиями</p>
+              </div>
+              <a href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
+                 class="w-full bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-bold py-3 rounded-2xl shadow-lg shadow-amber-500/20 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                </svg>
+                <span>Скачать для Android</span>
+              </a>
+            </div>
+          </template>
         </TransitionGroup>
 
         <!-- Alternative Search Offer -->
@@ -408,10 +429,10 @@ export default {
 
 
         <TransitionGroup name="list" tag="div" class="space-y-4">
-          <div v-for="(ticket, index) in busTickets" :key="ticket.id"
-               @click="$router.push({ name: 'bus-ticket-details', params: { id: ticket.id } })"
-               class="bg-white rounded-3xl shadow-sm border border-gray-100/70 cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-               :style="{ transitionDelay: `${index * 80}ms` }">
+          <template v-for="(ticket, index) in busTickets" :key="`ticket-${ticket.id}`">
+            <div @click="$router.push({ name: 'bus-ticket-details', params: { id: ticket.id } })"
+                 class="bg-white rounded-3xl shadow-sm border border-gray-100/70 cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                 :style="{ transitionDelay: `${index * 80}ms` }">
 
             <!-- Ticket card: reference image style -->
             <div class="p-5">
@@ -485,9 +506,30 @@ export default {
                 </div>
               </div>
             </div>
-          </div>
+
+            <!-- Mobile App Promo Card after 3rd bus ticket -->
+            <div v-if="index === 2" class="bg-white rounded-3xl shadow-sm border border-gray-100/70 flex flex-col items-center justify-center text-center space-y-4 p-6"
+                 :style="{ transitionDelay: `${(index + 1) * 80}ms` }">
+              <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div class="space-y-1">
+                <h3 class="text-lg font-bold text-slate-800">Поездки в кармане</h3>
+                <p class="text-sm text-slate-600">Скачайте приложение для удобного поиска и управления бронированиями</p>
+              </div>
+              <a href="https://github.com/Shomirsaidov/poputki-apk/raw/refs/heads/main/app-release.apk"
+                 class="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold py-3 rounded-2xl shadow-lg shadow-blue-500/20 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+                </svg>
+                <span>Скачать для Android</span>
+              </a>
+            </div>
+          </template>
         </TransitionGroup>
-        
+
         <!-- Alternative Search Offer -->
         <Transition name="fade-slide">
           <div v-if="showAltOffer" class="mb-2">
