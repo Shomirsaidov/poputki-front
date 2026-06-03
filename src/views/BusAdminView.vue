@@ -584,6 +584,7 @@ export default {
                             drop_off_city: b.drop_off_city,
                             paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
                             originalBookingId: b.id,
+                            createdAt: b.created_at,
                             searchContext: `${b.passenger_name} ${b.passenger_phone} ${b.pickup_city} ${b.drop_off_city}`.toLowerCase()
                         });
                     } else {
@@ -597,6 +598,7 @@ export default {
                                     contactPhone: passengerPhone,
                                     paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
                                     originalBookingId: b.id,
+                                    createdAt: b.created_at,
                                     searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${passengerPhone} ${b.pickup_city} ${b.drop_off_city}`.toLowerCase()
                                 });
                         });
@@ -971,6 +973,7 @@ watch: {
                                         <th class="px-6 py-5">МАРШРУТ (П/В)</th>
                                         <th class="px-6 py-5">КОНТАКТ</th>
                                         <th class="px-6 py-5">ОПЛАТА</th>
+                                        <th class="px-6 py-5">ДАТА ВЫСТАВЛЕНИЯ СЧЕТА</th>
                                         <th class="px-6 py-5">ДЕЙСТВИЯ</th>
                                     </tr>
                                 </thead>
@@ -1019,6 +1022,9 @@ watch: {
                                                     {{ p.paymentStatus }}
                                                 </span>
                                             </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-[10px] text-slate-500 font-mono whitespace-nowrap">{{ p.createdAt ? new Date(p.createdAt).toLocaleDateString('ru-RU') : '—' }}</span>
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex items-center gap-3">
@@ -1133,7 +1139,7 @@ watch: {
                                         <input v-model="p.citizenship" placeholder="Таджикистан" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 outline-none focus:border-amber-500 shadow-sm" />
                                     </div>
                                     <div class="space-y-1">
-                                        <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Телефон</label>
+                                        <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Телефон пассажира</label>
                                         <input v-model="p.phone" placeholder="+992..." class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 outline-none focus:border-amber-500 shadow-sm" />
                                     </div>
                                 </div>

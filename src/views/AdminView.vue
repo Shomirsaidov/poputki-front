@@ -559,7 +559,8 @@ export default {
                         contactPhone: b.passenger_phone || b.phone,
                         pickup_city: b.pickup_city, drop_off_city: b.drop_off_city,
                         paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
-                        originalBookingId: b.id
+                        originalBookingId: b.id,
+                        createdAt: b.created_at
                     });
                 } else {
                     pData.forEach((p, idx) => {
@@ -569,7 +570,8 @@ export default {
                             contactPhone: p.phone || b.passenger_phone || b.phone,
                             pickup_city: b.pickup_city, drop_off_city: b.drop_off_city,
                             paymentStatus: b.status === 'pending_payment' ? 'Ожидает оплаты' : (b.total_price === 0 ? 'Ручная' : 'Оплачено'),
-                            originalBookingId: b.id
+                            originalBookingId: b.id,
+                            createdAt: b.created_at
                         });
                     });
                 }
@@ -1491,6 +1493,7 @@ export default {
                                 <th class="px-4 py-4">Маршрут (П/В)</th>
                                 <th class="px-4 py-4">Контакт</th>
                                 <th class="px-4 py-4">Оплата</th>
+                                <th class="px-4 py-4">Дата выставления счета</th>
                                 <th class="px-4 py-4">Действия</th>
                             </tr>
                         </thead>
@@ -1515,6 +1518,9 @@ export default {
                                             'bg-emerald-50 text-emerald-600 border-emerald-100': p.paymentStatus === 'Оплачено',
                                             'bg-amber-50 text-amber-600 border-amber-100': p.paymentStatus === 'Ожидает оплаты'
                                         }">{{ p.paymentStatus }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="text-[10px] text-slate-500 font-mono whitespace-nowrap">{{ p.createdAt ? new Date(p.createdAt).toLocaleDateString('ru-RU') : '—' }}</span>
                                 </td>
                                 <td class="px-4 py-3">
                                     <button @click="deleteAdminBooking(p.originalBookingId)" class="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Удалить бронь">
