@@ -180,7 +180,7 @@ export default {
                 birthDate: '',
                 citizenship: 'Таджикистан',
                 customCitizenship: '',
-                docType: 'Внутренний паспорт',
+                docType: 'Загран паспорт',
                 docNumber: '',
             }));
         },
@@ -681,8 +681,8 @@ export default {
                                     <div class="relative">
                                         <select v-model="p.docType" @change="saveState"
                                             class="w-full px-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium appearance-none cursor-pointer pr-10">
-                                            <option>Внутренний паспорт</option>
                                             <option>Загран паспорт</option>
+                                            <option>Внутренний паспорт</option>
                                             <option>Свидетельство о рождении</option>
                                         </select>
                                         <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>

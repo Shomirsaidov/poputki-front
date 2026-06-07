@@ -100,7 +100,7 @@ export default {
                 bus_ticket_id: '',
                 passenger_count: 1,
                 passengers_data: [
-                    { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }
+                        { lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Загранпаспорт', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }
                 ],
                 pickup_city: '',
                 drop_off_city: ''
@@ -377,7 +377,7 @@ export default {
             this.activeTab = 'create-booking';
         },
         addPassenger() {
-            this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' });
+            this.bookingForm.passengers_data.push({ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Загранпаспорт', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' });
             this.bookingForm.passenger_count++;
         },
         initEditBooking(bookingId) {
@@ -515,7 +515,7 @@ export default {
                 this.bookingForm = {
                     bus_ticket_id: '',
                     passenger_count: 1,
-                    passengers_data: [{ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Паспорт РТ', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }],
+                    passengers_data: [{ lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Загранпаспорт', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: '' }],
                     pickup_city: '',
                     drop_off_city: ''
                 };
@@ -1121,8 +1121,8 @@ watch: {
                                     <div class="space-y-1">
                                         <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Тип документа</label>
                                         <select v-model="p.docType" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 outline-none shadow-sm">
-                                            <option>Паспорт РТ</option>
                                             <option>Загранпаспорт</option>
+                                            <option>Паспорт</option>
                                             <option>Свид. о рождении</option>
                                         </select>
                                     </div>
