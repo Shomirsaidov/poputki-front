@@ -14,6 +14,7 @@ import {
   BarElement
 } from 'chart.js';
 import { Line, Pie, Bar } from 'vue-chartjs';
+import * as XLSX from 'xlsx';
 
 ChartJS.register(
   Title, 
@@ -91,6 +92,8 @@ export default {
             editingRide: null,
             showUserEditModal: false,
             showRideEditModal: false,
+            passengersLoading: false,
+            passengersData: [],
             navItems: [
                 { id: 'dashboard', label: 'Дашборд' },
                 { id: 'users', label: 'Пользователи' },
@@ -98,6 +101,7 @@ export default {
                 { id: 'rides', label: 'Попутки' },
                 { id: 'bus-tickets', label: 'Автобусы' },
                 { id: 'reviews', label: 'Отзывы' },
+                { id: 'passengers', label: 'Данные пассажиров' },
                 { id: 'cities', label: 'Города' }
             ],
             chartOptions: {
@@ -520,6 +524,50 @@ export default {
             }
         },
 
+        // ─── Passengers Data Tab ──────────────────────────────────────
+        async fetchPassengersData() {
+            this.passengersLoading = true;
+            try {
+                const res = await api.get('/admin/passengers-data');
+                this.passengersData = res.data;
+            } catch (e) {
+                alert('Ошибка загрузки данных пассажиров: ' + (e.response?.data?.error || e.message));
+            } finally {
+                this.passengersLoading = false;
+            }
+        },
+        exportPassengersExcel() {
+            const data = this.passengersData.map(p => ({
+                'ID брони': p.booking_id,
+                'ID рейса': p.bus_ticket_id,
+                'Фамилия': p.lastName,
+                'Имя': p.firstName,
+                'Отчество': p.middleName,
+                'Пол': p.gender === 'male' ? 'Муж' : (p.gender === 'female' ? 'Жен' : p.gender),
+                'Дата рождения': p.birthDate,
+                'Тип документа': p.docType,
+                'Номер документа': p.docNumber,
+                'Гражданство': p.citizenship,
+                'Телефон': p.phone,
+                'Место': p.seatNumbers,
+                'Посадка': p.pickup_city,
+                'Высадка': p.drop_off_city,
+                'Откуда': p.from_city,
+                'Куда': p.to_city,
+                'Дата рейса': p.departure_date,
+                'Время рейса': p.departure_time,
+                'Перевозчик': p.transport_company,
+                'Сумма': p.total_price,
+                'Статус оплаты': p.paymentStatus,
+                'Статус брони': p.bookingStatus,
+                'Дата брони': p.created_at
+            }));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Пассажиры');
+            XLSX.writeFile(wb, 'Все_пассажиры.xlsx');
+        },
+
         // ─── Drill-down: Bus Ticket Bookings ───────────────────────────
         async openBusTicketBookings(ticket) {
             this.selectedBusTicket = ticket;
@@ -610,6 +658,7 @@ export default {
                 this.fetchCities();
             }
             if (newTab === 'reviews') this.fetchReviews();
+            if (newTab === 'passengers') this.fetchPassengersData();
             if (newTab === 'cities') this.fetchCities();
         }
     },
@@ -1317,6 +1366,81 @@ export default {
                 </div>
 
 
+            </section>
+
+            <!-- Passengers Data Section -->
+            <section v-if="activeTab === 'passengers'" class="space-y-6 lg:space-y-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                    <div>
+                        <h2 class="text-2xl lg:text-3xl font-bold">Данные пассажиров</h2>
+                        <p class="text-slate-500 mt-1">Все пассажиры из всех бронирований</p>
+                    </div>
+                    <button @click="exportPassengersExcel" :disabled="passengersData.length === 0"
+                        class="bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Экспорт .xlsx
+                    </button>
+                </div>
+
+                <div v-if="passengersLoading" class="flex items-center justify-center py-20">
+                    <span class="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></span>
+                </div>
+
+                <div v-else-if="passengersData.length === 0" class="text-center py-20 text-slate-400">
+                    <p class="text-lg font-medium">Нет данных о пассажирах</p>
+                </div>
+
+                <div v-else class="bg-white rounded-2xl lg:rounded-[32px] border border-slate-100 overflow-x-auto shadow-sm">
+                    <table class="w-full text-left min-w-[1400px]">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase text-slate-400 font-black tracking-widest">
+                            <tr>
+                                <th class="px-4 py-4">#</th>
+                                <th class="px-4 py-4">ФИО</th>
+                                <th class="px-4 py-4">Пол</th>
+                                <th class="px-4 py-4">Дата рождения</th>
+                                <th class="px-4 py-4">Документ</th>
+                                <th class="px-4 py-4">Гражданство</th>
+                                <th class="px-4 py-4">Телефон</th>
+                                <th class="px-4 py-4">Место</th>
+                                <th class="px-4 py-4">Посадка</th>
+                                <th class="px-4 py-4">Высадка</th>
+                                <th class="px-4 py-4">Маршрут</th>
+                                <th class="px-4 py-4">Дата рейса</th>
+                                <th class="px-4 py-4">Перевозчик</th>
+                                <th class="px-4 py-4">Сумма</th>
+                                <th class="px-4 py-4">Оплата</th>
+                                <th class="px-4 py-4">Дата брони</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <tr v-for="(p, idx) in passengersData" :key="idx" class="hover:bg-slate-50/50 transition-colors text-slate-700 text-sm">
+                                <td class="px-4 py-3 text-slate-400 font-mono text-xs">{{ idx + 1 }}</td>
+                                <td class="px-4 py-3 font-bold text-slate-800 whitespace-nowrap">{{ p.lastName }} {{ p.firstName }} {{ p.middleName }}</td>
+                                <td class="px-4 py-3 text-xs font-bold uppercase text-slate-500">{{ p.gender === 'male' ? 'Муж' : p.gender === 'female' ? 'Жен' : '—' }}</td>
+                                <td class="px-4 py-3 text-xs font-mono text-slate-500">{{ p.birthDate || '—' }}</td>
+                                <td class="px-4 py-3 text-xs text-slate-500">{{ p.docType }} {{ p.docNumber }}</td>
+                                <td class="px-4 py-3 text-xs text-slate-500">{{ p.citizenship || '—' }}</td>
+                                <td class="px-4 py-3 text-xs font-mono text-slate-500">{{ p.phone }}</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-black border border-amber-100">{{ p.seatNumbers }}</span></td>
+                                <td class="px-4 py-3 text-xs text-slate-500">{{ p.pickup_city }}</td>
+                                <td class="px-4 py-3 text-xs text-slate-500">{{ p.drop_off_city }}</td>
+                                <td class="px-4 py-3 text-xs font-bold text-slate-600 whitespace-nowrap">{{ p.from_city }} → {{ p.to_city }}</td>
+                                <td class="px-4 py-3 text-xs font-mono text-slate-500">{{ p.departure_date }} {{ p.departure_time }}</td>
+                                <td class="px-4 py-3 text-xs text-slate-500">{{ p.transport_company }}</td>
+                                <td class="px-4 py-3 text-xs font-bold font-mono">{{ p.total_price }} с.</td>
+                                <td class="px-4 py-3">
+                                    <span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border"
+                                        :class="{
+                                            'bg-blue-50 text-blue-600 border-blue-100': p.paymentStatus === 'Ручная',
+                                            'bg-emerald-50 text-emerald-600 border-emerald-100': p.paymentStatus === 'Оплачено',
+                                            'bg-amber-50 text-amber-600 border-amber-100': p.paymentStatus === 'Ожидает оплаты'
+                                        }">{{ p.paymentStatus }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-[10px] font-mono text-slate-400 whitespace-nowrap">{{ p.created_at ? new Date(p.created_at).toLocaleDateString('ru-RU') : '—' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
 
              <!-- Reviews Section -->
