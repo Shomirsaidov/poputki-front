@@ -127,6 +127,17 @@ export default {
             }));
         },
 
+        filterPhone(event) {
+            this.phone = event.target.value.replace(/\D/g, '');
+            this.saveState();
+        },
+
+        onlyNumber(event) {
+            if (event.key && !/[0-9]/.test(event.key)) {
+                event.preventDefault();
+            }
+        },
+
         loadState() {
             try {
                 const raw = sessionStorage.getItem(STATE_KEY(this.ticketId));
@@ -705,7 +716,7 @@ export default {
                             <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">Контактный телефон *</label>
                             <div class="relative">
                                 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm pointer-events-none">📞</div>
-                                <input v-model="phone" @input="saveState" type="tel" placeholder="+ (Код) Номер телефона"
+                                <input v-model="phone" @input="filterPhone" @keypress="onlyNumber" type="number" placeholder="Номер телефона (только цифры)"
                                     class="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-gray-200 rounded-xl text-slate-800 placeholder-gray-300 outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all font-medium"/>
                             </div>
                         </div>

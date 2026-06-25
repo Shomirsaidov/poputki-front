@@ -107,6 +107,7 @@ export default {
             },
             selectedBookingRideId: '',
             photoLoading: false,
+            ocrLoadingIndex: -1,
             uploadPreset: 'poputki',
             isEditingBooking: false,
             editingBookingId: null,
@@ -437,6 +438,120 @@ export default {
         removePassenger(index) {
             this.bookingForm.passengers_data.splice(index, 1);
             this.bookingForm.passenger_count--;
+        },
+        triggerScanner(index) {
+            this.ocrLoadingIndex = index;
+            this.$refs.passportInput.click();
+        },
+        async handlePassportUpload(event) {
+            const targetIndex = this.ocrLoadingIndex;
+            if (targetIndex === -1) return;
+
+            const file = event.target.files[0];
+            if (!file) {
+                this.ocrLoadingIndex = -1;
+                return;
+            }
+
+            try {
+                // 1. Compress image to < 200KB (OCR API recommendation)
+                const compressedDataUri = await compressImage(file, {
+                    maxWidth: 1200,
+                    maxHeight: 1200,
+                    quality: 0.6
+                });
+
+                // Send the full data URI so the API can identify image type
+                const base64 = compressedDataUri;
+                const sizeKB = Math.round(compressedDataUri.split(',')[1].length * 0.75 / 1024);
+                console.log('[OCR] Compressed image size:', sizeKB, 'KB');
+
+                // 2. Call OCR via Supabase Edge Function proxy
+                const ocrRes = await fetch('https://xzvtjcqwmuezxyeerkki.supabase.co/functions/v1/ocr-passport', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ img: base64 })
+                });
+
+                const data = await ocrRes.json();
+                console.log('[OCR] Response:', data);
+
+                if (data.status !== 'OK') {
+                    throw new Error(data.message || 'OCR recognition failed');
+                }
+
+                // 4. Map response to passenger format
+                const msg = data.message;
+                console.log('[OCR] Mapping message:', msg);
+
+                // Parse name
+                let lastName = msg.surname || msg.lastName || msg.last_name || '';
+                let firstName = msg.givenName || msg.given_name || msg.firstName || msg.first_name || '';
+                
+                if (!lastName && !firstName && msg.name) {
+                    const cleanName = msg.name.replace(/<+/g, ' ').replace(',', '').trim();
+                    const nameParts = cleanName.split(/\s+/);
+                    lastName = nameParts[0] || '';
+                    firstName = nameParts.slice(1).join(' ') || '';
+                }
+
+                // Parse birthDay "YYYYMMDD" or "YYYY-MM-DD" → "YYYY-MM-DD"
+                const rawBirth = msg.birthDay || msg.birth_day || msg.dateOfBirth || msg.date_of_birth;
+                let birthDate = '';
+                if (rawBirth) {
+                    if (rawBirth.includes('-')) {
+                        birthDate = rawBirth;
+                    } else if (rawBirth.length === 8) {
+                        birthDate = `${rawBirth.slice(0, 4)}-${rawBirth.slice(4, 6)}-${rawBirth.slice(6, 8)}`;
+                    }
+                }
+
+                // Map nationality codes/names to Russian names
+                const natMap = {
+                    'TJK': 'Таджикистан', 'TAJIKISTAN': 'Таджикистан',
+                    'RUS': 'Россия', 'RUSSIA': 'Россия',
+                    'UZB': 'Узбекистан', 'UZBEKISTAN': 'Узбекистан',
+                    'KAZ': 'Казахстан', 'KAZAKHSTAN': 'Казахстан',
+                    'KGZ': 'Кыргызстан', 'KYRGYZSTAN': 'Кыргызстан',
+                    'TKM': 'Туркменистан', 'TURKMENISTAN': 'Туркменистан',
+                    'BLR': 'Беларусь', 'BELARUS': 'Беларусь',
+                    'UKR': 'Украина', 'UKRAINE': 'Украина',
+                    'AZE': 'Азербайджан', 'AZERBAIJAN': 'Азербайджан',
+                    'ARM': 'Армения', 'ARMENIA': 'Армения',
+                    'GEO': 'Грузия', 'GEORGIA': 'Грузия'
+                };
+                const rawNat = (msg.nationality || msg.country || '').toUpperCase();
+                const citizenship = natMap[rawNat] || (msg.nationality || msg.country) || 'Таджикистан';
+
+                // 5. Fill passenger data
+                const p = { ...this.bookingForm.passengers_data[targetIndex] };
+                if (lastName) p.lastName = lastName;
+                if (firstName) p.firstName = firstName;
+                if (birthDate) p.birthDate = birthDate;
+                
+                const docNum = msg.passportNumber || msg.passport_number || msg.doc_number;
+                if (docNum) p.docNumber = docNum;
+                
+                const rawGender = msg.gender || msg.sex;
+                if (rawGender) {
+                    p.gender = (rawGender === 'M' || rawGender === 'MALE') ? 'male' : 
+                               (rawGender === 'F' || rawGender === 'FEMALE') ? 'female' : '';
+                }
+                
+                if (citizenship) {
+                    p.citizenship = citizenship;
+                }
+                
+                p.docType = 'Загранпаспорт';
+
+                this.bookingForm.passengers_data.splice(targetIndex, 1, p);
+            } catch (e) {
+                console.error('OCR Error:', e);
+                alert('Не удалось распознать паспорт: ' + (e.message || ''));
+            } finally {
+                this.ocrLoadingIndex = -1;
+                event.target.value = '';
+            }
         },
         exportToExcel() {
             if (!this.passengerManifest || this.passengerManifest.length === 0) return;
@@ -1079,13 +1194,26 @@ watch: {
                         </div>
 
                         <div class="space-y-4 pt-2 border-t border-slate-50">
+                            <!-- Hidden File Input for OCR -->
+                            <input type="file" ref="passportInput" class="hidden" accept="image/*" @change="handlePassportUpload" />
                             <div class="flex justify-between items-center">
                                 <h3 class="text-sm font-bold text-slate-700">Данные пассажиров ({{ bookingForm.passenger_count }})</h3>
                                 <button @click="addPassenger" class="text-xs font-bold text-amber-500 hover:text-amber-600 px-4 py-2 bg-amber-50 rounded-xl transition-all border border-amber-100">+ Добавить</button>
                             </div>
                             <div v-for="(p, idx) in bookingForm.passengers_data" :key="idx" class="bg-slate-50 p-6 rounded-[24px] border border-slate-100 relative shadow-inner">
                                 <div class="flex items-center justify-between mb-4">
-                                    <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Пассажир {{ idx + 1 }}</span>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Пассажир {{ idx + 1 }}</span>
+                                        <button @click="triggerScanner(idx)" type="button" :disabled="ocrLoadingIndex !== -1"
+                                            class="px-3 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50">
+                                            <span v-if="ocrLoadingIndex === idx" class="w-3 h-3 border-2 border-amber-700/30 border-t-amber-700 rounded-full animate-spin"></span>
+                                            <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            {{ ocrLoadingIndex === idx ? 'Загрузка...' : 'Скан' }}
+                                        </button>
+                                    </div>
                                     <button v-if="idx > 0" @click="removePassenger(idx)" class="text-red-400 hover:text-red-500 p-2 bg-white rounded-xl shadow-sm border border-slate-100 transition-all">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                     </button>
