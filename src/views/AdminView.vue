@@ -102,8 +102,14 @@ export default {
                 { id: 'bus-tickets', label: 'Автобусы' },
                 { id: 'reviews', label: 'Отзывы' },
                 { id: 'passengers', label: 'Данные пассажиров' },
-                { id: 'cities', label: 'Города' }
+                { id: 'cities', label: 'Города' },
+                { id: 'polls', label: 'Опросы' }
             ],
+            pollSettings: { question: '', option1: '', option2: '', option3: '' },
+            pollAnswers: [],
+            pollSettingsLoading: false,
+            pollAnswersLoading: false,
+            savingPollSettings: false,
             chartOptions: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -568,6 +574,45 @@ export default {
             XLSX.writeFile(wb, 'Все_пассажиры.xlsx');
         },
 
+        async fetchPollData() {
+            this.fetchPollSettings();
+            this.fetchPollAnswers();
+        },
+        async fetchPollSettings() {
+            this.pollSettingsLoading = true;
+            try {
+                const res = await api.get('/admin/polls/settings');
+                this.pollSettings = res.data;
+            } catch (e) {
+                alert('Ошибка загрузки настроек опроса: ' + (e.response?.data?.error || e.message));
+            } finally {
+                this.pollSettingsLoading = false;
+            }
+        },
+        async fetchPollAnswers() {
+            this.pollAnswersLoading = true;
+            try {
+                const res = await api.get('/admin/polls/answers');
+                this.pollAnswers = res.data;
+            } catch (e) {
+                alert('Ошибка загрузки ответов: ' + (e.response?.data?.error || e.message));
+            } finally {
+                this.pollAnswersLoading = false;
+            }
+        },
+        async savePollSettings() {
+            this.savingPollSettings = true;
+            try {
+                const res = await api.put('/admin/polls/settings', this.pollSettings);
+                this.pollSettings = res.data;
+                alert('Настройки опроса успешно сохранены!');
+            } catch (e) {
+                alert('Ошибка сохранения настроек опроса: ' + (e.response?.data?.error || e.message));
+            } finally {
+                this.savingPollSettings = false;
+            }
+        },
+
         // ─── Drill-down: Bus Ticket Bookings ───────────────────────────
         async openBusTicketBookings(ticket) {
             this.selectedBusTicket = ticket;
@@ -660,6 +705,7 @@ export default {
             if (newTab === 'reviews') this.fetchReviews();
             if (newTab === 'passengers') this.fetchPassengersData();
             if (newTab === 'cities') this.fetchCities();
+            if (newTab === 'polls') this.fetchPollData();
         }
     },
     mounted() {
@@ -1466,6 +1512,126 @@ export default {
                             <span v-for="i in 5" :key="i" :class="i <= review.rating ? 'opacity-100' : 'opacity-20'">★</span>
                         </div>
                         <p class="text-slate-600 italic">"{{ review.comment }}"</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Polls & Feedback Section -->
+            <section v-if="activeTab === 'polls'" class="space-y-8 text-slate-900">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl lg:text-3xl text-slate-900 font-bold">Опросы и обратная связь</h2>
+                        <p class="text-sm text-slate-500">Настройка вопросов для пользователей, прервавших покупку, и просмотр их ответов</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                    <!-- Left: Poll Settings Card -->
+                    <div class="lg:col-span-1 bg-white p-6 rounded-[28px] border border-slate-100 shadow-sm space-y-6 self-start">
+                        <div class="border-b border-slate-100 pb-4">
+                            <h3 class="font-bold text-lg text-slate-800">Настройки опроса</h3>
+                            <p class="text-xs text-slate-400">Этот опрос будет автоматически отправлен пользователям в бот</p>
+                        </div>
+                        <div v-if="pollSettingsLoading" class="flex justify-center py-10">
+                            <span class="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
+                        </div>
+                        <div v-else class="space-y-4">
+                            <!-- Question -->
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Текст вопроса</label>
+                                <textarea v-model="pollSettings.question" rows="3" placeholder="Напр. Что помешало вам завершить покупку?" class="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 transition-all"></textarea>
+                            </div>
+                            <!-- Option 1 -->
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Вариант 1 (Кнопка)</label>
+                                <input v-model="pollSettings.option1" placeholder="Вариант ответа 1" class="w-full bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 transition-all" />
+                            </div>
+                            <!-- Option 2 -->
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Вариант 2 (Кнопка)</label>
+                                <input v-model="pollSettings.option2" placeholder="Вариант ответа 2" class="w-full bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 transition-all" />
+                            </div>
+                            <!-- Option 3 -->
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Вариант 3 (Кнопка)</label>
+                                <input v-model="pollSettings.option3" placeholder="Вариант ответа 3" class="w-full bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 transition-all" />
+                            </div>
+                            <!-- Option 4 (Fixed) -->
+                            <div class="space-y-1 opacity-75">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Вариант 4 (Фиксированный)</label>
+                                <div class="w-full bg-slate-100 border border-slate-200 text-slate-500 rounded-xl p-3.5 text-sm font-medium">
+                                    Ваш вариант (напишите, что именно помешало)
+                                </div>
+                            </div>
+                            <!-- Save Button -->
+                            <button @click="savePollSettings" :disabled="savingPollSettings" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-black text-sm hover:bg-amber-600 shadow-lg shadow-amber-500/20 active:scale-98 transition-all flex items-center justify-center gap-2">
+                                <span v-if="savingPollSettings" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                Сохранить изменения
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Answers List -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="bg-white p-6 rounded-[28px] border border-slate-100 shadow-sm">
+                            <h3 class="font-bold text-lg text-slate-800 mb-2">Ответы пользователей ({{ pollAnswers.length }})</h3>
+                            <p class="text-xs text-slate-400">Ответы, полученные от клиентов в Telegram боте</p>
+                        </div>
+
+                        <div v-if="pollAnswersLoading" class="flex justify-center py-20">
+                            <span class="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
+                        </div>
+
+                        <div v-else-if="pollAnswers.length === 0" class="bg-white p-12 rounded-[28px] border border-slate-100 text-center space-y-3">
+                            <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-slate-400 text-2xl">💬</div>
+                            <h4 class="font-bold text-slate-700">Нет ответов</h4>
+                            <p class="text-sm text-slate-400">Пользователи еще не ответили на опросы.</p>
+                        </div>
+
+                        <div v-else class="space-y-4">
+                            <div v-for="ans in pollAnswers" :key="ans.id" class="bg-white p-6 rounded-[28px] border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-4 justify-between items-start">
+                                <div class="space-y-3 flex-1">
+                                    <!-- User and Date info -->
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center font-bold text-amber-600 text-sm">
+                                            {{ ans.users?.name?.[0] || 'П' }}
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-slate-800 text-sm">
+                                                {{ ans.users?.name || 'Пользователь #' + ans.user_id }}
+                                            </div>
+                                            <div class="text-[10px] text-slate-400 font-medium">
+                                                Телефон: {{ ans.users?.phone || 'Не указан' }} • TG ID: {{ ans.telegram_id }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Selected Answer -->
+                                    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                                        <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Ответ клиента</div>
+                                        <p class="text-sm font-bold text-slate-800 leading-relaxed">
+                                            {{ ans.answer }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Booking details context -->
+                                    <div v-if="ans.bus_ticket_bookings" class="text-xs text-slate-500 bg-slate-50/50 rounded-xl p-3 border border-slate-100/50 flex flex-wrap gap-x-4 gap-y-1">
+                                        <span><b>Бронь:</b> #{{ ans.booking_id }}</span>
+                                        <span><b>Пассажиров:</b> {{ ans.bus_ticket_bookings.passenger_count }}</span>
+                                        <span><b>Сумма:</b> {{ ans.bus_ticket_bookings.total_price }} сом</span>
+                                        <span v-if="ans.bus_ticket_bookings.bus_tickets">
+                                            <b>Рейс:</b> {{ ans.bus_ticket_bookings.bus_tickets.from_city }} ➡ {{ ans.bus_ticket_bookings.bus_tickets.to_city }} ({{ ans.bus_ticket_bookings.bus_tickets.departure_date }} {{ ans.bus_ticket_bookings.bus_tickets.departure_time?.substring(0, 5) }})
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="text-right flex flex-col items-end gap-2 self-stretch justify-between md:self-auto">
+                                    <span class="text-[10px] text-slate-400 font-semibold bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1">
+                                        {{ new Date(ans.created_at).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
