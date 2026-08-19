@@ -526,7 +526,7 @@ export default {
 
     <!-- Simple Footer -->
     <footer class="bg-white border-t border-gray-100 py-8 text-center text-slate-400 text-sm">
-        <p>&copy; 2024 Poputki.online. Все права защищены.</p>
+        <p>&copy; 2026 Poputki.online. Все права защищены.</p>
     </footer>
 
   </div>
