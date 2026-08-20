@@ -1,7 +1,7 @@
 <script>
 import api from '../api';
 import AppLogo from '../components/AppLogo.vue';
-import * as XLSX from 'xlsx';
+import { exportPassengerManifestExcel, sortPassengersBySeat } from '../utils/excelExport';
 import { compressImage } from '../utils/imageCompression';
 import { uploadToCloudinaryDirect } from '../utils/cloudinary';
 import { 
@@ -195,8 +195,22 @@ export default {
         async fetchTickets() {
             this.loading = true;
             try {
-                const res = await api.get(`/bus-admin/tickets?operator_id=${this.user.id}`);
-                this.tickets = res.data;
+                if (localStorage.getItem('FEATURE_V2_API') === 'true') {
+                    // Staging pilot flow
+                    const token = localStorage.getItem('v2Token');
+                    const orgId = localStorage.getItem('v2OrgId');
+                    const res = await api.get('/v2/carrier/trips', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'x-carrier-org-id': orgId
+                        }
+                    });
+                    this.tickets = res.data;
+                } else {
+                    // Legacy flow
+                    const res = await api.get(`/bus-admin/tickets?operator_id=${this.user.id}`);
+                    this.tickets = res.data;
+                }
             } catch (e) { console.error(e); } finally { this.loading = false; }
         },
         async fetchBookings() {
@@ -553,25 +567,10 @@ export default {
                 event.target.value = '';
             }
         },
-        exportToExcel() {
+        async exportToExcel() {
             if (!this.passengerManifest || this.passengerManifest.length === 0) return;
-            const data = this.passengerManifest.map((p, idx) => ({
-                '#': idx + 1,
-                'ФИО ПАССАЖИРА': `${p.lastName || ''} ${p.firstName || ''} ${p.middleName || ''}`.trim(),
-                'МЕСТО': p.seat,
-                'ПОЛ': p.gender === 'male' ? 'Муж' : (p.gender === 'female' ? 'Жен' : '—'),
-                'ДАТА РОЖДЕНИЯ': p.birthDate || '—',
-                'ДОКУМЕНТ': `${p.docType || ''} ${p.docNumber || ''}`.trim(),
-                'ГРАЖДАНСТВО': p.citizenship || '—',
-                'ПОСАДКА': p.pickup_city || '—',
-                'ВЫСАДКА': p.drop_off_city || '—',
-                'КОНТАКТ': p.contactPhone,
-                'ОПЛАТА': p.paymentStatus
-            }));
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Пассажиры");
-            XLSX.writeFile(wb, `Рейс_${this.selectedBookingRideId}_Пассажиры.xlsx`);
+            const selectedTicket = (this.tickets || []).find(t => t.id == this.selectedBookingRideId) || {};
+            await exportPassengerManifestExcel(selectedTicket, this.passengerManifest, this.user);
         },
         async submitManualBooking() {
             const f = this.bookingForm;
@@ -705,9 +704,12 @@ export default {
                     } else {
                         pData.forEach((p, idx) => {
                             const passengerPhone = p.phone || b.passenger_phone;
+                            const assignedSeat = (b.seat_numbers && b.seat_numbers[idx] !== undefined && b.seat_numbers[idx] !== null)
+                                ? b.seat_numbers[idx]
+                                : (p.seatNumber || p.seat || '—');
                             manifest.push({
                                     ...p,
-                                    seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
+                                    seat: assignedSeat,
                                     pickup_city: b.pickup_city,
                                     drop_off_city: b.drop_off_city,
                                     contactPhone: passengerPhone,
@@ -720,9 +722,11 @@ export default {
                     }
                 });
 
-            if (!this.bookingSearch) return manifest;
+            const sortedManifest = sortPassengersBySeat(manifest);
+
+            if (!this.bookingSearch) return sortedManifest;
             const s = this.bookingSearch.toLowerCase();
-            return manifest.filter(p => p.searchContext.includes(s));
+            return sortedManifest.filter(p => p.searchContext.includes(s));
         },
         dailyBookingsChartData() {
             if (!this.stats || !this.stats.dailyBookings) return null;
