@@ -4,6 +4,7 @@ import AppLogo from '../components/AppLogo.vue';
 import { exportPassengerManifestExcel, sortPassengersBySeat } from '../utils/excelExport';
 import { compressImage } from '../utils/imageCompression';
 import { uploadToCloudinaryDirect } from '../utils/cloudinary';
+import BusSeatSelector from '../components/BusSeatSelector.vue';
 import { 
   Chart as ChartJS, 
   Title, 
@@ -35,7 +36,8 @@ export default {
         AppLogo,
         LineChart: Line,
         PieChart: Pie,
-        BarChart: Bar
+        BarChart: Bar,
+        BusSeatSelector
     },
     async mounted() {
         const savedUser = localStorage.getItem('busUser');
@@ -108,6 +110,7 @@ export default {
                 drop_off_city: ''
             },
             selectedBookingRideId: '',
+            selectedManualSeats: [],
             photoLoading: false,
             ocrLoadingIndex: -1,
             uploadPreset: 'poputki',
@@ -411,6 +414,7 @@ export default {
                 phone: booking.phone || '',
                 passenger_name: booking.passenger_name || ''
             };
+            this.selectedManualSeats = (booking.passengers_data || []).map(p => Number(p.seatNumber)).filter(s => !isNaN(s));
             this.activeTab = 'create-booking';
         },
         async saveBookingUpdate() {
@@ -730,6 +734,15 @@ export default {
             const s = this.bookingSearch.toLowerCase();
             return sortedManifest.filter(p => p.searchContext.includes(s));
         },
+        currentBookingTicket() {
+            if (!this.bookingForm.bus_ticket_id) return null;
+            return this.tickets.find(t => t.id === this.bookingForm.bus_ticket_id) || null;
+        },
+        bookedSeatsForCurrentTicket() {
+            if (!this.bookingForm.bus_ticket_id) return [];
+            const ticket = this.tickets.find(t => t.id === this.bookingForm.bus_ticket_id);
+            return ticket ? ticket.reserved_seats || [] : [];
+        },
         crmPassengers() {
             const manifest = [];
             this.bookings.forEach(b => {
@@ -802,7 +815,27 @@ export default {
         }
     },
 watch: {
-
+        selectedManualSeats(newVal) {
+            const currentPassengers = [...this.bookingForm.passengers_data];
+            const newPassengers = [];
+            
+            newVal.forEach(seatNum => {
+                const existing = currentPassengers.find(p => String(p.seatNumber) === String(seatNum));
+                if (existing) {
+                    newPassengers.push(existing);
+                } else {
+                    newPassengers.push({
+                        lastName: '', firstName: '', middleName: '', gender: 'male', docType: 'Загранпаспорт', docNumber: '', birthDate: '', citizenship: 'Таджикистан', phone: '', seatNumber: seatNum
+                    });
+                }
+            });
+            
+            this.bookingForm.passengers_data = newPassengers;
+            this.bookingForm.passenger_count = newPassengers.length;
+        },
+        'bookingForm.bus_ticket_id'() {
+            this.selectedManualSeats = [];
+        },
         activeTab() {
             this.fetchData();
         }
@@ -1275,54 +1308,64 @@ watch: {
                             </select>
                         </div>
 
-                        <!-- Pickup/Dropoff selector for manual booking -->
-                        <div v-if="bookingForm.bus_ticket_id" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Город посадки</label>
-                                <input v-model="bookingForm.pickup_city" placeholder="Напр. Душанбе" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500" />
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Город высадки</label>
-                                <input v-model="bookingForm.drop_off_city" placeholder="Напр. Худжанд" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500" />
-                            </div>
+                        <!-- Bus Seat Selector (shown after ride is selected) -->
+                        <div v-if="currentBookingTicket" class="border-t border-slate-50 pt-6 mt-6">
+                            <h3 class="text-lg font-bold text-slate-800 text-center mb-2">Схема салона</h3>
+                            <p class="text-[11px] font-bold text-slate-400 text-center mb-6 uppercase tracking-widest">Выберите свободные места для бронирования</p>
+                            <BusSeatSelector 
+                                v-model="selectedManualSeats"
+                                :bookedSeats="bookedSeatsForCurrentTicket"
+                                :totalSeats="currentBookingTicket.total_seats"
+                                :floor1Seats="currentBookingTicket.floor1_seats"
+                                :floor2Seats="currentBookingTicket.floor2_seats"
+                                :busType="currentBookingTicket.bus_type"
+                                :maxSelectable="50"
+                            />
                         </div>
 
-                        <!-- Booked seats info hint -->
-                        <div v-if="bookingForm.bus_ticket_id" class="bg-amber-50 border border-amber-100 rounded-2xl px-5 py-3 text-xs font-bold text-amber-700">
-                            Занятые места: {{ (tickets.find(t => t.id === bookingForm.bus_ticket_id)?.reserved_seats || []).sort((a,b)=>a-b).join(', ') || 'нет' }}
-                        </div>
-
-                        <div class="space-y-4 pt-2 border-t border-slate-50">
-                            <!-- Hidden File Input for OCR -->
-                            <input type="file" ref="passportInput" class="hidden" accept="image/*" @change="handlePassportUpload" />
-                            <div class="flex justify-between items-center">
-                                <h3 class="text-sm font-bold text-slate-700">Данные пассажиров ({{ bookingForm.passenger_count }})</h3>
-                                <button @click="addPassenger" class="text-xs font-bold text-amber-500 hover:text-amber-600 px-4 py-2 bg-amber-50 rounded-xl transition-all border border-amber-100">+ Добавить</button>
+                        <!-- Manual booking form (shown only if seats are selected) -->
+                        <div v-if="selectedManualSeats.length > 0" class="border-t border-slate-50 pt-6 mt-6">
+                            <!-- Pickup/Dropoff selector for manual booking -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Город посадки</label>
+                                    <input v-model="bookingForm.pickup_city" placeholder="Напр. Душанбе" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500" />
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Город высадки</label>
+                                    <input v-model="bookingForm.drop_off_city" placeholder="Напр. Худжанд" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 outline-none focus:border-amber-500" />
+                                </div>
                             </div>
-                            <div v-for="(p, idx) in bookingForm.passengers_data" :key="idx" class="bg-slate-50 p-6 rounded-[24px] border border-slate-100 relative shadow-inner">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Пассажир {{ idx + 1 }}</span>
-                                        <button @click="triggerScanner(idx)" type="button" :disabled="ocrLoadingIndex !== -1"
-                                            class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-black shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none">
-                                            <span v-if="ocrLoadingIndex === idx" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                            <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            </svg>
-                                            {{ ocrLoadingIndex === idx ? 'Распознавание...' : 'Заполнить по паспорту' }}
-                                        </button>
+
+                            <div class="space-y-4 pt-2 border-t border-slate-50">
+                                <!-- Hidden File Input for OCR -->
+                                <input type="file" ref="passportInput" class="hidden" accept="image/*" @change="handlePassportUpload" />
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-sm font-bold text-slate-700">Данные пассажиров ({{ bookingForm.passenger_count }})</h3>
+                                    <!-- Add Passenger button removed as layout selection handles this -->
+                                </div>
+                                <div v-for="(p, idx) in bookingForm.passengers_data" :key="idx" class="bg-slate-50 p-6 rounded-[24px] border border-slate-100 relative shadow-inner">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Пассажир {{ idx + 1 }}</span>
+                                            <button @click="triggerScanner(idx)" type="button" :disabled="ocrLoadingIndex !== -1"
+                                                class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs font-black shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none">
+                                                <span v-if="ocrLoadingIndex === idx" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                </svg>
+                                                {{ ocrLoadingIndex === idx ? 'Распознавание...' : 'Заполнить по паспорту' }}
+                                            </button>
+                                        </div>
+                                        <!-- Removed delete button from passenger data; user unselects seat on map -->
                                     </div>
-                                    <button v-if="idx > 0" @click="removePassenger(idx)" class="text-red-400 hover:text-red-500 p-2 bg-white rounded-xl shadow-sm border border-slate-100 transition-all">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                    </button>
-                                </div>
-                                <!-- Seat number — prominent at top -->
-                                <div class="mb-4 space-y-1">
-                                    <label class="text-[9px] text-amber-600 font-black uppercase ml-1">★ Номер места</label>
-                                    <input v-model="p.seatNumber" type="number" min="1" placeholder="Напр. 12" class="w-full bg-white border-2 border-amber-200 rounded-xl p-3 text-sm text-slate-900 outline-none focus:border-amber-500 shadow-sm font-bold" />
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <!-- Seat number — prominent at top (disabled as it's from map) -->
+                                    <div class="mb-4 space-y-1">
+                                        <label class="text-[9px] text-amber-600 font-black uppercase ml-1">★ Номер места</label>
+                                        <input :value="p.seatNumber" disabled type="number" class="w-full bg-slate-100/50 border-2 border-amber-200/50 rounded-xl p-3 text-sm text-slate-500 cursor-not-allowed font-bold" />
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                     <div class="space-y-1">
                                         <label class="text-[9px] text-slate-400 font-bold uppercase ml-1">Фамилия</label>
                                         <input v-model="p.lastName" placeholder="Иванов" class="w-full bg-white border border-slate-100 rounded-xl p-3 text-sm text-slate-900 outline-none focus:border-amber-500 shadow-sm" />
@@ -1373,14 +1416,14 @@ watch: {
                             </div>
                         </div>
 
-                        <div class="flex justify-end pt-4 gap-3">
+                        <div v-if="selectedManualSeats.length > 0" class="flex justify-end pt-4 gap-3">
                             <button v-if="isEditingBooking" @click="isEditingBooking = false; activeTab = 'bookings'" class="px-8 py-3.5 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all">Отмена</button>
                             <button @click="isEditingBooking ? saveBookingUpdate() : submitManualBooking()" :disabled="loading" class="px-8 py-3.5 bg-amber-500 text-white font-black rounded-2xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-2">
                                 <span v-if="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                 {{ isEditingBooking ? 'Сохранить изменения' : 'Создать бронирование' }}
                             </button>
                         </div>
-                </div>
+                    </div>
                 </section>
 
                 <!-- Create Bus Section (Copied from Admin View) -->
