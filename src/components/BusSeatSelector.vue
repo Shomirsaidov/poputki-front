@@ -14,7 +14,7 @@ export default {
         premiumPrice: { type: Number, default: 0 },
         regularPrice: { type: Number, default: 0 }
     },
-    emits: ['update:modelValue'],
+    emits: ['update:modelValue', 'seat-dblclick'],
     data() {
         return {
             currentFloor: this.busType === 'double' ? 2 : 1
@@ -221,8 +221,14 @@ export default {
                 if (this.selectedSeats.length >= this.maxSelectable) {
                     if (this.maxSelectable === 1) this.selectedSeats = [seatNum];
                     else this.selectedSeats = [...this.selectedSeats.slice(1), seatNum];
-                } else this.selectedSeats = [...this.selectedSeats, seatNum];
+                } else {
+                    this.selectedSeats = [...this.selectedSeats, seatNum];
+                }
             }
+        },
+        handleDblClick(seatNum) {
+            if (this.isSeatBooked(seatNum)) return;
+            this.$emit('seat-dblclick', seatNum);
         },
         getSeatClass(seatNum) {
             if (this.isSeatBooked(seatNum)) return 'seat-booked';
@@ -274,7 +280,7 @@ export default {
                 <template v-else-if="row.type === 'table-row'">
                     <div v-if="row.left === 'table'" class="table-cell span-2">СТОЛ</div>
                     <div v-else-if="Array.isArray(row.left)" class="seat-pair">
-                        <button v-for="s in row.left" :key="s" @click="toggleSeat(s)" :class="['seat-btn', getSeatClass(s), getSeatGender(s) ? 'booked-'+getSeatGender(s) : '']" :disabled="isSeatBooked(s)">
+                        <button v-for="s in row.left" :key="s" @click="toggleSeat(s)" @dblclick.prevent="handleDblClick(s)" :class="['seat-btn', getSeatClass(s), getSeatGender(s) ? 'booked-'+getSeatGender(s) : '']" :disabled="isSeatBooked(s)">
                             <template v-if="getSeatGender(s)">
                                 <svg class="gender-icon" :class="getSeatGender(s)==='male'?'male':'female'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a5 5 0 110 10A5 5 0 0112 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
                             </template>
@@ -291,7 +297,7 @@ export default {
 
                     <div v-if="row.right === 'table'" class="table-cell span-2">СТОЛ</div>
                     <div v-else-if="Array.isArray(row.right)" class="seat-pair">
-                        <button v-for="s in row.right" :key="s" @click="toggleSeat(s)" :class="['seat-btn', getSeatClass(s), getSeatGender(s) ? 'booked-'+getSeatGender(s) : '']" :disabled="isSeatBooked(s)">
+                        <button v-for="s in row.right" :key="s" @click="toggleSeat(s)" @dblclick.prevent="handleDblClick(s)" :class="['seat-btn', getSeatClass(s), getSeatGender(s) ? 'booked-'+getSeatGender(s) : '']" :disabled="isSeatBooked(s)">
                             <template v-if="getSeatGender(s)">
                                 <svg class="gender-icon" :class="getSeatGender(s)==='male'?'male':'female'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a5 5 0 110 10A5 5 0 0112 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
                             </template>
@@ -310,7 +316,7 @@ export default {
                     <div class="seat-pair">
                         <div v-if="row.left === 'stairs'" class="label-tile span-2 label-stairs">Лестница</div>
                         <template v-else>
-                            <button v-for="s in row.left" :key="s" @click="toggleSeat(s)" :class="['seat-btn', getSeatClass(s), getSeatGender(s) ? 'booked-'+getSeatGender(s) : '']" :disabled="isSeatBooked(s)">
+                            <button v-for="s in row.left" :key="s" @click="toggleSeat(s)" @dblclick.prevent="handleDblClick(s)" :class="['seat-btn', getSeatClass(s), getSeatGender(s) ? 'booked-'+getSeatGender(s) : '']" :disabled="isSeatBooked(s)">
                                 <template v-if="getSeatGender(s)">
                                     <svg class="gender-icon" :class="getSeatGender(s)==='male'?'male':'female'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a5 5 0 110 10A5 5 0 0112 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
                                 </template>
@@ -331,7 +337,7 @@ export default {
                             <div v-for="(l, li) in row.rightLabels" :key="li" :class="l.type==='label'?'label-tile small label-'+l.variant:'empty-cell'">{{ l.text }}</div>
                         </template>
                         <template v-else>
-                            <button v-for="s in row.right" :key="s" @click="toggleSeat(s)" :class="['seat-btn', getSeatClass(s), getSeatGender(s) ? 'booked-'+getSeatGender(s) : '']" :disabled="isSeatBooked(s)">
+                            <button v-for="s in row.right" :key="s" @click="toggleSeat(s)" @dblclick.prevent="handleDblClick(s)" :class="['seat-btn', getSeatClass(s), getSeatGender(s) ? 'booked-'+getSeatGender(s) : '']" :disabled="isSeatBooked(s)">
                                 <template v-if="getSeatGender(s)">
                                     <svg class="gender-icon" :class="getSeatGender(s)==='male'?'male':'female'" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a5 5 0 110 10A5 5 0 0112 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
                                 </template>
@@ -347,7 +353,7 @@ export default {
 
                 <template v-else-if="row.type === 'last-row'">
                     <div class="last-row-grid">
-                        <button v-for="s in row.seats" :key="s" @click="toggleSeat(s)" :class="['seat-btn', getSeatClass(s)]" :disabled="isSeatBooked(s)">
+                        <button v-for="s in row.seats" :key="s" @click="toggleSeat(s)" @dblclick.prevent="handleDblClick(s)" :class="['seat-btn', getSeatClass(s)]" :disabled="isSeatBooked(s)">
                             <span class="num">{{ s }}</span>
                         </button>
                     </div>

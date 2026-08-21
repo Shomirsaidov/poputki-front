@@ -111,6 +111,7 @@ export default {
             },
             selectedBookingRideId: '',
             selectedManualSeats: [],
+            showManualForm: false,
             photoLoading: false,
             ocrLoadingIndex: -1,
             uploadPreset: 'poputki',
@@ -150,6 +151,10 @@ export default {
         }
     },
     methods: {
+        handleSeatDblClick(seatNum) {
+            this.selectedManualSeats = [seatNum];
+            this.showManualForm = true;
+        },
         async handleLogin() {
             if (!this.phone || !this.password) {
                 alert('Введите телефон и пароль');
@@ -415,6 +420,7 @@ export default {
                 passenger_name: booking.passenger_name || ''
             };
             this.selectedManualSeats = (booking.passengers_data || []).map(p => Number(p.seatNumber)).filter(s => !isNaN(s));
+            this.showManualForm = true;
             this.activeTab = 'create-booking';
         },
         async saveBookingUpdate() {
@@ -835,8 +841,12 @@ watch: {
         },
         'bookingForm.bus_ticket_id'() {
             this.selectedManualSeats = [];
+            this.showManualForm = false;
         },
-        activeTab() {
+        activeTab(newTab) {
+            if (newTab === 'create-booking' && !this.isEditingBooking) {
+                this.showManualForm = false;
+            }
             this.fetchData();
         }
     }
@@ -1309,11 +1319,12 @@ watch: {
                         </div>
 
                         <!-- Bus Seat Selector (shown after ride is selected) -->
-                        <div v-if="currentBookingTicket" class="border-t border-slate-50 pt-6 mt-6">
+                        <div v-if="currentBookingTicket && !showManualForm" class="border-t border-slate-50 pt-6 mt-6">
                             <h3 class="text-lg font-bold text-slate-800 text-center mb-2">Схема салона</h3>
-                            <p class="text-[11px] font-bold text-slate-400 text-center mb-6 uppercase tracking-widest">Выберите свободные места для бронирования</p>
+                            <p class="text-[11px] font-bold text-slate-400 text-center mb-6 uppercase tracking-widest">Дважды кликните по свободному месту для бронирования</p>
                             <BusSeatSelector 
                                 v-model="selectedManualSeats"
+                                @seat-dblclick="handleSeatDblClick"
                                 :bookedSeats="bookedSeatsForCurrentTicket"
                                 :totalSeats="currentBookingTicket.total_seats"
                                 :floor1Seats="currentBookingTicket.floor1_seats"
@@ -1324,7 +1335,7 @@ watch: {
                         </div>
 
                         <!-- Manual booking form (shown only if seats are selected) -->
-                        <div v-if="selectedManualSeats.length > 0" class="border-t border-slate-50 pt-6 mt-6">
+                        <div v-if="showManualForm" class="border-t border-slate-50 pt-6 mt-6">
                             <!-- Pickup/Dropoff selector for manual booking -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div class="space-y-2">
@@ -1417,6 +1428,7 @@ watch: {
                         </div>
 
                             <div class="flex justify-end pt-4 gap-3">
+                                <button v-if="!isEditingBooking" @click="showManualForm = false" class="px-8 py-3.5 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all">Назад к схеме</button>
                                 <button v-if="isEditingBooking" @click="isEditingBooking = false; activeTab = 'bookings'" class="px-8 py-3.5 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all">Отмена</button>
                                 <button @click="isEditingBooking ? saveBookingUpdate() : submitManualBooking()" :disabled="loading" class="px-8 py-3.5 bg-amber-500 text-white font-black rounded-2xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-2">
                                     <span v-if="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
