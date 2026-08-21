@@ -493,7 +493,7 @@ export default {
                 console.log('[OCR] Compressed image size:', sizeKB, 'KB');
 
                 // 2. Call OCR via Supabase Edge Function proxy
-                const ocrRes = await fetch('https://xzvtjcqwmuezxyeerkki.supabase.co/functions/v1/ocr-passport', {
+                const ocrRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ocr-passport`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ img: base64 })
