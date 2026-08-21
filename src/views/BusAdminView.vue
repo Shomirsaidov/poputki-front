@@ -1416,12 +1416,13 @@ watch: {
                             </div>
                         </div>
 
-                        <div v-if="selectedManualSeats.length > 0" class="flex justify-end pt-4 gap-3">
-                            <button v-if="isEditingBooking" @click="isEditingBooking = false; activeTab = 'bookings'" class="px-8 py-3.5 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all">Отмена</button>
-                            <button @click="isEditingBooking ? saveBookingUpdate() : submitManualBooking()" :disabled="loading" class="px-8 py-3.5 bg-amber-500 text-white font-black rounded-2xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-2">
-                                <span v-if="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                {{ isEditingBooking ? 'Сохранить изменения' : 'Создать бронирование' }}
-                            </button>
+                            <div class="flex justify-end pt-4 gap-3">
+                                <button v-if="isEditingBooking" @click="isEditingBooking = false; activeTab = 'bookings'" class="px-8 py-3.5 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all">Отмена</button>
+                                <button @click="isEditingBooking ? saveBookingUpdate() : submitManualBooking()" :disabled="loading" class="px-8 py-3.5 bg-amber-500 text-white font-black rounded-2xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-2">
+                                    <span v-if="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                    {{ isEditingBooking ? 'Сохранить изменения' : 'Создать бронирование' }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>
