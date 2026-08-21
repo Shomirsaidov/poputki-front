@@ -738,25 +738,34 @@ export default {
                 const ticketInfo = ticket ? `${ticket.from_city} → ${ticket.to_city}` : '—';
                 
                 if (pData.length === 0) {
-                    manifest.push({
-                        lastName: b.passenger_name || '—', firstName: '', middleName: '',
-                        seat: (b.seat_numbers || []).join(', '),
-                        gender: '—', birthDate: '—', docType: '—', docNumber: '—', citizenship: '—',
-                        contactPhone: b.passenger_phone,
-                        route: ticketInfo,
-                        createdAt: b.created_at,
-                        searchContext: `${b.passenger_name} ${b.passenger_phone}`.toLowerCase()
-                    });
-                } else {
-                    pData.forEach((p, idx) => {
+                    const lName = b.passenger_name || '';
+                    if (lName.trim() && lName !== '—') {
                         manifest.push({
-                            ...p,
-                            seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
-                            contactPhone: p.phone || b.passenger_phone,
+                            lastName: lName, firstName: '', middleName: '',
+                            seat: (b.seat_numbers || []).join(', '),
+                            gender: '—', birthDate: '—', docType: '—', docNumber: '—', citizenship: '—',
+                            contactPhone: b.passenger_phone,
                             route: ticketInfo,
                             createdAt: b.created_at,
-                            searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${p.phone} ${b.passenger_phone}`.toLowerCase()
+                            searchContext: `${lName} ${b.passenger_phone}`.toLowerCase()
                         });
+                    }
+                } else {
+                    pData.forEach((p, idx) => {
+                        const hasName = (p.lastName && p.lastName.trim() !== '—' && p.lastName.trim() !== '') || 
+                                        (p.firstName && p.firstName.trim() !== '—' && p.firstName.trim() !== '') || 
+                                        (p.middleName && p.middleName.trim() !== '—' && p.middleName.trim() !== '');
+                        
+                        if (hasName) {
+                            manifest.push({
+                                ...p,
+                                seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
+                                contactPhone: p.phone || b.passenger_phone,
+                                route: ticketInfo,
+                                createdAt: b.created_at,
+                                searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${p.phone} ${b.passenger_phone}`.toLowerCase()
+                            });
+                        }
                     });
                 }
             });
