@@ -91,9 +91,11 @@ export default {
                 { id: 'tickets', label: 'Мои рейсы' },
                 { id: 'create', label: 'Создать рейс' },
                 { id: 'create-booking', label: 'Создать бронь' },
-                { id: 'bookings', label: 'Бронирования' }
+                { id: 'bookings', label: 'Бронирования' },
+                { id: 'crm', label: 'CRM Пассажиров' }
             ],
             bookingSearch: '',
+            crmSearch: '',
             isEditingTicket: false,
             editingTicketId: null,
             bookingForm: {
@@ -173,7 +175,7 @@ export default {
                 promises.push(this.fetchStats());
             } else if (this.activeTab === 'tickets') {
                 promises.push(this.fetchTickets());
-            } else if (this.activeTab === 'bookings') {
+            } else if (this.activeTab === 'bookings' || this.activeTab === 'crm') {
                 promises.push(this.fetchBookings());
             }
             await Promise.all(promises);
@@ -728,6 +730,41 @@ export default {
             const s = this.bookingSearch.toLowerCase();
             return sortedManifest.filter(p => p.searchContext.includes(s));
         },
+        crmPassengers() {
+            const manifest = [];
+            this.bookings.forEach(b => {
+                const pData = b.passengers_data || [];
+                const ticket = this.tickets.find(t => t.id === b.bus_ticket_id);
+                const ticketInfo = ticket ? `${ticket.from_city} → ${ticket.to_city}` : '—';
+                
+                if (pData.length === 0) {
+                    manifest.push({
+                        lastName: b.passenger_name || '—', firstName: '', middleName: '',
+                        seat: (b.seat_numbers || []).join(', '),
+                        gender: '—', birthDate: '—', docType: '—', docNumber: '—', citizenship: '—',
+                        contactPhone: b.passenger_phone,
+                        route: ticketInfo,
+                        createdAt: b.created_at,
+                        searchContext: `${b.passenger_name} ${b.passenger_phone}`.toLowerCase()
+                    });
+                } else {
+                    pData.forEach((p, idx) => {
+                        manifest.push({
+                            ...p,
+                            seat: (b.seat_numbers && b.seat_numbers[idx]) ? b.seat_numbers[idx] : '—',
+                            contactPhone: p.phone || b.passenger_phone,
+                            route: ticketInfo,
+                            createdAt: b.created_at,
+                            searchContext: `${p.lastName} ${p.firstName} ${p.middleName} ${p.phone} ${b.passenger_phone}`.toLowerCase()
+                        });
+                    });
+                }
+            });
+
+            if (!this.crmSearch) return manifest;
+            const s = this.crmSearch.toLowerCase();
+            return manifest.filter(p => p.searchContext.includes(s));
+        },
         dailyBookingsChartData() {
             if (!this.stats || !this.stats.dailyBookings) return null;
             return {
@@ -1161,6 +1198,55 @@ watch: {
                         </div>
                     </div>
                 </section>
+                <!-- CRM section -->
+                <section v-if="activeTab === 'crm'" class="space-y-6 lg:space-y-8">
+                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                         <div>
+                            <h2 class="text-2xl lg:text-3xl font-bold text-slate-900">CRM Пассажиров</h2>
+                            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-black">База всех ваших пассажиров</p>
+                         </div>
+                         <div class="relative w-full sm:w-80">
+                            <input v-model="crmSearch" placeholder="Поиск по имени или телефону..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-amber-500 text-slate-900 shadow-sm" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                     </div>
+                     <div class="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[1000px]">
+                                <thead>
+                                    <tr class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-100">
+                                        <th class="px-6 py-5">#</th>
+                                        <th class="px-6 py-5">ФИО ПАССАЖИРА</th>
+                                        <th class="px-6 py-5">ТЕЛЕФОН</th>
+                                        <th class="px-6 py-5">ПОЛ</th>
+                                        <th class="px-6 py-5">ДАТА РОЖДЕНИЯ</th>
+                                        <th class="px-6 py-5">ДОКУМЕНТ</th>
+                                        <th class="px-6 py-5">ГРАЖДАНСТВО</th>
+                                        <th class="px-6 py-5">ПОСЛЕДНИЙ МАРШРУТ</th>
+                                        <th class="px-6 py-5">ДАТА БРОНИ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    <tr v-for="(p, idx) in crmPassengers" :key="idx" class="hover:bg-slate-50/20 transition-colors">
+                                        <td class="px-6 py-4 text-slate-400 font-bold text-[11px]">{{ idx + 1 }}</td>
+                                        <td class="px-6 py-4 font-bold text-slate-900 text-sm whitespace-nowrap">{{ p.lastName }} {{ p.firstName }} {{ p.middleName }}</td>
+                                        <td class="px-6 py-4 text-[11px] font-bold text-slate-900">{{ p.contactPhone || '—' }}</td>
+                                        <td class="px-6 py-4 text-xs text-slate-600 uppercase font-bold">{{ p.gender === 'male' ? 'Муж' : (p.gender === 'female' ? 'Жен' : '—') }}</td>
+                                        <td class="px-6 py-4 text-xs text-slate-600 font-medium font-mono">{{ p.birthDate || '—' }}</td>
+                                        <td class="px-6 py-4 text-[11px] text-slate-600">{{ p.docType }} {{ p.docNumber }}</td>
+                                        <td class="px-6 py-4 text-xs text-slate-600">{{ p.citizenship || '—' }}</td>
+                                        <td class="px-6 py-4 text-[10px] text-slate-500 font-bold uppercase">{{ p.route }}</td>
+                                        <td class="px-6 py-4 text-[10px] text-slate-500 font-mono">{{ p.createdAt ? new Date(p.createdAt).toLocaleDateString('ru-RU') : '—' }}</td>
+                                    </tr>
+                                    <tr v-if="crmPassengers.length === 0">
+                                        <td colspan="9" class="px-6 py-8 text-center text-slate-400">Пассажиры не найдены</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                     </div>
+                </section>
+
                 <!-- Create Booking Section -->
                 <section v-if="activeTab === 'create-booking'" class="space-y-6 lg:space-y-8">
                     <div class="flex justify-between items-center">
